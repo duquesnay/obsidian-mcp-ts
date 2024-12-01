@@ -16,6 +16,7 @@ class Obsidian():
         self.host = host
         self.port = port
         self.verify_ssl = verify_ssl
+        self.timeout = (3, 6)
 
     def get_base_url(self) -> str:
         return f'{self.protocol}://{self.host}:{self.port}'
@@ -41,7 +42,7 @@ class Obsidian():
         url = f"{self.get_base_url()}/vault/"
         
         def call_fn():
-            response = requests.get(url, headers=self._get_headers(), verify=self.verify_ssl)
+            response = requests.get(url, headers=self._get_headers(), verify=self.verify_ssl, timeout=self.timeout)
             response.raise_for_status()
             
             return response.json()['files']
@@ -53,7 +54,7 @@ class Obsidian():
         url = f"{self.get_base_url()}/vault/{dirpath}/"
         
         def call_fn():
-            response = requests.get(url, headers=self._get_headers(), verify=self.verify_ssl)
+            response = requests.get(url, headers=self._get_headers(), verify=self.verify_ssl, timeout=self.timeout)
             response.raise_for_status()
             
             return response.json()['files']
@@ -64,7 +65,7 @@ class Obsidian():
         url = f"{self.get_base_url()}/vault/{filepath}"
     
         def call_fn():
-            response = requests.get(url, headers=self._get_headers(), verify=self.verify_ssl)
+            response = requests.get(url, headers=self._get_headers(), verify=self.verify_ssl, timeout=self.timeout)
             response.raise_for_status()
             
             return response.text
@@ -79,7 +80,7 @@ class Obsidian():
         }
         
         def call_fn():
-            response = requests.post(url, headers=self._get_headers(), params=params, verify=self.verify_ssl)
+            response = requests.post(url, headers=self._get_headers(), params=params, verify=self.verify_ssl, timeout=self.timeout)
             response.raise_for_status()
             return response.json()
 
@@ -93,7 +94,8 @@ class Obsidian():
                 url, 
                 headers=self._get_headers() | {'Content-Type': 'text/markdown'}, 
                 data=content,
-                verify=self.verify_ssl
+                verify=self.verify_ssl,
+                timeout=self.timeout
             )
             response.raise_for_status()
             return None
@@ -111,7 +113,7 @@ class Obsidian():
         }
         
         def call_fn():
-            response = requests.patch(url, headers=headers, data=content, verify=self.verify_ssl)
+            response = requests.patch(url, headers=headers, data=content, verify=self.verify_ssl, timeout=self.timeout)
             response.raise_for_status()
             return None
 
@@ -125,7 +127,7 @@ class Obsidian():
         }
         
         def call_fn():
-            response = requests.post(url, headers=headers, json=query, verify=self.verify_ssl)
+            response = requests.post(url, headers=headers, json=query, verify=self.verify_ssl, timeout=self.timeout)
             response.raise_for_status()
             return response.json()
 
