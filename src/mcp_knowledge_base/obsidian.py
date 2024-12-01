@@ -16,7 +16,7 @@ class Obsidian():
         self.host = host
         self.port = port
         self.verify_ssl = verify_ssl
-        self.timeout = (5, 15)
+        self.timeout = (3, 6)
 
     def get_base_url(self) -> str:
         return f'{self.protocol}://{self.host}:{self.port}'
