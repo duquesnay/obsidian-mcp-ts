@@ -1,4 +1,5 @@
 import requests
+import urllib.parse
 from typing import Any
 
 class Obsidian():
@@ -106,7 +107,7 @@ class Obsidian():
             'Content-Type': 'text/markdown',
             'Operation': operation,
             'Target-Type': target_type,
-            'Target': target
+            'Target': urllib.parse.quote(target)
         }
         
         def call_fn():
