@@ -17,5 +17,10 @@ email = "markus@life-electronic.nl"
 requires = [ "hatchling",]
 build-backend = "hatchling.build"
 
+[dependency-groups]
+dev = [
+    "pyright>=1.1.389",
+]
+
 [project.scripts]
 mcp-knowledge-base = "mcp_knowledge_base:main"

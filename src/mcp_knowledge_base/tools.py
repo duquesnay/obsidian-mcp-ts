@@ -4,14 +4,13 @@ from mcp.types import (
     TextContent,
     ImageContent,
     EmbeddedResource,
-    LoggingLevel,
 )
 import json
 import os
 from . import obsidian
 
-api_key = os.getenv("OBSIDIAN_API_KEY")
-if not api_key:
+api_key = os.getenv("OBSIDIAN_API_KEY", "")
+if api_key == "":
     raise ValueError("OBSIDIAN_API_KEY environment variable required")
 
 TOOL_LIST_FILES_IN_VAULT = "list_files_in_vault"
@@ -219,7 +218,7 @@ class AppendContentToolHandler(ToolHandler):
            raise RuntimeError("filepath and content arguments required")
 
        api = obsidian.Obsidian(api_key=api_key)
-       api.append_content(args["filepath"], args["content"])
+       api.append_content(args.get("filepath", ""), args["content"])
 
        return [
            TextContent(
@@ -274,11 +273,11 @@ class PatchContentToolHandler(ToolHandler):
 
        api = obsidian.Obsidian(api_key=api_key)
        api.patch_content(
-           args["filepath"],
-           args["operation"],
-           args["target_type"],
-           args["target"],
-           args["content"]
+           args.get("filepath", ""),
+           args.get("operation", ""),
+           args.get("target_type", ""),
+           args.get("target", ""),
+           args.get("content", "")
        )
 
        return [
@@ -317,7 +316,7 @@ class ComplexSearchToolHandler(ToolHandler):
            raise RuntimeError("query argument missing in arguments")
 
        api = obsidian.Obsidian(api_key=api_key)
-       results = api.search_json(args["query"])
+       results = api.search_json(args.get("query", ""))
 
        return [
            TextContent(

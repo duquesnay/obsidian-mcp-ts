@@ -8,12 +8,10 @@ import os
 from dotenv import load_dotenv
 from mcp.server import Server
 from mcp.types import (
-    Resource,
     Tool,
     TextContent,
     ImageContent,
     EmbeddedResource,
-    LoggingLevel,
 )
 
 load_dotenv()
@@ -52,16 +50,6 @@ add_tool_handler(tools.PatchContentToolHandler())
 add_tool_handler(tools.AppendContentToolHandler())
 add_tool_handler(tools.ComplexSearchToolHandler())
 
-#@app.list_resources()
-#async def list_resources() -> list[Resource]:
-#    return [
-#        Resource(
-#            uri="obisidian:///note/app.log",
-#            name="Application Logs",
-#            mimeType="text/plain"
-#        )
-#    ]
-
 @app.list_tools()
 async def list_tools() -> list[Tool]:
     """List available tools."""
@@ -69,7 +57,7 @@ async def list_tools() -> list[Tool]:
     return [th.get_tool_description() for th in tool_handlers.values()]
 
 @app.call_tool()
-async def call_tool(name: str, arguments: Any) -> Sequence[TextContent]:
+async def call_tool(name: str, arguments: Any) -> Sequence[TextContent | ImageContent | EmbeddedResource]:
     """Handle tool calls for command line run."""
     
     if not isinstance(arguments, dict):
