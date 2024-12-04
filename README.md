@@ -1,6 +1,6 @@
-# mcp-knowledge-base MCP server
+# MCP server for Obsidian
 
-Example MCP server to interact with Obsidian.
+MCP server to interact with Obsidian via the Local REST API community plugin.
 
 ## Components
 
@@ -58,13 +58,13 @@ On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 ```json
 {
   "mcpServers": {
-    "mcp-knowledge-base": {
+    "mcp-obsidian": {
       "command": "uv",
       "args": [
         "--directory",
-        "<dir_to>/mcp-knowledge-base",
+        "<dir_to>/mcp-obsidian",
         "run",
-        "mcp-knowledge-base"
+        "mcp-obsidian"
       ]
     }
   }
@@ -78,10 +78,10 @@ On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 ```json
 {
   "mcpServers": {
-    "mcp-knowledge-base": {
+    "mcp-obsidian": {
       "command": "uvx",
       "args": [
-        "mcp-knowledge-base"
+        "mcp-obsidian"
       ]
     }
   }
@@ -91,7 +91,7 @@ On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 
 ## Development
 
-### Building and Publishing
+### Building
 
 To prepare the package for distribution:
 
@@ -99,22 +99,6 @@ To prepare the package for distribution:
 ```bash
 uv sync
 ```
-
-2. Build package distributions:
-```bash
-uv build
-```
-
-This will create source and wheel distributions in the `dist/` directory.
-
-3. Publish to PyPI:
-```bash
-uv publish
-```
-
-Note: You'll need to set PyPI credentials via environment variables or command flags:
-- Token: `--token` or `UV_PUBLISH_TOKEN`
-- Or username/password: `--username`/`UV_PUBLISH_USERNAME` and `--password`/`UV_PUBLISH_PASSWORD`
 
 ### Debugging
 
@@ -124,7 +108,7 @@ experience, we strongly recommend using the [MCP Inspector](https://github.com/m
 You can launch the MCP Inspector via [`npm`](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) with this command:
 
 ```bash
-npx @modelcontextprotocol/inspector uv --directory /path/to/mcp-knowledge-base run mcp-knowledge-base
+npx @modelcontextprotocol/inspector uv --directory /path/to/mcp-obsidian run mcp-obsidian
 ```
 
 Upon launching, the Inspector will display a URL that you can access in your browser to begin debugging.
@@ -132,5 +116,5 @@ Upon launching, the Inspector will display a URL that you can access in your bro
 You can also watch the server logs with this command:
 
 ```bash
-tail -n 20 -f ~/Library/Logs/Claude/mcp-server-mcp-knowledge-base.log
+tail -n 20 -f ~/Library/Logs/Claude/mcp-server-mcp-obsidian.log
 ```

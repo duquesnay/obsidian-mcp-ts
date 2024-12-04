@@ -1,7 +1,7 @@
 [project]
-name = "mcp-knowledge-base"
+name = "mcp-obsidian"
 version = "0.1.0"
-description = "Example MCP server to create a knowledge-base"
+description = "MCP server to work with Obsidian via the remote REST plugin"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
@@ -23,4 +23,4 @@ dev = [
 ]
 
 [project.scripts]
-mcp-knowledge-base = "mcp_knowledge_base:main"
+mcp-obsidian = "mcp_obsidian:main"

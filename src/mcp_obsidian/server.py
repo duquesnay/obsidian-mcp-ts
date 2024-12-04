@@ -22,7 +22,7 @@ from . import tools
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("mcp-knowledge-base")
+logger = logging.getLogger("mcp-obsidian")
 
 api_key = os.getenv("OBSIDIAN_API_KEY")
 if not api_key:
