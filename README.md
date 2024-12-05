@@ -26,15 +26,32 @@ The use prompts like this:
 
 ## Configuration
 
-### Environment Variables
+### Obsidian REST API Key
 
-Create a `.env` file in the root directory with the following required variable:
+There are two ways to configure the environment with the Obsidian REST API Key. 
+
+1. Add to server config (preferred)
+
+```json
+{
+  "mcp-obsidian": {
+    "command": "uvx",
+    "args": [
+      "mcp-obsidian"
+    ],
+    "env": {
+      "OBSIDIAN_API_KEY":"<your_api_key_here>"
+    }
+  }
+```
+
+2. Create a `.env` file in the working directory with the following required variable:
 
 ```
 OBSIDIAN_API_KEY=your_api_key_here
 ```
 
-Without this API key, the server will not be able to function.
+Note: You can find the key in the Obsidian plugin config.
 
 ## Quickstart
 
