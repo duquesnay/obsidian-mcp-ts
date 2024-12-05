@@ -82,7 +82,10 @@ On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
       "command": "uvx",
       "args": [
         "mcp-obsidian"
-      ]
+      ],
+      "env": {
+        "OBSIDIAN_API_KEY" : "<YOUR_OBSIDIAN_API_KEY>"
+      }
     }
   }
 }
