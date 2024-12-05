@@ -26,9 +26,9 @@ logger = logging.getLogger("mcp-obsidian")
 
 api_key = os.getenv("OBSIDIAN_API_KEY")
 if not api_key:
-    raise ValueError("OBSIDIAN_API_KEY environment variable required")
+    raise ValueError(f"OBSIDIAN_API_KEY environment variable required. Working directory: {os.getcwd()}")
 
-app = Server("mcp-knowledge-base")
+app = Server("mcp-obsidian")
 
 tool_handlers = {}
 def add_tool_handler(tool_class: tools.ToolHandler):

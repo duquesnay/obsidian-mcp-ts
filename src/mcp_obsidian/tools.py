@@ -11,7 +11,7 @@ from . import obsidian
 
 api_key = os.getenv("OBSIDIAN_API_KEY", "")
 if api_key == "":
-    raise ValueError("OBSIDIAN_API_KEY environment variable required")
+    raise ValueError(f"OBSIDIAN_API_KEY environment variable required. Working directory: {os.getcwd()}")
 
 TOOL_LIST_FILES_IN_VAULT = "list_files_in_vault"
 TOOL_LIST_FILES_IN_DIR = "list_files_in_dir"
