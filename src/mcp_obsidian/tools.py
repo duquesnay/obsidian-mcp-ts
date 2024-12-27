@@ -13,8 +13,8 @@ api_key = os.getenv("OBSIDIAN_API_KEY", "")
 if api_key == "":
     raise ValueError(f"OBSIDIAN_API_KEY environment variable required. Working directory: {os.getcwd()}")
 
-TOOL_LIST_FILES_IN_VAULT = "list_files_in_vault"
-TOOL_LIST_FILES_IN_DIR = "list_files_in_dir"
+TOOL_LIST_FILES_IN_VAULT = "obsidian_list_files_in_vault"
+TOOL_LIST_FILES_IN_DIR = "obsidian_list_files_in_dir"
 
 class ToolHandler():
     def __init__(self, tool_name: str):
@@ -92,7 +92,7 @@ class ListFilesInDirToolHandler(ToolHandler):
     
 class GetFileContentsToolHandler(ToolHandler):
     def __init__(self):
-        super().__init__("get_file_contents")
+        super().__init__("obsidian_get_file_contents")
 
     def get_tool_description(self):
         return Tool(
@@ -128,7 +128,7 @@ class GetFileContentsToolHandler(ToolHandler):
     
 class SearchToolHandler(ToolHandler):
     def __init__(self):
-        super().__init__("simple_search")
+        super().__init__("obsidian_simple_search")
 
     def get_tool_description(self):
         return Tool(
@@ -190,7 +190,7 @@ class SearchToolHandler(ToolHandler):
     
 class AppendContentToolHandler(ToolHandler):
    def __init__(self):
-       super().__init__("append_content")
+       super().__init__("obsidian_append_content")
 
    def get_tool_description(self):
        return Tool(
@@ -229,7 +229,7 @@ class AppendContentToolHandler(ToolHandler):
    
 class PatchContentToolHandler(ToolHandler):
    def __init__(self):
-       super().__init__("patch_content")
+       super().__init__("obsidian_patch_content")
 
    def get_tool_description(self):
        return Tool(
@@ -289,7 +289,7 @@ class PatchContentToolHandler(ToolHandler):
    
 class ComplexSearchToolHandler(ToolHandler):
    def __init__(self):
-       super().__init__("complex_search")
+       super().__init__("obsidian_complex_search")
 
    def get_tool_description(self):
        return Tool(
