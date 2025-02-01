@@ -324,3 +324,42 @@ class ComplexSearchToolHandler(ToolHandler):
                text=json.dumps(results, indent=2)
            )
        ]
+
+class BatchGetFileContentsToolHandler(ToolHandler):
+    def __init__(self):
+        super().__init__("obsidian_batch_get_file_contents")
+
+    def get_tool_description(self):
+        return Tool(
+            name=self.name,
+            description="Return the contents of multiple files in your vault, concatenated with headers.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "filepaths": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "description": "Path to a file (relative to your vault root)",
+                            "format": "path"
+                        },
+                        "description": "List of file paths to read"
+                    },
+                },
+                "required": ["filepaths"]
+            }
+        )
+
+    def run_tool(self, args: dict) -> Sequence[TextContent | ImageContent | EmbeddedResource]:
+        if "filepaths" not in args:
+            raise RuntimeError("filepaths argument missing in arguments")
+
+        api = obsidian.Obsidian(api_key=api_key)
+        content = api.get_batch_file_contents(args["filepaths"])
+
+        return [
+            TextContent(
+                type="text",
+                text=content
+            )
+        ]
