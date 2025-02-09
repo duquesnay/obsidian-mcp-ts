@@ -1,4 +1,3 @@
-
 import json
 import logging
 from collections.abc import Sequence
@@ -49,6 +48,7 @@ add_tool_handler(tools.SearchToolHandler())
 add_tool_handler(tools.PatchContentToolHandler())
 add_tool_handler(tools.AppendContentToolHandler())
 add_tool_handler(tools.ComplexSearchToolHandler())
+add_tool_handler(tools.BatchGetFileContentsToolHandler())
 
 @app.list_tools()
 async def list_tools() -> list[Tool]:

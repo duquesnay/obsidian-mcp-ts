@@ -72,6 +72,27 @@ class Obsidian():
 
         return self._safe_call(call_fn)
     
+    def get_batch_file_contents(self, filepaths: list[str]) -> str:
+        """Get contents of multiple files and concatenate them with headers.
+        
+        Args:
+            filepaths: List of file paths to read
+            
+        Returns:
+            String containing all file contents with headers
+        """
+        result = []
+        
+        for filepath in filepaths:
+            try:
+                content = self.get_file_contents(filepath)
+                result.append(f"# {filepath}\n\n{content}\n\n---\n\n")
+            except Exception as e:
+                # Add error message but continue processing other files
+                result.append(f"# {filepath}\n\nError reading file: {str(e)}\n\n---\n\n")
+                
+        return "".join(result)
+
     def search(self, query: str, context_length: int = 100) -> Any:
         url = f"{self.get_base_url()}/search/simple/"
         params = {
