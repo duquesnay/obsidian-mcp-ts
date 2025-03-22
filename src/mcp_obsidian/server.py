@@ -49,6 +49,9 @@ add_tool_handler(tools.PatchContentToolHandler())
 add_tool_handler(tools.AppendContentToolHandler())
 add_tool_handler(tools.ComplexSearchToolHandler())
 add_tool_handler(tools.BatchGetFileContentsToolHandler())
+add_tool_handler(tools.PeriodicNotesToolHandler())
+add_tool_handler(tools.RecentPeriodicNotesToolHandler())
+add_tool_handler(tools.RecentChangesToolHandler())
 
 @app.list_tools()
 async def list_tools() -> list[Tool]:
@@ -86,6 +89,3 @@ async def main():
             write_stream,
             app.create_initialization_options()
         )
-
-
-

@@ -153,3 +153,87 @@ class Obsidian():
             return response.json()
 
         return self._safe_call(call_fn)
+    
+    def get_periodic_note(self, period: str) -> Any:
+        """Get current periodic note for the specified period.
+        
+        Args:
+            period: The period type (daily, weekly, monthly, quarterly, yearly)
+            
+        Returns:
+            Content of the periodic note
+        """
+        url = f"{self.get_base_url()}/periodic/{period}/"
+        
+        def call_fn():
+            response = requests.get(url, headers=self._get_headers(), verify=self.verify_ssl, timeout=self.timeout)
+            response.raise_for_status()
+            
+            return response.text
+
+        return self._safe_call(call_fn)
+    
+    def get_recent_periodic_notes(self, period: str, limit: int = 5, include_content: bool = False) -> Any:
+        """Get most recent periodic notes for the specified period type.
+        
+        Args:
+            period: The period type (daily, weekly, monthly, quarterly, yearly)
+            limit: Maximum number of notes to return (default: 5)
+            include_content: Whether to include note content (default: False)
+            
+        Returns:
+            List of recent periodic notes
+        """
+        url = f"{self.get_base_url()}/periodic/{period}/recent"
+        params = {
+            "limit": limit,
+            "includeContent": include_content
+        }
+        
+        def call_fn():
+            response = requests.get(
+                url, 
+                headers=self._get_headers(), 
+                params=params,
+                verify=self.verify_ssl, 
+                timeout=self.timeout
+            )
+            response.raise_for_status()
+            
+            return response.json()
+
+        return self._safe_call(call_fn)
+    
+    def get_recent_changes(self, limit: int = 10, days: int = None, extensions: list = None) -> Any:
+        """Get recently modified files in the vault.
+        
+        Args:
+            limit: Maximum number of files to return (default: 10)
+            days: Only include files modified within this many days (optional)
+            extensions: Only include files with these extensions (optional)
+            
+        Returns:
+            List of recently modified files with metadata
+        """
+        url = f"{self.get_base_url()}/vault/recent"
+        params = {"limit": limit}
+        
+        if days is not None:
+            params["days"] = days
+            
+        if extensions is not None:
+            params["extensions"] = ",".join(extensions)
+        
+        def call_fn():
+            response = requests.get(
+                url, 
+                headers=self._get_headers(), 
+                params=params,
+                verify=self.verify_ssl, 
+                timeout=self.timeout
+            )
+            response.raise_for_status()
+            
+            return response.json()
+
+        return self._safe_call(call_fn)

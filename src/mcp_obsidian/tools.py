@@ -363,3 +363,160 @@ class BatchGetFileContentsToolHandler(ToolHandler):
                 text=content
             )
         ]
+
+class PeriodicNotesToolHandler(ToolHandler):
+    def __init__(self):
+        super().__init__("obsidian_get_periodic_note")
+
+    def get_tool_description(self):
+        return Tool(
+            name=self.name,
+            description="Get current periodic note for the specified period.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "period": {
+                        "type": "string",
+                        "description": "The period type (daily, weekly, monthly, quarterly, yearly)",
+                        "enum": ["daily", "weekly", "monthly", "quarterly", "yearly"]
+                    }
+                },
+                "required": ["period"]
+            }
+        )
+
+    def run_tool(self, args: dict) -> Sequence[TextContent | ImageContent | EmbeddedResource]:
+        if "period" not in args:
+            raise RuntimeError("period argument missing in arguments")
+
+        period = args["period"]
+        valid_periods = ["daily", "weekly", "monthly", "quarterly", "yearly"]
+        if period not in valid_periods:
+            raise RuntimeError(f"Invalid period: {period}. Must be one of: {', '.join(valid_periods)}")
+
+        api = obsidian.Obsidian(api_key=api_key)
+        content = api.get_periodic_note(period)
+
+        return [
+            TextContent(
+                type="text",
+                text=content
+            )
+        ]
+        
+class RecentPeriodicNotesToolHandler(ToolHandler):
+    def __init__(self):
+        super().__init__("obsidian_get_recent_periodic_notes")
+
+    def get_tool_description(self):
+        return Tool(
+            name=self.name,
+            description="Get most recent periodic notes for the specified period type.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "period": {
+                        "type": "string",
+                        "description": "The period type (daily, weekly, monthly, quarterly, yearly)",
+                        "enum": ["daily", "weekly", "monthly", "quarterly", "yearly"]
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "description": "Maximum number of notes to return (default: 5)",
+                        "default": 5,
+                        "minimum": 1,
+                        "maximum": 50
+                    },
+                    "include_content": {
+                        "type": "boolean",
+                        "description": "Whether to include note content (default: false)",
+                        "default": False
+                    }
+                },
+                "required": ["period"]
+            }
+        )
+
+    def run_tool(self, args: dict) -> Sequence[TextContent | ImageContent | EmbeddedResource]:
+        if "period" not in args:
+            raise RuntimeError("period argument missing in arguments")
+
+        period = args["period"]
+        valid_periods = ["daily", "weekly", "monthly", "quarterly", "yearly"]
+        if period not in valid_periods:
+            raise RuntimeError(f"Invalid period: {period}. Must be one of: {', '.join(valid_periods)}")
+
+        limit = args.get("limit", 5)
+        if not isinstance(limit, int) or limit < 1:
+            raise RuntimeError(f"Invalid limit: {limit}. Must be a positive integer")
+            
+        include_content = args.get("include_content", False)
+        if not isinstance(include_content, bool):
+            raise RuntimeError(f"Invalid include_content: {include_content}. Must be a boolean")
+
+        api = obsidian.Obsidian(api_key=api_key)
+        results = api.get_recent_periodic_notes(period, limit, include_content)
+
+        return [
+            TextContent(
+                type="text",
+                text=json.dumps(results, indent=2)
+            )
+        ]
+        
+class RecentChangesToolHandler(ToolHandler):
+    def __init__(self):
+        super().__init__("obsidian_get_recent_changes")
+
+    def get_tool_description(self):
+        return Tool(
+            name=self.name,
+            description="Get recently modified files in the vault.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "limit": {
+                        "type": "integer",
+                        "description": "Maximum number of files to return (default: 10)",
+                        "default": 10,
+                        "minimum": 1,
+                        "maximum": 100
+                    },
+                    "days": {
+                        "type": "integer",
+                        "description": "Only include files modified within this many days (optional)",
+                        "minimum": 1
+                    },
+                    "extensions": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "Only include files with these extensions (optional)"
+                    }
+                }
+            }
+        )
+
+    def run_tool(self, args: dict) -> Sequence[TextContent | ImageContent | EmbeddedResource]:
+        limit = args.get("limit", 10)
+        if not isinstance(limit, int) or limit < 1:
+            raise RuntimeError(f"Invalid limit: {limit}. Must be a positive integer")
+            
+        days = args.get("days")
+        if days is not None and (not isinstance(days, int) or days < 1):
+            raise RuntimeError(f"Invalid days: {days}. Must be a positive integer")
+            
+        extensions = args.get("extensions")
+        if extensions is not None and not isinstance(extensions, list):
+            raise RuntimeError(f"Invalid extensions: {extensions}. Must be an array of strings")
+
+        api = obsidian.Obsidian(api_key=api_key)
+        results = api.get_recent_changes(limit, days, extensions)
+
+        return [
+            TextContent(
+                type="text",
+                text=json.dumps(results, indent=2)
+            )
+        ]
