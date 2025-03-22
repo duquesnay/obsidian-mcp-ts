@@ -484,15 +484,9 @@ class RecentChangesToolHandler(ToolHandler):
                     },
                     "days": {
                         "type": "integer",
-                        "description": "Only include files modified within this many days (optional)",
-                        "minimum": 1
-                    },
-                    "extensions": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "description": "Only include files with these extensions (optional)"
+                        "description": "Only include files modified within this many days (default: 90)",
+                        "minimum": 1,
+                        "default": 90
                     }
                 }
             }
@@ -503,16 +497,12 @@ class RecentChangesToolHandler(ToolHandler):
         if not isinstance(limit, int) or limit < 1:
             raise RuntimeError(f"Invalid limit: {limit}. Must be a positive integer")
             
-        days = args.get("days")
-        if days is not None and (not isinstance(days, int) or days < 1):
+        days = args.get("days", 90)
+        if not isinstance(days, int) or days < 1:
             raise RuntimeError(f"Invalid days: {days}. Must be a positive integer")
-            
-        extensions = args.get("extensions")
-        if extensions is not None and not isinstance(extensions, list):
-            raise RuntimeError(f"Invalid extensions: {extensions}. Must be an array of strings")
 
         api = obsidian.Obsidian(api_key=api_key)
-        results = api.get_recent_changes(limit, days, extensions)
+        results = api.get_recent_changes(limit, days)
 
         return [
             TextContent(
