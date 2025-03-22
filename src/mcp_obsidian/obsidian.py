@@ -204,35 +204,23 @@ class Obsidian():
 
         return self._safe_call(call_fn)
     
-    def get_recent_changes(self, limit: int = 10, days: int = 90, extensions: list = None) -> Any:
+    def get_recent_changes(self, limit: int = 10, days: int = 90) -> Any:
         """Get recently modified files in the vault.
         
         Args:
             limit: Maximum number of files to return (default: 10)
             days: Only include files modified within this many days (default: 90)
-            extensions: Only include files with these extensions (optional)
             
         Returns:
             List of recently modified files with metadata
         """
-        # Build the DQL query based on parameters
-        query_lines = ["TABLE file.mtime"]
-        
-        # Add WHERE clauses
-        where_clauses = []
-        if days is not None:
-            where_clauses.append(f"file.mtime >= date(today) - dur({days} days)")
-            
-        if extensions:
-            ext_list = ", ".join(f'"{ext}"' for ext in extensions)
-            where_clauses.append(f"file.ext IN ({ext_list})")
-        
-        if where_clauses:
-            query_lines.append(f"WHERE {' AND '.join(where_clauses)}")
-        
-        # Add sorting and limit
-        query_lines.append("SORT file.mtime DESC")
-        query_lines.append(f"LIMIT {limit}")
+        # Build the DQL query
+        query_lines = [
+            "TABLE file.mtime",
+            f"WHERE file.mtime >= date(today) - dur({days} days)",
+            "SORT file.mtime DESC",
+            f"LIMIT {limit}"
+        ]
         
         # Join with proper DQL line breaks
         dql_query = "\n".join(query_lines)
