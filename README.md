@@ -16,6 +16,7 @@ The server implements multiple tools to interact with Obsidian:
 - search: Search for documents matching a specified text query across all files in the vault
 - patch_content: Insert content into an existing note relative to a heading, block reference, or frontmatter field.
 - append_content: Append content to a new or existing file in the vault.
+- delete_file: Delete a file or directory from your vault.
 
 ### Example prompts
 
