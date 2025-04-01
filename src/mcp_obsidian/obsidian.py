@@ -140,6 +140,24 @@ class Obsidian():
 
         return self._safe_call(call_fn)
     
+    def delete_file(self, filepath: str) -> Any:
+        """Delete a file or directory from the vault.
+        
+        Args:
+            filepath: Path to the file to delete (relative to vault root)
+            
+        Returns:
+            None on success
+        """
+        url = f"{self.get_base_url()}/vault/{filepath}"
+        
+        def call_fn():
+            response = requests.delete(url, headers=self._get_headers(), verify=self.verify_ssl, timeout=self.timeout)
+            response.raise_for_status()
+            return None
+            
+        return self._safe_call(call_fn)
+    
     def search_json(self, query: dict) -> Any:
         url = f"{self.get_base_url()}/search/"
         

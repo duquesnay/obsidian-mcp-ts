@@ -286,6 +286,49 @@ class PatchContentToolHandler(ToolHandler):
                text=f"Successfully patched content in {args['filepath']}"
            )
        ]
+
+class DeleteFileToolHandler(ToolHandler):
+   def __init__(self):
+       super().__init__("obsidian_delete_file")
+
+   def get_tool_description(self):
+       return Tool(
+           name=self.name,
+           description="Delete a file or directory from the vault.",
+           inputSchema={
+               "type": "object",
+               "properties": {
+                   "filepath": {
+                       "type": "string",
+                       "description": "Path to the file or directory to delete (relative to vault root)",
+                       "format": "path"
+                   },
+                   "confirm": {
+                       "type": "boolean",
+                       "description": "Confirmation to delete the file (must be true)",
+                       "default": False
+                   }
+               },
+               "required": ["filepath", "confirm"]
+           }
+       )
+
+   def run_tool(self, args: dict) -> Sequence[TextContent | ImageContent | EmbeddedResource]:
+       if "filepath" not in args:
+           raise RuntimeError("filepath argument missing in arguments")
+       
+       if not args.get("confirm", False):
+           raise RuntimeError("confirm must be set to true to delete a file")
+
+       api = obsidian.Obsidian(api_key=api_key)
+       api.delete_file(args["filepath"])
+
+       return [
+           TextContent(
+               type="text",
+               text=f"Successfully deleted {args['filepath']}"
+           )
+       ]
    
 class ComplexSearchToolHandler(ToolHandler):
    def __init__(self):
