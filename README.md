@@ -45,6 +45,7 @@ There are two ways to configure the environment with the Obsidian REST API Key.
       "OBSIDIAN_API_KEY":"<your_api_key_here>"
     }
   }
+}
 ```
 
 2. Create a `.env` file in the working directory with the following required variable:
