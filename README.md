@@ -43,7 +43,8 @@ There are two ways to configure the environment with the Obsidian REST API Key.
       "mcp-obsidian"
     ],
     "env": {
-      "OBSIDIAN_API_KEY":"<your_api_key_here>"
+      "OBSIDIAN_API_KEY": "<your_api_key_here>",
+      "OBSIDIAN_HOST": "<your_obsidian_host>"
     }
   }
 }
@@ -53,6 +54,7 @@ There are two ways to configure the environment with the Obsidian REST API Key.
 
 ```
 OBSIDIAN_API_KEY=your_api_key_here
+OBSIDIAN_HOST=your_obsidian_host
 ```
 
 Note: You can find the key in the Obsidian plugin config.
