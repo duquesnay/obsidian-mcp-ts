@@ -12,11 +12,17 @@ The server implements multiple tools to interact with Obsidian:
 
 - list_files_in_vault: Lists all files and directories in the root directory of your Obsidian vault
 - list_files_in_dir: Lists all files and directories in a specific Obsidian directory
-- get_file_contents: Return the content of a single file in your vault.
-- search: Search for documents matching a specified text query across all files in the vault
-- patch_content: Insert content into an existing note relative to a heading, block reference, or frontmatter field.
-- append_content: Append content to a new or existing file in the vault.
-- delete_file: Delete a file or directory from your vault.
+- get_file_contents: Return the content of a single file in your vault
+- batch_get_file_contents: Return the contents of multiple files in your vault, concatenated with headers
+- simple_search: Simple search for documents matching a specified text query across all files in the vault
+- complex_search: Complex search for documents using a JsonLogic query
+- patch_content: Insert content into an existing note relative to a heading, block reference, or frontmatter field
+- append_content: Append content to a new or existing file in the vault
+- delete_file: Delete a file or directory from your vault
+- rename_file: Rename or move a file in the vault (requires updated REST API plugin with rename endpoint)
+- get_periodic_note: Get current periodic note for the specified period (daily, weekly, monthly, quarterly, yearly)
+- get_recent_periodic_notes: Get most recent periodic notes for the specified period type
+- get_recent_changes: Get recently modified files in the vault
 
 ### Example prompts
 
@@ -26,6 +32,8 @@ The use prompts like this:
 - Get the contents of the last architecture call note and summarize them
 - Search for all files where Azure CosmosDb is mentioned and quickly explain to me the context in which it is mentioned
 - Summarize the last meeting notes and put them into a new note 'summary meeting.md'. Add an introduction so that I can send it via email.
+- Rename my file 'draft-proposal.md' to 'final-proposal-2024.md'
+- Move all files from the 'inbox' folder to 'processed/2024' folder
 
 ## Configuration
 
