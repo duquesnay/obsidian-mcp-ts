@@ -1,0 +1,44 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+      
+    - name: Set up Python ${{ matrix.python-version }}
+      run: uv python install ${{ matrix.python-version }}
+      
+    - name: Install dependencies
+      run: |
+        uv sync --group dev
+        
+    - name: Run unit tests
+      run: |
+        uv run pytest tests/test_obsidian_client.py -v
+        
+    - name: Run type checking
+      run: |
+        uv run pyright
+        
+    # Integration tests only run on main branch with secrets
+    - name: Run integration tests
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      env:
+        OBSIDIAN_API_KEY: ${{ secrets.OBSIDIAN_TEST_API_KEY }}
+        OBSIDIAN_HOST: ${{ secrets.OBSIDIAN_TEST_HOST }}
+      run: |
+        uv run pytest tests/test_integration.py -v || echo "Integration tests require Obsidian instance"

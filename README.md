@@ -134,6 +134,23 @@ To prepare the package for distribution:
 uv sync
 ```
 
+### Testing
+
+Run the test suite:
+
+```bash
+# Run all tests (unit tests only, unless OBSIDIAN_API_KEY is set)
+uv run pytest
+
+# Run only unit tests
+uv run pytest tests/test_obsidian_client.py
+
+# Run integration tests (requires Obsidian with REST API plugin)
+OBSIDIAN_API_KEY=your-key uv run pytest tests/test_integration.py
+```
+
+See [TESTING.md](TESTING.md) for detailed testing instructions.
+
 ### Debugging
 
 Since MCP servers run over stdio, debugging can be challenging. For the best debugging
