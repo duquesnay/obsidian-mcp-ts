@@ -9,11 +9,16 @@ import json
 import os
 from . import obsidian
 
-api_key = os.getenv("OBSIDIAN_API_KEY", "")
-obsidian_host = os.getenv("OBSIDIAN_HOST", "127.0.0.1")
+def get_api_key():
+    """Get the API key from environment, raise error if not found."""
+    api_key = os.getenv("OBSIDIAN_API_KEY", "")
+    if api_key == "":
+        raise ValueError(f"OBSIDIAN_API_KEY environment variable required. Working directory: {os.getcwd()}")
+    return api_key
 
-if api_key == "":
-    raise ValueError(f"OBSIDIAN_API_KEY environment variable required. Working directory: {os.getcwd()}")
+def get_obsidian_host():
+    """Get the Obsidian host from environment."""
+    return os.getenv("OBSIDIAN_HOST", "127.0.0.1")
 
 TOOL_LIST_FILES_IN_VAULT = "obsidian_list_files_in_vault"
 TOOL_LIST_FILES_IN_DIR = "obsidian_list_files_in_dir"
@@ -44,7 +49,7 @@ class ListFilesInVaultToolHandler(ToolHandler):
         )
 
     def run_tool(self, args: dict) -> Sequence[TextContent | ImageContent | EmbeddedResource]:
-        api = obsidian.Obsidian(api_key=api_key, host=obsidian_host)
+        api = obsidian.Obsidian(api_key=get_api_key(), host=get_obsidian_host())
 
         files = api.list_files_in_vault()
 
@@ -80,7 +85,7 @@ class ListFilesInDirToolHandler(ToolHandler):
         if "dirpath" not in args:
             raise RuntimeError("dirpath argument missing in arguments")
 
-        api = obsidian.Obsidian(api_key=api_key, host=obsidian_host)
+        api = obsidian.Obsidian(api_key=get_api_key(), host=get_obsidian_host())
 
         files = api.list_files_in_dir(args["dirpath"])
 
@@ -116,7 +121,7 @@ class GetFileContentsToolHandler(ToolHandler):
         if "filepath" not in args:
             raise RuntimeError("filepath argument missing in arguments")
 
-        api = obsidian.Obsidian(api_key=api_key, host=obsidian_host)
+        api = obsidian.Obsidian(api_key=get_api_key(), host=get_obsidian_host())
 
         content = api.get_file_contents(args["filepath"])
 
@@ -159,7 +164,7 @@ class SearchToolHandler(ToolHandler):
 
         context_length = args.get("context_length", 100)
         
-        api = obsidian.Obsidian(api_key=api_key, host=obsidian_host)
+        api = obsidian.Obsidian(api_key=get_api_key(), host=get_obsidian_host())
         results = api.search(args["query"], context_length)
         
         formatted_results = []
@@ -397,7 +402,7 @@ class BatchGetFileContentsToolHandler(ToolHandler):
         if "filepaths" not in args:
             raise RuntimeError("filepaths argument missing in arguments")
 
-        api = obsidian.Obsidian(api_key=api_key, host=obsidian_host)
+        api = obsidian.Obsidian(api_key=get_api_key(), host=get_obsidian_host())
         content = api.get_batch_file_contents(args["filepaths"])
 
         return [
@@ -437,7 +442,7 @@ class PeriodicNotesToolHandler(ToolHandler):
         if period not in valid_periods:
             raise RuntimeError(f"Invalid period: {period}. Must be one of: {', '.join(valid_periods)}")
 
-        api = obsidian.Obsidian(api_key=api_key, host=obsidian_host)
+        api = obsidian.Obsidian(api_key=get_api_key(), host=get_obsidian_host())
         content = api.get_periodic_note(period)
 
         return [
@@ -497,7 +502,7 @@ class RecentPeriodicNotesToolHandler(ToolHandler):
         if not isinstance(include_content, bool):
             raise RuntimeError(f"Invalid include_content: {include_content}. Must be a boolean")
 
-        api = obsidian.Obsidian(api_key=api_key, host=obsidian_host)
+        api = obsidian.Obsidian(api_key=get_api_key(), host=get_obsidian_host())
         results = api.get_recent_periodic_notes(period, limit, include_content)
 
         return [
@@ -544,7 +549,7 @@ class RecentChangesToolHandler(ToolHandler):
         if not isinstance(days, int) or days < 1:
             raise RuntimeError(f"Invalid days: {days}. Must be a positive integer")
 
-        api = obsidian.Obsidian(api_key=api_key, host=obsidian_host)
+        api = obsidian.Obsidian(api_key=get_api_key(), host=get_obsidian_host())
         results = api.get_recent_changes(limit, days)
 
         return [
@@ -594,7 +599,7 @@ Note: This requires an updated version of the Obsidian Local REST API plugin wit
         if old_path == new_path:
             raise RuntimeError("old_path and new_path cannot be the same")
 
-        api = obsidian.Obsidian(api_key=api_key, host=obsidian_host)
+        api = obsidian.Obsidian(api_key=get_api_key(), host=get_obsidian_host())
         
         try:
             api.rename_file(old_path, new_path)

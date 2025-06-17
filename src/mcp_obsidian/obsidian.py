@@ -279,7 +279,7 @@ class Obsidian():
             Exception: If the source file doesn't exist, destination already exists,
                       endpoint not available, or any operation fails
         """
-        url = f"{self.get_base_url()}/vault/{urllib.parse.quote(old_path, safe='')}/rename"
+        url = f"{self.get_base_url()}/vault/{urllib.parse.quote(old_path, safe='/')}/rename"
         
         def rename_fn():
             response = requests.post(
