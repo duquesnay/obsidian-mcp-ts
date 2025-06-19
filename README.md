@@ -19,8 +19,8 @@ The server implements multiple tools to interact with Obsidian:
 - patch_content: Insert content into an existing note relative to a heading, block reference, or frontmatter field
 - append_content: Append content to a new or existing file in the vault
 - delete_file: Delete a file or directory from your vault
-- rename_file: Rename a file within the same directory while preserving history and updating links (requires updated REST API plugin with rename endpoint)
-- move_file: Move a file to a different directory, optionally renaming it, while preserving history and updating links (requires updated REST API plugin with rename endpoint)
+- rename_file: Rename a file within the same directory while preserving history and updating links (requires updated REST API plugin)
+- move_file: Move a file to a different location (can move between directories, rename in place, or both) while preserving history and updating links (requires updated REST API plugin)
 - get_periodic_note: Get current periodic note for the specified period (daily, weekly, monthly, quarterly, yearly)
 - get_recent_periodic_notes: Get most recent periodic notes for the specified period type
 - get_recent_changes: Get recently modified files in the vault

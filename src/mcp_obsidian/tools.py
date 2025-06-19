@@ -632,12 +632,16 @@ class MoveFileToolHandler(ToolHandler):
     def get_tool_description(self):
         return Tool(
             name=self.name,
-            description="""Move a file to a different directory, optionally renaming it.
+            description="""Move a file to a different location in the vault.
             
-This preserves file history, metadata, and automatically updates all links to the moved file.
-Use this tool when you need to reorganize files between directories.
+This tool can:
+- Move files between directories: 'folder1/file.md' → 'folder2/file.md'
+- Rename files (alternative to rename_file): 'file.md' → 'newname.md'
+- Move and rename simultaneously: 'folder1/old.md' → 'folder2/new.md'
 
-Note: This requires an updated version of the Obsidian Local REST API plugin with rename support.""",
+This preserves file history, metadata, and automatically updates all links.
+
+Note: This requires an updated version of the Obsidian Local REST API plugin with move support.""",
             inputSchema={
                 "type": "object",
                 "properties": {

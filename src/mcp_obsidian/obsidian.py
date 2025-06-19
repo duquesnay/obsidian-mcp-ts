@@ -303,6 +303,11 @@ class Obsidian():
         """Move a file to a different location in the vault.
         
         Uses the PATCH operation with Operation: move header.
+        This can be used to:
+        - Move files between directories
+        - Rename files (alternative to rename_file) 
+        - Move and rename simultaneously
+        
         This preserves file history, metadata, and automatically updates all links.
         
         Args:
