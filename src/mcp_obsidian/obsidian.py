@@ -265,7 +265,7 @@ class Obsidian():
     def rename_file(self, old_path: str, new_path: str) -> Any:
         """Rename or move a file in the vault.
         
-        Requires the rename endpoint to be available in the Obsidian Local REST API.
+        Uses the PATCH operation with Operation: rename header.
         This preserves file history, metadata, and automatically updates all links.
         
         Args:
@@ -273,19 +273,24 @@ class Obsidian():
             new_path: New path for the file (relative to vault root)
             
         Returns:
-            None on success
+            Response from the API on success
             
         Raises:
             Exception: If the source file doesn't exist, destination already exists,
-                      endpoint not available, or any operation fails
+                      or any operation fails
         """
-        url = f"{self.get_base_url()}/vault/{urllib.parse.quote(old_path, safe='/')}/rename"
+        url = f"{self.get_base_url()}/vault/{urllib.parse.quote(old_path, safe='/')}"
         
         def rename_fn():
-            response = requests.post(
+            response = requests.patch(
                 url,
-                headers=self._get_headers() | {'Content-Type': 'application/json'},
-                json={'newPath': new_path},
+                headers=self._get_headers() | {
+                    'Content-Type': 'text/plain',
+                    'Operation': 'replace',
+                    'Target-Type': 'file',
+                    'Target': 'name'
+                },
+                data=new_path,
                 verify=self.verify_ssl,
                 timeout=self.timeout
             )

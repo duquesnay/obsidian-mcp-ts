@@ -7,7 +7,11 @@ They are skipped by default unless the OBSIDIAN_API_KEY environment variable is 
 import os
 import pytest
 import requests
+from dotenv import load_dotenv
 from mcp_obsidian.obsidian import Obsidian
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 @pytest.mark.skipif(
@@ -44,6 +48,8 @@ class TestObsidianIntegration:
     
     def test_rename_file_integration(self, client, test_file_path, renamed_file_path):
         """Test the complete rename workflow."""
+        # Rename endpoint is now available
+        
         # Clean up any existing test files
         self.cleanup_files(client, test_file_path, renamed_file_path)
         
@@ -74,6 +80,8 @@ class TestObsidianIntegration:
     
     def test_rename_file_with_links_integration(self, client):
         """Test renaming a file that has incoming links."""
+        # Rename endpoint is now available
+        
         source_file = "test-integration-source.md"
         target_file = "test-integration-target.md"
         renamed_target = "test-integration-target-renamed.md"
@@ -107,23 +115,57 @@ class TestObsidianIntegration:
     
     def test_rename_endpoint_availability(self, client):
         """Test if the rename endpoint is available."""
-        # Try to call the rename endpoint with invalid data to check if it exists
-        url = f"{client.get_base_url()}/vault/nonexistent.md/rename"
-        headers = client._get_headers() | {'Content-Type': 'application/json'}
+        # Test the rename endpoint by attempting a simple rename
+        test_file = "test-endpoint-check.md"
+        renamed_file = "test-endpoint-renamed.md"
         
-        response = requests.post(
-            url,
-            headers=headers,
-            json={'newPath': 'test.md'},
-            verify=False,
-            timeout=(3, 6)
-        )
+        try:
+            # Create a test file
+            client.append_content(test_file, "# Test")
+            
+            # Try to rename it
+            client.rename_file(test_file, renamed_file)
+            
+            # If we get here, the endpoint is available
+            # Clean up
+            client.delete_file(renamed_file)
+            
+        except Exception as e:
+            # Clean up original file if rename failed
+            try:
+                client.delete_file(test_file)
+            except:
+                pass
+            pytest.fail(f"Rename endpoint not available: {str(e)}")
+    
+    def test_basic_file_operations(self, client):
+        """Test basic file operations to verify API connection."""
+        test_file = "test-integration-basic.md"
+        test_content = "# Test File\n\nThis is a basic integration test."
         
-        if response.status_code == 404 and 'Cannot POST' in response.text:
-            pytest.skip("Rename endpoint not available in REST API plugin")
-        elif response.status_code == 404:
-            # File not found is expected - endpoint exists
-            assert True
-        else:
-            # Some other response - endpoint likely exists
-            assert response.status_code in [400, 404, 409, 500]
+        try:
+            # Create a file
+            client.append_content(test_file, test_content)
+            
+            # Read it back
+            content = client.get_file_contents(test_file)
+            assert test_content in content
+            
+            # List files to ensure it appears
+            files = client.list_files_in_vault()
+            assert test_file in files
+            
+            # Delete it
+            client.delete_file(test_file)
+            
+            # Verify it's gone
+            with pytest.raises(Exception) as exc_info:
+                client.get_file_contents(test_file)
+            assert "404" in str(exc_info.value) or "not found" in str(exc_info.value).lower()
+            
+        finally:
+            # Clean up just in case
+            try:
+                client.delete_file(test_file)
+            except:
+                pass

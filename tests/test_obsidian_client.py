@@ -11,7 +11,7 @@ class TestObsidianClient:
     """Test cases for Obsidian client methods."""
     
     @pytest.fixture
-    def client(self):
+    def client(self, mock_api_key):
         """Create an Obsidian client instance for testing."""
         return Obsidian(api_key='test-key', host='127.0.0.1')
     
@@ -26,24 +26,27 @@ class TestObsidianClient:
             "newPath": "new-file.md"
         }
         
-        with patch('requests.post', return_value=mock_response) as mock_post:
+        with patch('requests.patch', return_value=mock_response) as mock_patch:
             result = client.rename_file('old-file.md', 'new-file.md')
             
             # Verify the request
-            mock_post.assert_called_once()
-            call_args = mock_post.call_args
+            mock_patch.assert_called_once()
+            call_args = mock_patch.call_args
             
             # Check URL construction
-            expected_url = 'https://127.0.0.1:27124/vault/old-file.md/rename'
+            expected_url = 'https://127.0.0.1:27124/vault/old-file.md'
             assert call_args[0][0] == expected_url
             
             # Check headers
             headers = call_args[1]['headers']
             assert headers['Authorization'] == 'Bearer test-key'
-            assert headers['Content-Type'] == 'application/json'
+            assert headers['Content-Type'] == 'text/plain'
+            assert headers['Operation'] == 'replace'
+            assert headers['Target-Type'] == 'file'
+            assert headers['Target'] == 'name'
             
-            # Check JSON body
-            assert call_args[1]['json'] == {'newPath': 'new-file.md'}
+            # Check body (new filename only, no path)
+            assert call_args[1]['data'] == 'new-file.md'
             
             # Check SSL and timeout
             assert call_args[1]['verify'] == False
@@ -55,12 +58,12 @@ class TestObsidianClient:
         mock_response.status_code = 200
         mock_response.json.return_value = {"message": "File successfully renamed"}
         
-        with patch('requests.post', return_value=mock_response) as mock_post:
+        with patch('requests.patch', return_value=mock_response) as mock_patch:
             client.rename_file('folder/file with spaces.md', 'folder/new-file.md')
             
             # Check URL encoding (preserve forward slashes)
-            expected_url = 'https://127.0.0.1:27124/vault/folder/file%20with%20spaces.md/rename'
-            actual_url = mock_post.call_args[0][0]
+            expected_url = 'https://127.0.0.1:27124/vault/folder/file%20with%20spaces.md'
+            actual_url = mock_patch.call_args[0][0]
             assert actual_url == expected_url
     
     def test_rename_file_not_found(self, client):
@@ -73,7 +76,7 @@ class TestObsidianClient:
         }
         mock_response.raise_for_status.side_effect = Exception("Error 40404: File not found")
         
-        with patch('requests.post', return_value=mock_response):
+        with patch('requests.patch', return_value=mock_response):
             with pytest.raises(Exception) as exc_info:
                 client.rename_file('nonexistent.md', 'new.md')
             
@@ -90,7 +93,7 @@ class TestObsidianClient:
         }
         mock_response.raise_for_status.side_effect = Exception("Error 40901: Destination file already exists")
         
-        with patch('requests.post', return_value=mock_response):
+        with patch('requests.patch', return_value=mock_response):
             with pytest.raises(Exception) as exc_info:
                 client.rename_file('source.md', 'existing.md')
             
@@ -105,9 +108,9 @@ class TestObsidianClient:
         mock_response.status_code = 200
         mock_response.json.return_value = {"message": "Success"}
         
-        with patch('requests.post', return_value=mock_response) as mock_post:
+        with patch('requests.patch', return_value=mock_response) as mock_patch:
             client.rename_file('test.md', 'renamed.md')
             
             # Check custom host in URL
-            expected_url = 'https://192.168.1.100:8080/vault/test.md/rename'
-            assert mock_post.call_args[0][0] == expected_url
+            expected_url = 'https://192.168.1.100:8080/vault/test.md'
+            assert mock_patch.call_args[0][0] == expected_url

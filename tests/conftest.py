@@ -5,8 +5,8 @@ import pytest
 from unittest.mock import patch
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def mock_api_key():
-    """Automatically mock the API key for all tests."""
+    """Mock the API key for unit tests only."""
     with patch.dict(os.environ, {'OBSIDIAN_API_KEY': 'test-api-key'}):
         yield
