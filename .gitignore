@@ -9,3 +9,7 @@ wheels/
 # Virtual environments
 .venv
 .env
+
+# CRITICAL: Local Obsidian REST API development folder - DO NOT DELETE!
+# This contains the local development version of the REST API plugin
+obsidian-local-rest-api/
