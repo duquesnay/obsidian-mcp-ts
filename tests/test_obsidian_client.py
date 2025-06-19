@@ -137,9 +137,9 @@ class TestObsidianClient:
             # Check headers for new move operation
             headers = call_args[1]['headers']
             assert headers['Operation'] == 'move'
+            assert headers['Content-Type'] == 'text/plain'
             assert headers['Target-Type'] == 'file'
             assert headers['Target'] == 'path'
-            assert headers['Content-Type'] == 'text/plain'
             
             # Check body contains new path
             assert call_args[1]['data'] == 'folder2/test.md'

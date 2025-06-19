@@ -138,6 +138,49 @@ class TestObsidianIntegration:
                 pass
             pytest.fail(f"Rename endpoint not available: {str(e)}")
     
+    def test_move_file_integration(self, client):
+        """Test the complete move workflow."""
+        # Create directories if needed
+        source_file = 'test-folder1/test-move.md'
+        target_file = 'test-folder2/test-moved.md'
+        
+        # Clean up any existing test files
+        self.cleanup_files(client, source_file, target_file)
+        
+        try:
+            # Create source file
+            test_content = "# Move Test\n\nThis file will be moved to another folder."
+            client.append_content(source_file, test_content)
+            
+            # Verify file was created
+            content = client.get_file_contents(source_file)
+            assert test_content in content
+            
+            # Move the file
+            client.move_file(source_file, target_file)
+            
+            # Verify new file exists
+            new_content = client.get_file_contents(target_file)
+            assert test_content in new_content
+            
+            # Verify old file no longer exists
+            with pytest.raises(Exception) as exc_info:
+                client.get_file_contents(source_file)
+            assert "40004" in str(exc_info.value) or "not found" in str(exc_info.value).lower()
+            
+        finally:
+            # Cleanup
+            self.cleanup_files(client, source_file, target_file)
+            # Clean up directories
+            try:
+                client.delete_file('test-folder1', confirm=True)
+            except:
+                pass
+            try:
+                client.delete_file('test-folder2', confirm=True)
+            except:
+                pass
+    
     def test_basic_file_operations(self, client):
         """Test basic file operations to verify API connection."""
         test_file = "test-integration-basic.md"
