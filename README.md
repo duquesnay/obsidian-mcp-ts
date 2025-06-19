@@ -19,7 +19,7 @@ The server implements multiple tools to interact with Obsidian:
 - patch_content: Insert content into an existing note relative to a heading, block reference, or frontmatter field
 - append_content: Append content to a new or existing file in the vault
 - delete_file: Delete a file or directory from your vault
-- rename_file: Rename or move a file in the vault (requires updated REST API plugin with rename endpoint)
+- rename_file: Rename or move a file in the vault while preserving history and updating links (requires updated REST API plugin with rename endpoint)
 - get_periodic_note: Get current periodic note for the specified period (daily, weekly, monthly, quarterly, yearly)
 - get_recent_periodic_notes: Get most recent periodic notes for the specified period type
 - get_recent_changes: Get recently modified files in the vault
@@ -34,6 +34,7 @@ The use prompts like this:
 - Summarize the last meeting notes and put them into a new note 'summary meeting.md'. Add an introduction so that I can send it via email.
 - Rename my file 'draft-proposal.md' to 'final-proposal-2024.md'
 - Move all files from the 'inbox' folder to 'processed/2024' folder
+- Rename 'Project Notes.md' to 'Project-Completed-2024.md' to mark it as done
 
 ## Configuration
 
