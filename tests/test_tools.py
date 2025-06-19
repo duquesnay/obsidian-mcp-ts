@@ -137,6 +137,74 @@ class TestToolHandlers:
             # Verify rename_file was called
             mock_client.rename_file.assert_called_once_with('old.md', 'new.md')
     
+    def test_rename_file_handler_rejects_cross_directory(self):
+        """Test RenameFileToolHandler rejects renames across directories."""
+        handler = RenameFileToolHandler()
+        
+        with patch('mcp_obsidian.tools.obsidian.Obsidian') as mock_obsidian_class:
+            mock_client = Mock()
+            mock_obsidian_class.return_value = mock_client
+            
+            # Try to rename across directories
+            args = {'old_path': 'folder1/old.md', 'new_path': 'folder2/new.md'}
+            
+            with pytest.raises(RuntimeError, match="different director"):
+                handler.run_tool(args)
+            
+            # Client should not be called for invalid rename
+            mock_client.rename_file.assert_not_called()
+    
+    def test_rename_file_handler_accepts_same_directory(self):
+        """Test RenameFileToolHandler accepts renames within same directory."""
+        handler = RenameFileToolHandler()
+        
+        with patch('mcp_obsidian.tools.obsidian.Obsidian') as mock_obsidian_class:
+            mock_client = Mock()
+            mock_obsidian_class.return_value = mock_client
+            
+            # Rename within same directory
+            args = {'old_path': 'folder/old.md', 'new_path': 'folder/new.md'}
+            result = handler.run_tool(args)
+            
+            # Verify rename was called
+            mock_client.rename_file.assert_called_once_with('folder/old.md', 'folder/new.md')
+    
+    def test_move_file_handler(self):
+        """Test MoveFileToolHandler handles cross-directory moves."""
+        from mcp_obsidian.tools import MoveFileToolHandler
+        handler = MoveFileToolHandler()
+        
+        with patch('mcp_obsidian.tools.obsidian.Obsidian') as mock_obsidian_class:
+            mock_client = Mock()
+            mock_obsidian_class.return_value = mock_client
+            
+            # Move file to different directory
+            args = {'old_path': 'folder1/file.md', 'new_path': 'folder2/file.md'}
+            result = handler.run_tool(args)
+            
+            # Verify rename_file was called (uses same API method)
+            mock_client.rename_file.assert_called_once_with('folder1/file.md', 'folder2/file.md')
+            
+            # Verify result message
+            assert len(result) == 1
+            assert "moved" in result[0].text.lower()
+    
+    def test_move_file_handler_with_rename(self):
+        """Test MoveFileToolHandler handles move with rename."""
+        from mcp_obsidian.tools import MoveFileToolHandler
+        handler = MoveFileToolHandler()
+        
+        with patch('mcp_obsidian.tools.obsidian.Obsidian') as mock_obsidian_class:
+            mock_client = Mock()
+            mock_obsidian_class.return_value = mock_client
+            
+            # Move and rename file
+            args = {'old_path': 'folder1/old.md', 'new_path': 'folder2/new.md'}
+            result = handler.run_tool(args)
+            
+            # Verify rename_file was called
+            mock_client.rename_file.assert_called_once_with('folder1/old.md', 'folder2/new.md')
+    
     def test_handler_missing_env_vars(self, monkeypatch):
         """Test that handlers fail gracefully when API key is missing."""
         monkeypatch.delenv('OBSIDIAN_API_KEY')

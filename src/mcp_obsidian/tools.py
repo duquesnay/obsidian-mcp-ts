@@ -566,9 +566,73 @@ class RenameFileToolHandler(ToolHandler):
     def get_tool_description(self):
         return Tool(
             name=self.name,
-            description="""Rename or move a file in the vault. 
+            description="""Rename a file within the same directory. 
             
 This preserves file history, metadata, and automatically updates all links to the renamed file.
+To move files between directories, use the move_file tool instead.
+
+Note: This requires an updated version of the Obsidian Local REST API plugin with rename support.""",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "old_path": {
+                        "type": "string",
+                        "description": "Current path of the file (relative to vault root)",
+                        "format": "path"
+                    },
+                    "new_path": {
+                        "type": "string",
+                        "description": "New path for the file (relative to vault root)",
+                        "format": "path"
+                    }
+                },
+                "required": ["old_path", "new_path"]
+            }
+        )
+
+    def run_tool(self, args: dict) -> Sequence[TextContent | ImageContent | EmbeddedResource]:
+        if "old_path" not in args or "new_path" not in args:
+            raise RuntimeError("old_path and new_path arguments are required")
+
+        old_path = args["old_path"]
+        new_path = args["new_path"]
+        
+        if old_path == new_path:
+            raise RuntimeError("old_path and new_path cannot be the same")
+        
+        # Extract directories from paths
+        import os
+        old_dir = os.path.dirname(old_path)
+        new_dir = os.path.dirname(new_path)
+        
+        if old_dir != new_dir:
+            raise RuntimeError("Rename can only change the filename, not move to a different directory. Use move_file for moving files.")
+
+        api = obsidian.Obsidian(api_key=get_api_key(), host=get_obsidian_host())
+        
+        try:
+            api.rename_file(old_path, new_path)
+            return [
+                TextContent(
+                    type="text",
+                    text=f"Successfully renamed '{old_path}' to '{new_path}'"
+                )
+            ]
+        except Exception as e:
+            raise RuntimeError(f"Failed to rename file: {str(e)}")
+
+
+class MoveFileToolHandler(ToolHandler):
+    def __init__(self):
+        super().__init__("obsidian_move_file")
+
+    def get_tool_description(self):
+        return Tool(
+            name=self.name,
+            description="""Move a file to a different directory, optionally renaming it.
+            
+This preserves file history, metadata, and automatically updates all links to the moved file.
+Use this tool when you need to reorganize files between directories.
 
 Note: This requires an updated version of the Obsidian Local REST API plugin with rename support.""",
             inputSchema={
@@ -606,8 +670,8 @@ Note: This requires an updated version of the Obsidian Local REST API plugin wit
             return [
                 TextContent(
                     type="text",
-                    text=f"Successfully renamed '{old_path}' to '{new_path}'"
+                    text=f"Successfully moved '{old_path}' to '{new_path}'"
                 )
             ]
         except Exception as e:
-            raise RuntimeError(f"Failed to rename file: {str(e)}")
+            raise RuntimeError(f"Failed to move file: {str(e)}")
