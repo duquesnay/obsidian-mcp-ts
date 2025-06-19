@@ -223,7 +223,7 @@ class AppendContentToolHandler(ToolHandler):
        if "filepath" not in args or "content" not in args:
            raise RuntimeError("filepath and content arguments required")
 
-       api = obsidian.Obsidian(api_key=api_key, host=obsidian_host)
+       api = obsidian.Obsidian(api_key=get_api_key(), host=get_obsidian_host())
        api.append_content(args.get("filepath", ""), args["content"])
 
        return [
@@ -276,7 +276,7 @@ class PatchContentToolHandler(ToolHandler):
        if not all(k in args for k in ["filepath", "operation", "target_type", "target", "content"]):
            raise RuntimeError("filepath, operation, target_type, target and content arguments required")
 
-       api = obsidian.Obsidian(api_key=api_key, host=obsidian_host)
+       api = obsidian.Obsidian(api_key=get_api_key(), host=get_obsidian_host())
        api.patch_content(
            args.get("filepath", ""),
            args.get("operation", ""),
@@ -325,7 +325,7 @@ class DeleteFileToolHandler(ToolHandler):
        if not args.get("confirm", False):
            raise RuntimeError("confirm must be set to true to delete a file")
 
-       api = obsidian.Obsidian(api_key=api_key, host=obsidian_host)
+       api = obsidian.Obsidian(api_key=get_api_key(), host=get_obsidian_host())
        api.delete_file(args["filepath"])
 
        return [
@@ -363,7 +363,7 @@ class ComplexSearchToolHandler(ToolHandler):
        if "query" not in args:
            raise RuntimeError("query argument missing in arguments")
 
-       api = obsidian.Obsidian(api_key=api_key, host=obsidian_host)
+       api = obsidian.Obsidian(api_key=get_api_key(), host=get_obsidian_host())
        results = api.search_json(args.get("query", ""))
 
        return [
