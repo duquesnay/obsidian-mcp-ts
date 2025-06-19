@@ -666,7 +666,7 @@ Note: This requires an updated version of the Obsidian Local REST API plugin wit
         api = obsidian.Obsidian(api_key=get_api_key(), host=get_obsidian_host())
         
         try:
-            api.rename_file(old_path, new_path)
+            api.move_file(old_path, new_path)
             return [
                 TextContent(
                     type="text",

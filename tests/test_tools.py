@@ -182,8 +182,8 @@ class TestToolHandlers:
             args = {'old_path': 'folder1/file.md', 'new_path': 'folder2/file.md'}
             result = handler.run_tool(args)
             
-            # Verify rename_file was called (uses same API method)
-            mock_client.rename_file.assert_called_once_with('folder1/file.md', 'folder2/file.md')
+            # Verify move_file was called
+            mock_client.move_file.assert_called_once_with('folder1/file.md', 'folder2/file.md')
             
             # Verify result message
             assert len(result) == 1
@@ -202,8 +202,8 @@ class TestToolHandlers:
             args = {'old_path': 'folder1/old.md', 'new_path': 'folder2/new.md'}
             result = handler.run_tool(args)
             
-            # Verify rename_file was called
-            mock_client.rename_file.assert_called_once_with('folder1/old.md', 'folder2/new.md')
+            # Verify move_file was called
+            mock_client.move_file.assert_called_once_with('folder1/old.md', 'folder2/new.md')
     
     def test_handler_missing_env_vars(self, monkeypatch):
         """Test that handlers fail gracefully when API key is missing."""

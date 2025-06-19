@@ -298,3 +298,40 @@ class Obsidian():
             return response.json()
         
         return self._safe_call(rename_fn)
+    
+    def move_file(self, old_path: str, new_path: str) -> Any:
+        """Move a file to a different location in the vault.
+        
+        Uses the PATCH operation with Operation: move header.
+        This preserves file history, metadata, and automatically updates all links.
+        
+        Args:
+            old_path: Current path of the file (relative to vault root)
+            new_path: New path for the file (relative to vault root)
+            
+        Returns:
+            Response from the API on success
+            
+        Raises:
+            Exception: If the source file doesn't exist, destination already exists,
+                      or any operation fails
+        """
+        url = f"{self.get_base_url()}/vault/{urllib.parse.quote(old_path, safe='/')}"
+        
+        def move_fn():
+            response = requests.patch(
+                url,
+                headers=self._get_headers() | {
+                    'Content-Type': 'text/plain',
+                    'Operation': 'move',
+                    'Target-Type': 'file',
+                    'Target': 'path'
+                },
+                data=new_path,
+                verify=self.verify_ssl,
+                timeout=self.timeout
+            )
+            response.raise_for_status()
+            return None
+            
+        return self._safe_call(move_fn)

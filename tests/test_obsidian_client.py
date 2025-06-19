@@ -114,3 +114,50 @@ class TestObsidianClient:
             # Check custom host in URL
             expected_url = 'https://192.168.1.100:8080/vault/test.md'
             assert mock_patch.call_args[0][0] == expected_url
+    
+    def test_move_file_success(self):
+        """Test successful file move with new API signature."""
+        client = Obsidian(api_key='test-key', host='localhost')
+        
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.raise_for_status = Mock()
+        
+        with patch('requests.patch', return_value=mock_response) as mock_patch:
+            result = client.move_file('folder1/test.md', 'folder2/test.md')
+            
+            # Verify request details
+            mock_patch.assert_called_once()
+            call_args = mock_patch.call_args
+            
+            # Check URL
+            expected_url = 'https://localhost:27124/vault/folder1/test.md'
+            assert call_args[0][0] == expected_url
+            
+            # Check headers for new move operation
+            headers = call_args[1]['headers']
+            assert headers['Operation'] == 'move'
+            assert headers['Target-Type'] == 'file'
+            assert headers['Target'] == 'path'
+            assert headers['Content-Type'] == 'text/plain'
+            
+            # Check body contains new path
+            assert call_args[1]['data'] == 'folder2/test.md'
+            
+            # Result should be None for successful move
+            assert result is None
+    
+    def test_move_file_with_rename(self):
+        """Test moving file to different directory with name change."""
+        client = Obsidian(api_key='test-key', host='localhost')
+        
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.raise_for_status = Mock()
+        
+        with patch('requests.patch', return_value=mock_response) as mock_patch:
+            result = client.move_file('folder1/old.md', 'folder2/new.md')
+            
+            # Verify the move operation handles both directory and name change
+            assert mock_patch.call_args[1]['data'] == 'folder2/new.md'
+            assert mock_patch.call_args[1]['headers']['Operation'] == 'move'
