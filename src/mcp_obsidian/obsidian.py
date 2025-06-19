@@ -263,14 +263,14 @@ class Obsidian():
         return self._safe_call(call_fn)
     
     def rename_file(self, old_path: str, new_path: str) -> Any:
-        """Rename or move a file in the vault.
+        """Rename a file within the same directory.
         
         Uses the PATCH operation with Operation: rename header.
         This preserves file history, metadata, and automatically updates all links.
         
         Args:
             old_path: Current path of the file (relative to vault root)
-            new_path: New path for the file (relative to vault root)
+            new_path: New filename (just the filename, not full path)
             
         Returns:
             Response from the API on success
@@ -286,7 +286,7 @@ class Obsidian():
                 url,
                 headers=self._get_headers() | {
                     'Content-Type': 'text/plain',
-                    'Operation': 'replace',
+                    'Operation': 'rename',
                     'Target-Type': 'file',
                     'Target': 'name'
                 },
@@ -295,7 +295,7 @@ class Obsidian():
                 timeout=self.timeout
             )
             response.raise_for_status()
-            return response.json()
+            return None
         
         return self._safe_call(rename_fn)
     

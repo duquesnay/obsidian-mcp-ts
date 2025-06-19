@@ -41,7 +41,7 @@ class TestObsidianClient:
             headers = call_args[1]['headers']
             assert headers['Authorization'] == 'Bearer test-key'
             assert headers['Content-Type'] == 'text/plain'
-            assert headers['Operation'] == 'replace'
+            assert headers['Operation'] == 'rename'
             assert headers['Target-Type'] == 'file'
             assert headers['Target'] == 'name'
             

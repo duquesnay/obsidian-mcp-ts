@@ -608,10 +608,13 @@ Note: This requires an updated version of the Obsidian Local REST API plugin wit
         if old_dir != new_dir:
             raise RuntimeError("Rename can only change the filename, not move to a different directory. Use move_file for moving files.")
 
+        # Extract just the filename from new_path
+        new_filename = os.path.basename(new_path)
+        
         api = obsidian.Obsidian(api_key=get_api_key(), host=get_obsidian_host())
         
         try:
-            api.rename_file(old_path, new_path)
+            api.rename_file(old_path, new_filename)
             return [
                 TextContent(
                     type="text",

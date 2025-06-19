@@ -134,7 +134,7 @@ class TestToolHandlers:
                 host='test-host'
             )
             
-            # Verify rename_file was called
+            # Verify rename_file was called with just the filename
             mock_client.rename_file.assert_called_once_with('old.md', 'new.md')
     
     def test_rename_file_handler_rejects_cross_directory(self):
@@ -166,8 +166,8 @@ class TestToolHandlers:
             args = {'old_path': 'folder/old.md', 'new_path': 'folder/new.md'}
             result = handler.run_tool(args)
             
-            # Verify rename was called
-            mock_client.rename_file.assert_called_once_with('folder/old.md', 'folder/new.md')
+            # Verify rename was called with just the filename
+            mock_client.rename_file.assert_called_once_with('folder/old.md', 'new.md')
     
     def test_move_file_handler(self):
         """Test MoveFileToolHandler handles cross-directory moves."""
