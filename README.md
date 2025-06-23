@@ -86,7 +86,7 @@ On MacOS: `~/Library/Application\ Support/Claude/claude_desktop_config.json`
 On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 
 <details>
-  <summary>Development/Unpublished Servers Configuration</summary>
+  <summary>Development/Local Build Configuration</summary>
   
 ```json
 {
@@ -107,7 +107,7 @@ On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 </details>
 
 <details>
-  <summary>Published Servers Configuration</summary>
+  <summary>System Installation Configuration (Recommended)</summary>
   
 ```json
 {
@@ -118,7 +118,8 @@ On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
         "obsidian-mcp"
       ],
       "env": {
-        "OBSIDIAN_API_KEY": "<YOUR_OBSIDIAN_API_KEY>"
+        "OBSIDIAN_API_KEY": "<YOUR_OBSIDIAN_API_KEY>",
+        "OBSIDIAN_HOST": "127.0.0.1"
       }
     }
   }
