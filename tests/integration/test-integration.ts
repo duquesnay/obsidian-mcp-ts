@@ -1,13 +1,30 @@
-import { spawn } from 'child_process';
+import { spawn, ChildProcess } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const serverPath = join(__dirname, '../../dist/index.js');
 
+interface JsonRpcRequest {
+  jsonrpc: string;
+  id: number;
+  method: string;
+  params: any;
+}
+
+interface JsonRpcResponse {
+  jsonrpc: string;
+  id: number;
+  result?: any;
+  error?: {
+    code: number;
+    message: string;
+  };
+}
+
 console.log('Testing MCP server startup...');
 
-const server = spawn('node', [serverPath], {
+const server: ChildProcess = spawn('node', [serverPath], {
   stdio: 'pipe',
   env: {
     ...process.env,
@@ -18,17 +35,17 @@ const server = spawn('node', [serverPath], {
 let output = '';
 let errorOutput = '';
 
-server.stdout.on('data', (data) => {
+server.stdout?.on('data', (data: Buffer) => {
   output += data.toString();
 });
 
-server.stderr.on('data', (data) => {
+server.stderr?.on('data', (data: Buffer) => {
   errorOutput += data.toString();
   console.error('Server error:', data.toString());
 });
 
 // Send initialize request
-const initRequest = {
+const initRequest: JsonRpcRequest = {
   jsonrpc: '2.0',
   id: 1,
   method: 'initialize',
@@ -42,7 +59,7 @@ const initRequest = {
   }
 };
 
-server.stdin.write(JSON.stringify(initRequest) + '\n');
+server.stdin?.write(JSON.stringify(initRequest) + '\n');
 
 // Wait for response
 setTimeout(() => {
@@ -52,14 +69,14 @@ setTimeout(() => {
   }
   
   // Send list tools request
-  const listToolsRequest = {
+  const listToolsRequest: JsonRpcRequest = {
     jsonrpc: '2.0',
     id: 2,
     method: 'tools/list',
     params: {}
   };
   
-  server.stdin.write(JSON.stringify(listToolsRequest) + '\n');
+  server.stdin?.write(JSON.stringify(listToolsRequest) + '\n');
   
   setTimeout(() => {
     console.log('Final output:', output);

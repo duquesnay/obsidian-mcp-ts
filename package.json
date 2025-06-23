@@ -17,7 +17,8 @@
     "dev": "tsx watch src/index.ts",
     "start": "node ./dist/index.js",
     "test": "vitest",
-    "test:integration": "node tests/integration/test-integration.js",
+    "test:integration": "tsx tests/integration/test-integration.ts",
+    "test:e2e": "tsx tests/e2e/test-obsidian-api.ts",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build"
   },
