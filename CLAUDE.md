@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-mcp-obsidian is a Model Context Protocol (MCP) server that provides an interface for AI assistants to interact with Obsidian vaults via the Local REST API community plugin. It enables reading, writing, searching, and managing notes programmatically.
+obsidian-mcp is a Model Context Protocol (MCP) server that provides an interface for AI assistants to interact with Obsidian vaults via the Local REST API community plugin. It enables reading, writing, searching, and managing notes programmatically.
 
 ## Development Commands
 
@@ -14,16 +14,16 @@ mcp-obsidian is a Model Context Protocol (MCP) server that provides an interface
 uv sync
 
 # Run the server directly (for debugging)
-uv --directory /path/to/mcp-obsidian run mcp-obsidian
+uv --directory /path/to/obsidian-mcp run obsidian-mcp
 ```
 
 ### Debugging
 ```bash
 # Use MCP Inspector for interactive debugging
-npx @modelcontextprotocol/inspector uv --directory /path/to/mcp-obsidian run mcp-obsidian
+npx @modelcontextprotocol/inspector uv --directory /path/to/obsidian-mcp run obsidian-mcp
 
 # View logs on macOS
-tail -f ~/Library/Logs/Claude/mcp-server-mcp-obsidian.log
+tail -f ~/Library/Logs/Claude/mcp-server-obsidian-mcp.log
 
 # Environment setup for development
 export OBSIDIAN_API_KEY=your_api_key_here
@@ -137,9 +137,9 @@ OBSIDIAN_HOST=127.0.0.1
 ```json
 {
   "mcpServers": {
-    "mcp-obsidian": {
+    "obsidian": {
       "command": "uvx",
-      "args": ["mcp-obsidian"],
+      "args": ["obsidian-mcp"],
       "env": {
         "OBSIDIAN_API_KEY": "your_key_here"
       }

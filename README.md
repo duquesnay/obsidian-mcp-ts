@@ -47,10 +47,10 @@ There are two ways to configure the environment with the Obsidian REST API Key.
 
 ```json
 {
-  "mcp-obsidian": {
+  "obsidian": {
     "command": "uvx",
     "args": [
-      "mcp-obsidian"
+      "obsidian-mcp"
     ],
     "env": {
       "OBSIDIAN_API_KEY": "<your_api_key_here>",
@@ -91,14 +91,15 @@ On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 ```json
 {
   "mcpServers": {
-    "mcp-obsidian": {
-      "command": "uv",
+    "obsidian": {
+      "command": "node",
       "args": [
-        "--directory",
-        "<dir_to>/mcp-obsidian",
-        "run",
-        "mcp-obsidian"
-      ]
+        "<path_to>/obsidian-mcp/dist/index.js"
+      ],
+      "env": {
+        "OBSIDIAN_API_KEY": "<YOUR_OBSIDIAN_API_KEY>",
+        "OBSIDIAN_HOST": "127.0.0.1"
+      }
     }
   }
 }
@@ -111,13 +112,13 @@ On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 ```json
 {
   "mcpServers": {
-    "mcp-obsidian": {
-      "command": "uvx",
+    "obsidian": {
+      "command": "npx",
       "args": [
-        "mcp-obsidian"
+        "obsidian-mcp"
       ],
       "env": {
-        "OBSIDIAN_API_KEY" : "<YOUR_OBSIDIAN_API_KEY>"
+        "OBSIDIAN_API_KEY": "<YOUR_OBSIDIAN_API_KEY>"
       }
     }
   }
@@ -131,9 +132,14 @@ On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 
 To prepare the package for distribution:
 
-1. Sync dependencies and update lockfile:
+1. Install dependencies:
 ```bash
-uv sync
+npm install
+```
+
+2. Build the TypeScript code:
+```bash
+npm run build
 ```
 
 ### Testing
@@ -141,17 +147,23 @@ uv sync
 Run the test suite:
 
 ```bash
-# Run all tests (unit tests only, unless OBSIDIAN_API_KEY is set)
-uv run pytest
+# Run unit tests
+npm test
 
-# Run only unit tests
-uv run pytest tests/test_obsidian_client.py
+# Run integration tests
+npm run test:integration
 
-# Run integration tests (requires Obsidian with REST API plugin)
-OBSIDIAN_API_KEY=your-key uv run pytest tests/test_integration.py
+# Type checking
+npm run typecheck
 ```
 
-See [TESTING.md](TESTING.md) for detailed testing instructions.
+### Development Mode
+
+For development with automatic recompilation:
+
+```bash
+npm run dev
+```
 
 ### Debugging
 
@@ -161,7 +173,7 @@ experience, we strongly recommend using the [MCP Inspector](https://github.com/m
 You can launch the MCP Inspector via [`npm`](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) with this command:
 
 ```bash
-npx @modelcontextprotocol/inspector uv --directory /path/to/mcp-obsidian run mcp-obsidian
+npx @modelcontextprotocol/inspector node /path/to/obsidian-mcp/dist/index.js
 ```
 
 Upon launching, the Inspector will display a URL that you can access in your browser to begin debugging.
@@ -169,5 +181,5 @@ Upon launching, the Inspector will display a URL that you can access in your bro
 You can also watch the server logs with this command:
 
 ```bash
-tail -n 20 -f ~/Library/Logs/Claude/mcp-server-mcp-obsidian.log
+tail -n 20 -f ~/Library/Logs/Claude/mcp-server-obsidian.log
 ```

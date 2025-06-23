@@ -1,14 +1,41 @@
-# Python-generated files
-__pycache__/
-*.py[oc]
-build/
-dist/
-wheels/
-*.egg-info
+# Node modules
+node_modules/
 
-# Virtual environments
-.venv
+# Build output
+dist/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# TypeScript cache
+*.tsbuildinfo
+
+# dotenv environment variable files
 .env
+.env.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python cache (from old version)
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# UV/Python (from old version)
+.venv/
+uv.lock
 
 # CRITICAL: Local Obsidian REST API development folder - DO NOT DELETE!
 # This contains the local development version of the REST API plugin
