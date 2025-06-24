@@ -1,8 +1,8 @@
-# MCP server for Obsidian
+# Obsidian MCP Server (TypeScript)
 
-MCP server to interact with Obsidian via the Local REST API community plugin.
+A TypeScript MCP server to interact with Obsidian via the Local REST API community plugin.
 
-<a href="https://glama.ai/mcp/servers/3wko1bhuek"><img width="380" height="200" src="https://glama.ai/mcp/servers/3wko1bhuek/badge" alt="server for Obsidian MCP server" /></a>
+**Note**: This is a TypeScript port of the original [mcp-obsidian](https://github.com/MarkusPfundstein/mcp-obsidian) Python project by MarkusPfundstein. All credit for the original concept and API design goes to the original author.
 
 ## Components
 
