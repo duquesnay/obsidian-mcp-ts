@@ -14,7 +14,8 @@
       "Bash(grep:*)",
       "Bash(gh repo fork:*)",
       "Bash(pkill:*)",
-      "Bash(true)"
+      "Bash(true)",
+      "Bash(npx tsx:*)"
     ],
     "deny": []
   }

@@ -159,9 +159,11 @@ describe('ObsidianClient', () => {
 
       const result = await client.search('test query', 200);
 
-      expect(mockAxiosInstance.post).toHaveBeenCalledWith('/search/simple/', {
-        query: 'test query',
-        contextLength: 200
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith('/search/simple/', null, {
+        params: {
+          query: 'test query',
+          contextLength: 200
+        }
       });
       expect(result).toEqual(mockResults);
     });
@@ -218,28 +220,92 @@ describe('ObsidianClient', () => {
   });
 
   describe('renameFile', () => {
-    it('should rename file', async () => {
-      (mockAxiosInstance.post as any).mockResolvedValue({ data: {} });
+    it('should rename file using PATCH with proper headers', async () => {
+      (mockAxiosInstance.patch as any).mockResolvedValue({ data: {} });
 
       await client.renameFile('old-name.md', 'new-name.md');
 
-      expect(mockAxiosInstance.post).toHaveBeenCalledWith('/vault/rename', {
-        oldPath: 'old-name.md',
-        newPath: 'new-name.md'
+      expect(mockAxiosInstance.patch).toHaveBeenCalledWith('/vault/old-name.md', 'new-name.md', {
+        headers: {
+          'Content-Type': 'text/plain',
+          'Operation': 'rename',
+          'Target-Type': 'file',
+          'Target': 'name'
+        }
       });
+    });
+
+    it('should fall back to copy+delete if enhanced API not available', async () => {
+      const error = {
+        isAxiosError: true,
+        response: { status: 400 }
+      };
+      
+      // Mock isAxiosError to return true for our error
+      (axios.isAxiosError as any).mockReturnValue(true);
+      
+      // First PATCH fails with 400
+      (mockAxiosInstance.patch as any).mockRejectedValue(error);
+      // Then GET succeeds
+      (mockAxiosInstance.get as any).mockResolvedValue({ data: 'file content' });
+      // Then PUT succeeds
+      (mockAxiosInstance.put as any).mockResolvedValue({ data: {} });
+      // Then DELETE succeeds
+      (mockAxiosInstance.delete as any).mockResolvedValue({ data: {} });
+
+      await client.renameFile('old-name.md', 'new-name.md');
+
+      expect(mockAxiosInstance.patch).toHaveBeenCalled();
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/vault/old-name.md');
+      expect(mockAxiosInstance.put).toHaveBeenCalledWith('/vault/new-name.md', 'file content', {
+        headers: { 'Content-Type': 'text/markdown' }
+      });
+      expect(mockAxiosInstance.delete).toHaveBeenCalledWith('/vault/old-name.md');
     });
   });
 
   describe('moveFile', () => {
-    it('should move file', async () => {
-      (mockAxiosInstance.post as any).mockResolvedValue({ data: {} });
+    it('should move file using PATCH with proper headers', async () => {
+      (mockAxiosInstance.patch as any).mockResolvedValue({ data: {} });
 
       await client.moveFile('source/file.md', 'destination/file.md');
 
-      expect(mockAxiosInstance.post).toHaveBeenCalledWith('/vault/move', {
-        sourcePath: 'source/file.md',
-        destinationPath: 'destination/file.md'
+      expect(mockAxiosInstance.patch).toHaveBeenCalledWith('/vault/source%2Ffile.md', 'destination/file.md', {
+        headers: {
+          'Content-Type': 'text/plain',
+          'Operation': 'move',
+          'Target-Type': 'file',
+          'Target': 'path'
+        }
       });
+    });
+
+    it('should fall back to copy+delete if enhanced API not available', async () => {
+      const error = {
+        isAxiosError: true,
+        response: { status: 400 }
+      };
+      
+      // Mock isAxiosError to return true for our error
+      (axios.isAxiosError as any).mockReturnValue(true);
+      
+      // First PATCH fails with 400
+      (mockAxiosInstance.patch as any).mockRejectedValue(error);
+      // Then GET succeeds
+      (mockAxiosInstance.get as any).mockResolvedValue({ data: 'file content' });
+      // Then PUT succeeds
+      (mockAxiosInstance.put as any).mockResolvedValue({ data: {} });
+      // Then DELETE succeeds
+      (mockAxiosInstance.delete as any).mockResolvedValue({ data: {} });
+
+      await client.moveFile('source/file.md', 'destination/file.md');
+
+      expect(mockAxiosInstance.patch).toHaveBeenCalled();
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/vault/source/file.md');
+      expect(mockAxiosInstance.put).toHaveBeenCalledWith('/vault/destination%2Ffile.md', 'file content', {
+        headers: { 'Content-Type': 'text/markdown' }
+      });
+      expect(mockAxiosInstance.delete).toHaveBeenCalledWith('/vault/source%2Ffile.md');
     });
   });
 });

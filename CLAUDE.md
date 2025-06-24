@@ -101,6 +101,25 @@ async def tool_name(arguments: dict[str, Any]) -> Any:
 - Include proper auth headers with bearer token
 - Implement retries for transient failures
 
+## Critical Development Rules
+
+### File Deletion Policy
+**NEVER delete a file as part of another operation** (rename, move, etc.). Deletion should only occur when:
+1. The user explicitly requests file deletion
+2. It's the end goal, not an intermediate step
+3. The file should no longer exist
+
+**Why this matters:**
+- Deleting and recreating breaks all backlinks in Obsidian
+- File history is permanently lost
+- Obsidian's internal references are destroyed
+- User's note graph integrity is compromised
+
+### Proper File Operations
+- **Rename/Move**: Must use proper API endpoints that preserve backlinks
+- **Copy**: Create new file, original remains untouched
+- **Delete**: Only when explicitly requested as final action
+
 ## Common Development Tasks
 
 ### Adding a New Tool

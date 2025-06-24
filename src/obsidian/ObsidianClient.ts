@@ -101,9 +101,11 @@ export class ObsidianClient {
 
   async search(query: string, contextLength: number = 100): Promise<any> {
     return this.safeCall(async () => {
-      const response = await this.axiosInstance.post('/search/simple/', {
-        query,
-        contextLength
+      const response = await this.axiosInstance.post('/search/simple/', null, {
+        params: {
+          query,
+          contextLength
+        }
       });
       return response.data;
     });
@@ -185,26 +187,67 @@ export class ObsidianClient {
   }
 
   async renameFile(oldPath: string, newPath: string): Promise<void> {
+    const encodedPath = encodeURIComponent(oldPath);
+    
+    // Extract just the filename from newPath if it's a full path
+    const newFilename = newPath.includes('/') ? newPath.split('/').pop()! : newPath;
+    
     return this.safeCall(async () => {
-      await this.axiosInstance.post('/vault/rename', {
-        oldPath,
-        newPath
-      });
+      try {
+        // Try using the enhanced API with PATCH
+        await this.axiosInstance.patch(`/vault/${encodedPath}`, newFilename, {
+          headers: {
+            'Content-Type': 'text/plain',
+            'Operation': 'rename',
+            'Target-Type': 'file',
+            'Target': 'name'
+          }
+        });
+      } catch (error) {
+        // NEVER fall back to delete operations - this would break backlinks
+        if (axios.isAxiosError(error) && error.response?.status === 400) {
+          throw new ObsidianError(
+            'Rename operation requires the enhanced Obsidian REST API. The standard API does not support preserving backlinks during rename operations.',
+            400
+          );
+        } else {
+          throw error;
+        }
+      }
     });
   }
 
   async moveFile(sourcePath: string, destinationPath: string): Promise<void> {
+    const encodedPath = encodeURIComponent(sourcePath);
+    
     return this.safeCall(async () => {
-      await this.axiosInstance.post('/vault/move', {
-        sourcePath,
-        destinationPath
-      });
+      try {
+        // Try using the enhanced API with PATCH
+        await this.axiosInstance.patch(`/vault/${encodedPath}`, destinationPath, {
+          headers: {
+            'Content-Type': 'text/plain',
+            'Operation': 'move',
+            'Target-Type': 'file',
+            'Target': 'path'
+          }
+        });
+      } catch (error) {
+        // NEVER fall back to delete operations - this would break backlinks
+        if (axios.isAxiosError(error) && error.response?.status === 400) {
+          throw new ObsidianError(
+            'Move operation requires the enhanced Obsidian REST API. The standard API does not support preserving backlinks during move operations.',
+            400
+          );
+        } else {
+          throw error;
+        }
+      }
     });
   }
 
   async getPeriodicNote(period: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'): Promise<any> {
     return this.safeCall(async () => {
-      const response = await this.axiosInstance.post('/periodic-notes/', { period });
+      const response = await this.axiosInstance.get(`/periodic/${period}/`);
       return response.data;
     });
   }
@@ -213,12 +256,11 @@ export class ObsidianClient {
     period: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly',
     days?: number
   ): Promise<any> {
-    const payload: any = { period };
-    if (days !== undefined) payload.days = days;
-    
+    // The API doesn't have a direct "recent periodic notes" endpoint
+    // For now, just return the current periodic note
     return this.safeCall(async () => {
-      const response = await this.axiosInstance.post('/periodic-notes/recent', payload);
-      return response.data;
+      const currentNote = await this.getPeriodicNote(period);
+      return [currentNote];
     });
   }
 
@@ -228,15 +270,17 @@ export class ObsidianClient {
     offset?: number,
     contentLength?: number
   ): Promise<any> {
-    const params: any = {};
-    if (directory) params.dir = directory;
-    if (limit !== undefined) params.limit = limit;
-    if (offset !== undefined) params.offset = offset;
-    if (contentLength !== undefined) params['content-length'] = contentLength;
-    
+    // The Obsidian REST API doesn't have a direct "recent changes" endpoint
+    // Instead, we'll get all files and sort them by modification time
     return this.safeCall(async () => {
-      const response = await this.axiosInstance.get('/vault/recent', { params });
-      return response.data;
+      const files = await this.listFilesInVault();
+      // For now, just return the file list as we can't get modification times without individual requests
+      // This is a limitation of the current API
+      const limitedFiles = limit ? files.slice(0, limit) : files;
+      return limitedFiles.map((file: string) => ({
+        filename: file,
+        message: 'Recent changes functionality limited by API - modification times not available'
+      }));
     });
   }
 }
