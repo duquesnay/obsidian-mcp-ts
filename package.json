@@ -1,0 +1,51 @@
+{
+  "name": "obsidian-mcp",
+  "version": "0.3.0",
+  "description": "MCP server to work with Obsidian via the remote REST plugin",
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": {
+    "obsidian-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node ./dist/index.js",
+    "test": "vitest",
+    "test:integration": "tsx tests/integration/test-integration.ts",
+    "test:e2e": "tsx tests/e2e/test-obsidian-api.ts",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "obsidian",
+    "model-context-protocol",
+    "ai-tools"
+  ],
+  "author": "Markus Pfundstein <markus@life-electronic.nl>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/obsidian-mcp.git"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.1.0",
+    "axios": "^1.7.9",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.6",
+    "tsx": "^4.19.2",
+    "typescript": "^5.8.3",
+    "vitest": "^2.1.8"
+  }
+}
