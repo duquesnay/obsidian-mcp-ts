@@ -170,3 +170,15 @@ OBSIDIAN_HOST=127.0.0.1
 - Binary file operations not supported
 - Large vaults may have performance implications
 - Some Obsidian-specific features (e.g., canvas) not accessible via REST API
+
+## Development Learnings
+
+### TypeScript Conversion and Repository Separation (2025-06-24)
+
+**Technical insights**:
+- **Protocol-level API debugging approach**: Instead of just testing if the server "starts up," we built comprehensive E2E tests that actually exercise the MCP protocol handshake and tool execution. This caught critical API endpoint bugs (search using wrong HTTP method, periodic notes using POST instead of GET) that would have been missed by simpler testing approaches.
+- **Git history surgery for clean attribution**: Creating separate clean branches from specific commit points (using `git checkout -b typescript-clean f6d4bff`) allowed us to maintain proper project attribution while removing AI collaboration traces. This technique enabled professional open-source contribution without implementation details leaking into commit history.
+
+**Methodological insights**:
+- **Systematic API endpoint verification**: When converting between languages, systematically testing each endpoint revealed multiple breaking changes in the original Python implementation. The TypeScript conversion became an opportunity to fix longstanding bugs rather than just a language port.
+- **Repository separation strategy**: Rather than trying to force both Python improvements and TypeScript conversion into the same project timeline, cleanly separating them into distinct contributions (Python PR for upstream, TypeScript as independent project) avoided the complexity of mixed concerns and maintained clear project boundaries.

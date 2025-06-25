@@ -85,15 +85,25 @@ export class ObsidianClient {
   }
 
   async getBatchFileContents(filepaths: string[]): Promise<string> {
+    // Process files in smaller batches to avoid token limits
+    const BATCH_SIZE = 5; // Conservative batch size to stay under token limits
     const results: string[] = [];
     
-    for (const filepath of filepaths) {
-      try {
-        const content = await this.getFileContents(filepath);
-        results.push(`# ${filepath}\n\n${content}\n\n---\n\n`);
-      } catch (error) {
-        results.push(`# ${filepath}\n\nError reading file: ${error instanceof Error ? error.message : String(error)}\n\n---\n\n`);
-      }
+    for (let i = 0; i < filepaths.length; i += BATCH_SIZE) {
+      const batch = filepaths.slice(i, i + BATCH_SIZE);
+      
+      // Process batch concurrently for better performance
+      const batchPromises = batch.map(async (filepath) => {
+        try {
+          const content = await this.getFileContents(filepath);
+          return `# ${filepath}\n\n${content}\n\n---\n\n`;
+        } catch (error) {
+          return `# ${filepath}\n\nError reading file: ${error instanceof Error ? error.message : String(error)}\n\n---\n\n`;
+        }
+      });
+      
+      const batchResults = await Promise.all(batchPromises);
+      results.push(...batchResults);
     }
     
     return results.join('');

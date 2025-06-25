@@ -11,7 +11,20 @@
       "Bash(mkdir:*)",
       "Bash(mv:*)",
       "Bash(rm:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "mcp__dev__list_directory",
+      "Bash(git -C /Users/guillaume/Dev/tools/mcp/mcp-obsidian branch -a)",
+      "mcp__dev__directory_tree",
+      "mcp__dev__read_file",
+      "Bash(git -C /Users/guillaume/Dev/tools/mcp/mcp-obsidian checkout feature/add-rename-functionality)",
+      "Bash(git -C /Users/guillaume/Dev/tools/mcp/mcp-obsidian diff main..feature/add-rename-functionality --name-only)",
+      "Bash(git -C /Users/guillaume/Dev/tools/mcp/mcp-obsidian diff main..feature/add-rename-functionality README.md)",
+      "Bash(git -C /Users/guillaume/Dev/tools/mcp/mcp-obsidian checkout feature/rename-move-operations)",
+      "Bash(git -C /Users/guillaume/Dev/tools/mcp/mcp-obsidian fetch origin)",
+      "Bash( git -C /Users/guillaume/Dev/tools/mcp/mcp-obsidian)",
+      "Bash(npm run build:*)",
+      "Bash(npm install)",
+      "Bash(npm test)"
     ],
     "deny": []
   }
