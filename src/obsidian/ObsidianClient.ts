@@ -308,11 +308,15 @@ export class ObsidianClient {
 
   async moveDirectory(sourcePath: string, destinationPath: string): Promise<{ movedFiles: string[], failedFiles: string[] }> {
     return this.safeCall(async () => {
-      // Get all files in the source directory recursively
-      const allFiles = await this.listFilesInVault();
-      const sourceFiles = allFiles.filter(file => 
-        file.startsWith(sourcePath + '/') || file === sourcePath
-      );
+      // First, try to list files in the source directory to verify it exists
+      try {
+        await this.listFilesInDir(sourcePath);
+      } catch (error) {
+        throw new ObsidianError(`Source directory not found or empty: ${sourcePath}`, 404);
+      }
+
+      // Recursively collect all files in the directory and subdirectories
+      const sourceFiles = await this.collectAllFilesInDirectory(sourcePath);
 
       if (sourceFiles.length === 0) {
         throw new ObsidianError(`No files found in directory: ${sourcePath}`, 404);
@@ -344,5 +348,33 @@ export class ObsidianClient {
 
       return { movedFiles, failedFiles };
     });
+  }
+
+  private async collectAllFilesInDirectory(dirPath: string): Promise<string[]> {
+    const allFiles: string[] = [];
+    
+    try {
+      const files = await this.listFilesInDir(dirPath);
+      
+      for (const file of files) {
+        const fullPath = `${dirPath}/${file}`;
+        
+        // Check if this is a directory by trying to list its contents
+        try {
+          await this.listFilesInDir(fullPath);
+          // If successful, it's a directory - recursively collect its files
+          const subFiles = await this.collectAllFilesInDirectory(fullPath);
+          allFiles.push(...subFiles);
+        } catch (error) {
+          // If it fails, it's a file - add it to the list
+          allFiles.push(fullPath);
+        }
+      }
+    } catch (error) {
+      // Directory doesn't exist or is empty
+      throw error;
+    }
+
+    return allFiles;
   }
 }
