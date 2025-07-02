@@ -22,6 +22,8 @@ The server implements multiple tools to interact with Obsidian:
 - rename_file: Rename a file within the same directory while preserving history and updating links (requires updated REST API plugin)
 - move_file: Move a file to a different location (can move between directories, rename in place, or both) while preserving history and updating links (requires updated REST API plugin)
 - move_directory: Move an entire directory and all its contents to a different location while preserving the internal structure and updating all links
+- copy_file: Copy a file to a new location within the vault, creating a duplicate with all content preserved
+- check_path_exists: Check if a file or directory exists in the vault and determine its type
 - get_periodic_note: Get current periodic note for the specified period (daily, weekly, monthly, quarterly, yearly)
 - get_recent_periodic_notes: Get most recent periodic notes for the specified period type
 - get_recent_changes: Get recently modified files in the vault
@@ -38,6 +40,8 @@ The use prompts like this:
 - Move 'inbox/todo.md' to 'projects/active/todo.md' to reorganize it
 - Move all files from the 'inbox' folder to 'processed/2024' folder
 - Move the entire 'drafts/2023' directory to 'archive/2023/drafts' to organize old content
+- Copy 'templates/meeting-template.md' to 'meetings/2024-07-02-standup.md' for today's meeting
+- Check if 'projects/important-project/' directory exists before creating new files there
 
 ## Configuration
 

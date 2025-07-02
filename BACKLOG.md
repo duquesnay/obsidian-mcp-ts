@@ -24,8 +24,8 @@ This document tracks potential features and enhancements for the Obsidian MCP se
 
 | Feature | Status | Description | Technical Notes |
 |---------|--------|-------------|-----------------|
-| `copy_file` | ❌ | Duplicate files within the vault | Read content + create new file |
-| `check_path_exists` | ❌ | Verify if file/directory exists | Try read with error handling |
+| `copy_file` | ✅ | Duplicate files within the vault | Implemented with overwrite protection |
+| `check_path_exists` | ✅ | Verify if file/directory exists | Implemented with type detection |
 | `get_file_metadata` | ❌ | Get size, dates, permissions | API may need enhancement |
 
 ### 3. Bulk Operations (High Priority)

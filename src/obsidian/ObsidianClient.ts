@@ -355,4 +355,51 @@ export class ObsidianClient {
       }
     });
   }
+
+  async copyFile(sourcePath: string, destinationPath: string, overwrite: boolean = false): Promise<void> {
+    validatePath(sourcePath, 'sourcePath');
+    validatePath(destinationPath, 'destinationPath');
+    
+    return this.safeCall(async () => {
+      // Check if destination exists and handle overwrite logic
+      if (!overwrite) {
+        try {
+          await this.getFileContents(destinationPath);
+          throw new ObsidianError(`Destination file already exists: ${destinationPath}. Use overwrite=true to replace it.`, 409);
+        } catch (error) {
+          // If file doesn't exist, that's what we want for non-overwrite
+          if (!(error instanceof ObsidianError && error.message.includes('does not exist'))) {
+            throw error;
+          }
+        }
+      }
+
+      // Read source file content
+      const content = await this.getFileContents(sourcePath);
+      
+      // Create the new file at destination
+      await this.createFile(destinationPath, content);
+    });
+  }
+
+  async checkPathExists(path: string): Promise<{ exists: boolean; type: 'file' | 'directory' | null }> {
+    validatePath(path, 'path');
+    
+    return this.safeCall(async () => {
+      try {
+        // First try to read as a file
+        await this.getFileContents(path);
+        return { exists: true, type: 'file' as const };
+      } catch (fileError) {
+        try {
+          // If file read fails, try to list as directory
+          await this.listFilesInDir(path);
+          return { exists: true, type: 'directory' as const };
+        } catch (dirError) {
+          // Neither file nor directory exists
+          return { exists: false, type: null };
+        }
+      }
+    });
+  }
 }
