@@ -622,4 +622,48 @@ export class ObsidianClient {
       };
     });
   }
+
+  async advancedSearch(
+    filters: any,
+    options: any
+  ): Promise<{
+    totalResults: number;
+    results: Array<{
+      path: string;
+      score?: number;
+      matches?: Array<{
+        type: 'content' | 'frontmatter' | 'tag';
+        context?: string;
+        lineNumber?: number;
+        field?: string;
+      }>;
+      metadata?: {
+        size: number;
+        created: string;
+        modified: string;
+        tags?: string[];
+      };
+      content?: string;
+    }>;
+    hasMore: boolean;
+  }> {
+    return this.safeCall(async () => {
+      const response = await this.axiosInstance.post('/search/advanced', {
+        filters,
+        options
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        timeout: 30000 // 30 second timeout for search operations
+      });
+      
+      const result = response.data;
+      return {
+        totalResults: result.totalResults || 0,
+        results: result.results || [],
+        hasMore: result.hasMore || false
+      };
+    });
+  }
 }

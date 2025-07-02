@@ -24,6 +24,7 @@ import { ManageFileTagsTool } from './ManageFileTagsTool.js';
 import { GetPeriodicNoteTool } from './GetPeriodicNoteTool.js';
 import { GetRecentPeriodicNotesTool } from './GetRecentPeriodicNotesTool.js';
 import { GetRecentChangesTool } from './GetRecentChangesTool.js';
+import { AdvancedSearchTool } from './AdvancedSearchTool.js';
 import { BaseTool } from './base.js';
 
 const tools: BaseTool[] = [
@@ -51,6 +52,7 @@ const tools: BaseTool[] = [
   new GetPeriodicNoteTool(),
   new GetRecentPeriodicNotesTool(),
   new GetRecentChangesTool(),
+  new AdvancedSearchTool(),
 ];
 
 export async function registerTools(server: Server): Promise<void> {

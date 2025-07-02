@@ -34,6 +34,7 @@ The server implements multiple tools to interact with Obsidian:
 - get_periodic_note: Get current periodic note for the specified period (daily, weekly, monthly, quarterly, yearly)
 - get_recent_periodic_notes: Get most recent periodic notes for the specified period type
 - get_recent_changes: Get recently modified files in the vault
+- advanced_search: Advanced search with comprehensive filtering options including content, frontmatter, file metadata, and tags
 
 ### Example prompts
 
@@ -57,6 +58,9 @@ The use prompts like this:
 - Find all files tagged with #project to review my active projects
 - Rename the tag #todo to #task across all my notes
 - Add tags #meeting #important to today's meeting notes
+- Search for files containing "API" that were modified in the last week
+- Find all notes with frontmatter field "status" equal to "in-progress"
+- Search for markdown files larger than 10KB containing regex pattern "TODO|FIXME"
 
 ## Configuration
 

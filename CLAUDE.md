@@ -216,6 +216,15 @@ git cherry-pick $(git rev-list --grep="^(?!claude:)" main..source-branch)
 
 ## Development Learnings
 
+### Tag Management Implementation & Code Review (2025-01-02)
+
+**Methodological insights**:
+- **Security Defaults Matter Most in Code Reviews**: Despite good architecture and patterns, a single poor default (`verifySsl: false`) creates a critical security vulnerability. Security reviews should prioritize defaults over features - a well-architected system with insecure defaults is more dangerous than a poorly architected system with secure defaults.
+
+**Technical insights**:
+- **API Endpoint Design Evolution**: The Obsidian REST API's tag management design showed excellent API evolution - using consistent patterns (`GET /tags`, `PATCH /tags/{tagname}`, `PATCH /vault/{filepath}` with headers) that follow RESTful principles while maintaining backward compatibility. The use of operation headers (`Target-Type: tag`, `Operation: add/remove`) is a clean way to extend existing endpoints without breaking changes.
+- **TypeScript `any` Proliferation Pattern**: The codebase showed how `any` types propagate through inheritance - starting with `BaseTool.execute(args: any): Promise<any>`, this pattern infected all 25 tools. This demonstrates that type safety must be enforced at the base/interface level, as fixing it later requires changing every implementation.
+
 ### Move Directory Implementation (2025-07-02)
 
 **Methodological insights**:

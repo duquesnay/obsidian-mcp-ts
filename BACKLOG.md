@@ -78,9 +78,10 @@ This document tracks potential features and enhancements for the Obsidian MCP se
 
 | Feature | Status | Description | Technical Notes |
 |---------|--------|-------------|-----------------|
-| `search_by_frontmatter` | ❌ | Search frontmatter fields | YAML parser needed |
-| `regex_search` | ❌ | Regular expression search | Regex engine integration |
-| `search_with_filters` | ❌ | Date, type, path filters | Query builder |
+| `advanced_search` | ✅ | Comprehensive search with filters | Implemented using POST /search/advanced |
+| `search_by_frontmatter` | ✅ | Search frontmatter fields | Part of advanced_search |
+| `regex_search` | ✅ | Regular expression search | Part of advanced_search |
+| `search_with_filters` | ✅ | Date, type, path filters | Part of advanced_search |
 | `search_history` | ❌ | Track recent searches | Local storage needed |
 
 ### 9. Content Operations (Low Priority)
@@ -136,9 +137,8 @@ Based on user feedback, the following features are prioritized for next implemen
 - `batch_update_links` - Update multiple links at once
 
 ### 3. Advanced Search
-- `search_by_frontmatter` - Search by frontmatter fields
-- `regex_search` - Regular expression search
-- `search_with_filters` - Date ranges, file types, paths
+Status: **COMPLETED** ✅
+- `advanced_search` - Comprehensive search with all filters combined
 
 ### 4. File Metadata
 - `get_file_metadata` - Get size, creation/modification dates, permissions
