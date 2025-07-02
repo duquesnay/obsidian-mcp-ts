@@ -15,6 +15,7 @@ import { MoveDirectoryTool } from './MoveDirectoryTool.js';
 import { CopyFileTool } from './CopyFileTool.js';
 import { CheckPathExistsTool } from './CheckPathExistsTool.js';
 import { CreateDirectoryTool } from './CreateDirectoryTool.js';
+import { DeleteDirectoryTool } from './DeleteDirectoryTool.js';
 import { GetPeriodicNoteTool } from './GetPeriodicNoteTool.js';
 import { GetRecentPeriodicNotesTool } from './GetRecentPeriodicNotesTool.js';
 import { GetRecentChangesTool } from './GetRecentChangesTool.js';
@@ -36,6 +37,7 @@ const tools: BaseTool[] = [
   new CopyFileTool(),
   new CheckPathExistsTool(),
   new CreateDirectoryTool(),
+  new DeleteDirectoryTool(),
   new GetPeriodicNoteTool(),
   new GetRecentPeriodicNotesTool(),
   new GetRecentChangesTool(),

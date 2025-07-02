@@ -447,4 +447,57 @@ export class ObsidianClient {
       }
     });
   }
+
+  async deleteDirectory(directoryPath: string, recursive: boolean = false, permanent: boolean = false): Promise<{ 
+    deleted: boolean,
+    message?: string,
+    filesDeleted?: number
+  }> {
+    validatePath(directoryPath, 'directoryPath');
+    const encodedPath = encodeURIComponent(directoryPath);
+    
+    return this.safeCall(async () => {
+      try {
+        // Use the new directory delete API endpoint
+        const headers: Record<string, string> = {
+          'Target-Type': 'directory',
+          'Recursive': recursive.toString()
+        };
+        
+        // Add Permanent header only if permanent deletion is requested
+        if (permanent) {
+          headers['Permanent'] = 'true';
+        }
+        
+        const response = await this.axiosInstance.delete(`/vault/${encodedPath}`, { headers });
+
+        // Return the response in the expected format
+        const result = response.data;
+        return {
+          deleted: true,
+          message: result.message || `Directory deleted: ${directoryPath}`,
+          filesDeleted: result.filesDeleted || 0
+        };
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 400) {
+          throw new ObsidianError(
+            'Directory deletion requires an updated Obsidian REST API plugin that supports directory operations.',
+            400
+          );
+        } else if (axios.isAxiosError(error) && error.response?.status === 404) {
+          throw new ObsidianError(
+            `Directory not found: ${directoryPath}`,
+            404
+          );
+        } else if (axios.isAxiosError(error) && error.response?.status === 409) {
+          throw new ObsidianError(
+            `Directory not empty: ${directoryPath}. Use recursive=true to delete non-empty directories.`,
+            409
+          );
+        } else {
+          throw error;
+        }
+      }
+    });
+  }
 }
