@@ -17,6 +17,10 @@ import { CopyDirectoryTool } from './CopyDirectoryTool.js';
 import { CheckPathExistsTool } from './CheckPathExistsTool.js';
 import { CreateDirectoryTool } from './CreateDirectoryTool.js';
 import { DeleteDirectoryTool } from './DeleteDirectoryTool.js';
+import { GetAllTagsTool } from './GetAllTagsTool.js';
+import { GetFilesByTagTool } from './GetFilesByTagTool.js';
+import { RenameTagTool } from './RenameTagTool.js';
+import { ManageFileTagsTool } from './ManageFileTagsTool.js';
 import { GetPeriodicNoteTool } from './GetPeriodicNoteTool.js';
 import { GetRecentPeriodicNotesTool } from './GetRecentPeriodicNotesTool.js';
 import { GetRecentChangesTool } from './GetRecentChangesTool.js';
@@ -40,6 +44,10 @@ const tools: BaseTool[] = [
   new CheckPathExistsTool(),
   new CreateDirectoryTool(),
   new DeleteDirectoryTool(),
+  new GetAllTagsTool(),
+  new GetFilesByTagTool(),
+  new RenameTagTool(),
+  new ManageFileTagsTool(),
   new GetPeriodicNoteTool(),
   new GetRecentPeriodicNotesTool(),
   new GetRecentChangesTool(),

@@ -69,11 +69,10 @@ This document tracks potential features and enhancements for the Obsidian MCP se
 
 | Feature | Status | Description | Technical Notes |
 |---------|--------|-------------|-----------------|
-| `get_all_tags` | ❌ | List all tags in vault | Parse all files for tags |
-| `get_files_by_tag` | ❌ | Find files with specific tags | Tag index needed |
-| `rename_tag` | ❌ | Rename tags across files | Bulk find/replace |
-| `add_tags_to_file` | ❌ | Add tags to files | Frontmatter manipulation |
-| `remove_tags_from_file` | ❌ | Remove tags from files | Frontmatter parsing |
+| `get_all_tags` | ✅ | List all tags in vault | Implemented using GET /tags |
+| `get_files_by_tag` | ✅ | Find files with specific tags | Implemented using GET /tags/{tagname} |
+| `rename_tag` | ✅ | Rename tags across files | Implemented using PATCH /tags/{tagname} |
+| `manage_file_tags` | ✅ | Add/remove tags from files | Implemented using PATCH /vault/{filepath} with Target-Type: tag |
 
 ### 8. Advanced Search (High Priority - User Interest)
 

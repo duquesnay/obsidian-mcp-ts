@@ -552,4 +552,74 @@ export class ObsidianClient {
       }
     });
   }
+
+  // Tag Management Methods
+  
+  async getAllTags(): Promise<Array<{ name: string; count: number }>> {
+    return this.safeCall(async () => {
+      const response = await this.axiosInstance.get('/tags');
+      return response.data.tags || [];
+    });
+  }
+
+  async getFilesByTag(tagName: string): Promise<string[]> {
+    const encodedTag = encodeURIComponent(tagName);
+    
+    return this.safeCall(async () => {
+      const response = await this.axiosInstance.get(`/tags/${encodedTag}`);
+      return response.data.files || [];
+    });
+  }
+
+  async renameTag(oldTagName: string, newTagName: string): Promise<{ 
+    filesUpdated: number;
+    message?: string;
+  }> {
+    const encodedOldTag = encodeURIComponent(oldTagName);
+    
+    return this.safeCall(async () => {
+      const response = await this.axiosInstance.patch(`/tags/${encodedOldTag}`, newTagName, {
+        headers: {
+          'Content-Type': 'text/plain',
+          'Operation': 'rename'
+        }
+      });
+      
+      const result = response.data;
+      return {
+        filesUpdated: result.filesUpdated || 0,
+        message: result.message
+      };
+    });
+  }
+
+  async manageFileTags(
+    filePath: string, 
+    operation: 'add' | 'remove', 
+    tags: string[],
+    location: 'frontmatter' | 'inline' | 'both' = 'frontmatter'
+  ): Promise<{ 
+    tagsModified: number;
+    message?: string;
+  }> {
+    validatePath(filePath, 'filePath');
+    const encodedPath = encodeURIComponent(filePath);
+    
+    return this.safeCall(async () => {
+      const response = await this.axiosInstance.patch(`/vault/${encodedPath}`, tags, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Target-Type': 'tag',
+          'Operation': operation,
+          'Tag-Location': location
+        }
+      });
+      
+      const result = response.data;
+      return {
+        tagsModified: result.tagsModified || tags.length,
+        message: result.message
+      };
+    });
+  }
 }

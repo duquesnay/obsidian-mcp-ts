@@ -27,6 +27,10 @@ The server implements multiple tools to interact with Obsidian:
 - check_path_exists: Check if a file or directory exists in the vault and determine its type
 - create_directory: Create a new directory in the vault, with support for creating nested directory structures
 - delete_directory: Delete a directory from the vault, with optional recursive deletion of contents
+- get_all_tags: List all unique tags in the vault with their usage counts
+- get_files_by_tag: Get all files that contain a specific tag
+- rename_tag: Rename a tag across the entire vault
+- manage_file_tags: Add or remove tags from a specific file
 - get_periodic_note: Get current periodic note for the specified period (daily, weekly, monthly, quarterly, yearly)
 - get_recent_periodic_notes: Get most recent periodic notes for the specified period type
 - get_recent_changes: Get recently modified files in the vault
@@ -49,6 +53,10 @@ The use prompts like this:
 - Delete the empty 'old-drafts/' directory (moves to trash by default)
 - Permanently delete 'temp-folder/' and all its contents with recursive=true and permanent=true
 - Copy 'projects/template-structure/' to 'projects/new-client/' to reuse project structure
+- List all tags in my vault to see which ones are most used
+- Find all files tagged with #project to review my active projects
+- Rename the tag #todo to #task across all my notes
+- Add tags #meeting #important to today's meeting notes
 
 ## Configuration
 
