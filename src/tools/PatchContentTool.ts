@@ -1,4 +1,5 @@
 import { BaseTool } from './base.js';
+import { validatePath } from '../utils/pathValidator.js';
 
 export class PatchContentTool extends BaseTool {
   name = 'obsidian_patch_content';
@@ -58,6 +59,9 @@ export class PatchContentTool extends BaseTool {
       if (!args.content) {
         throw new Error('content argument missing in arguments');
       }
+      
+      // Validate the filepath
+      validatePath(args.filepath, 'filepath');
       
       const client = this.getClient();
       const result = await client.patchContent(args.filepath, args.content, {

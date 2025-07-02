@@ -1,4 +1,5 @@
 import { BaseTool } from './base.js';
+import { validatePaths } from '../utils/pathValidator.js';
 
 export class BatchGetFileContentsTool extends BaseTool {
   name = 'obsidian_batch_get_file_contents';
@@ -31,6 +32,9 @@ export class BatchGetFileContentsTool extends BaseTool {
       if (!args.filepaths || !Array.isArray(args.filepaths)) {
         throw new Error('filepaths argument must be an array');
       }
+      
+      // Validate all filepaths
+      validatePaths(args.filepaths, 'filepaths');
       
       // Apply pagination if specified
       let filesToProcess = args.filepaths;

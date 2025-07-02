@@ -1,4 +1,5 @@
 import { BaseTool } from './base.js';
+import { validatePath } from '../utils/pathValidator.js';
 
 export class ListFilesInDirTool extends BaseTool {
   name = 'obsidian_list_files_in_dir';
@@ -20,6 +21,9 @@ export class ListFilesInDirTool extends BaseTool {
       if (!args.dirpath) {
         throw new Error('dirpath argument missing in arguments');
       }
+      
+      // Validate the directory path
+      validatePath(args.dirpath, 'dirpath');
       
       const client = this.getClient();
       const files = await client.listFilesInDir(args.dirpath);

@@ -1,4 +1,5 @@
 import { BaseTool } from './base.js';
+import { validatePath } from '../utils/pathValidator.js';
 
 export class AppendContentTool extends BaseTool {
   name = 'obsidian_append_content';
@@ -36,6 +37,9 @@ export class AppendContentTool extends BaseTool {
       if (!args.content) {
         throw new Error('content argument missing in arguments');
       }
+      
+      // Validate the filepath
+      validatePath(args.filepath, 'filepath');
       
       const client = this.getClient();
       await client.appendContent(

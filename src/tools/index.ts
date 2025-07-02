@@ -11,6 +11,7 @@ import { AppendContentTool } from './AppendContentTool.js';
 import { DeleteFileTool } from './DeleteFileTool.js';
 import { RenameFileTool } from './RenameFileTool.js';
 import { MoveFileTool } from './MoveFileTool.js';
+import { MoveDirectoryTool } from './MoveDirectoryTool.js';
 import { GetPeriodicNoteTool } from './GetPeriodicNoteTool.js';
 import { GetRecentPeriodicNotesTool } from './GetRecentPeriodicNotesTool.js';
 import { GetRecentChangesTool } from './GetRecentChangesTool.js';
@@ -28,6 +29,7 @@ const tools: BaseTool[] = [
   new DeleteFileTool(),
   new RenameFileTool(),
   new MoveFileTool(),
+  new MoveDirectoryTool(),
   new GetPeriodicNoteTool(),
   new GetRecentPeriodicNotesTool(),
   new GetRecentChangesTool(),

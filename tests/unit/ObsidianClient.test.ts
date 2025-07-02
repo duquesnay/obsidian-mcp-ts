@@ -235,7 +235,7 @@ describe('ObsidianClient', () => {
       });
     });
 
-    it('should fall back to copy+delete if enhanced API not available', async () => {
+    it('should throw error if enhanced API not available', async () => {
       const error = {
         isAxiosError: true,
         response: { status: 400 }
@@ -244,23 +244,18 @@ describe('ObsidianClient', () => {
       // Mock isAxiosError to return true for our error
       (axios.isAxiosError as any).mockReturnValue(true);
       
-      // First PATCH fails with 400
+      // PATCH fails with 400
       (mockAxiosInstance.patch as any).mockRejectedValue(error);
-      // Then GET succeeds
-      (mockAxiosInstance.get as any).mockResolvedValue({ data: 'file content' });
-      // Then PUT succeeds
-      (mockAxiosInstance.put as any).mockResolvedValue({ data: {} });
-      // Then DELETE succeeds
-      (mockAxiosInstance.delete as any).mockResolvedValue({ data: {} });
 
-      await client.renameFile('old-name.md', 'new-name.md');
+      await expect(client.renameFile('old-name.md', 'new-name.md')).rejects.toThrow(
+        'Rename operation requires the enhanced Obsidian REST API. The standard API does not support preserving backlinks during rename operations.'
+      );
 
       expect(mockAxiosInstance.patch).toHaveBeenCalled();
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/vault/old-name.md');
-      expect(mockAxiosInstance.put).toHaveBeenCalledWith('/vault/new-name.md', 'file content', {
-        headers: { 'Content-Type': 'text/markdown' }
-      });
-      expect(mockAxiosInstance.delete).toHaveBeenCalledWith('/vault/old-name.md');
+      // Should NOT attempt fallback operations
+      expect(mockAxiosInstance.get).not.toHaveBeenCalled();
+      expect(mockAxiosInstance.put).not.toHaveBeenCalled();
+      expect(mockAxiosInstance.delete).not.toHaveBeenCalled();
     });
   });
 
@@ -280,7 +275,7 @@ describe('ObsidianClient', () => {
       });
     });
 
-    it('should fall back to copy+delete if enhanced API not available', async () => {
+    it('should throw error if enhanced API not available', async () => {
       const error = {
         isAxiosError: true,
         response: { status: 400 }
@@ -289,23 +284,18 @@ describe('ObsidianClient', () => {
       // Mock isAxiosError to return true for our error
       (axios.isAxiosError as any).mockReturnValue(true);
       
-      // First PATCH fails with 400
+      // PATCH fails with 400
       (mockAxiosInstance.patch as any).mockRejectedValue(error);
-      // Then GET succeeds
-      (mockAxiosInstance.get as any).mockResolvedValue({ data: 'file content' });
-      // Then PUT succeeds
-      (mockAxiosInstance.put as any).mockResolvedValue({ data: {} });
-      // Then DELETE succeeds
-      (mockAxiosInstance.delete as any).mockResolvedValue({ data: {} });
 
-      await client.moveFile('source/file.md', 'destination/file.md');
+      await expect(client.moveFile('source/file.md', 'destination/file.md')).rejects.toThrow(
+        'Move operation requires the enhanced Obsidian REST API. The standard API does not support preserving backlinks during move operations.'
+      );
 
       expect(mockAxiosInstance.patch).toHaveBeenCalled();
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/vault/source/file.md');
-      expect(mockAxiosInstance.put).toHaveBeenCalledWith('/vault/destination%2Ffile.md', 'file content', {
-        headers: { 'Content-Type': 'text/markdown' }
-      });
-      expect(mockAxiosInstance.delete).toHaveBeenCalledWith('/vault/source%2Ffile.md');
+      // Should NOT attempt fallback operations
+      expect(mockAxiosInstance.get).not.toHaveBeenCalled();
+      expect(mockAxiosInstance.put).not.toHaveBeenCalled();
+      expect(mockAxiosInstance.delete).not.toHaveBeenCalled();
     });
   });
 });

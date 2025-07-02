@@ -1,4 +1,5 @@
 import { BaseTool } from './base.js';
+import { validatePath } from '../utils/pathValidator.js';
 
 export class RenameFileTool extends BaseTool {
   name = 'obsidian_rename_file';
@@ -27,6 +28,10 @@ export class RenameFileTool extends BaseTool {
       if (!args.newPath) {
         throw new Error('newPath argument missing in arguments');
       }
+      
+      // Validate both paths
+      validatePath(args.oldPath, 'oldPath');
+      validatePath(args.newPath, 'newPath');
       
       const client = this.getClient();
       await client.renameFile(args.oldPath, args.newPath);

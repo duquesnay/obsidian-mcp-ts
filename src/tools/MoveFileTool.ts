@@ -1,4 +1,5 @@
 import { BaseTool } from './base.js';
+import { validatePath } from '../utils/pathValidator.js';
 
 export class MoveFileTool extends BaseTool {
   name = 'obsidian_move_file';
@@ -27,6 +28,10 @@ export class MoveFileTool extends BaseTool {
       if (!args.destinationPath) {
         throw new Error('destinationPath argument missing in arguments');
       }
+      
+      // Validate both paths
+      validatePath(args.sourcePath, 'sourcePath');
+      validatePath(args.destinationPath, 'destinationPath');
       
       const client = this.getClient();
       await client.moveFile(args.sourcePath, args.destinationPath);

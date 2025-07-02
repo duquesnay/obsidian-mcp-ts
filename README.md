@@ -21,6 +21,7 @@ The server implements multiple tools to interact with Obsidian:
 - delete_file: Delete a file or directory from your vault
 - rename_file: Rename a file within the same directory while preserving history and updating links (requires updated REST API plugin)
 - move_file: Move a file to a different location (can move between directories, rename in place, or both) while preserving history and updating links (requires updated REST API plugin)
+- move_directory: Move an entire directory and all its contents to a different location while preserving the internal structure and updating all links
 - get_periodic_note: Get current periodic note for the specified period (daily, weekly, monthly, quarterly, yearly)
 - get_recent_periodic_notes: Get most recent periodic notes for the specified period type
 - get_recent_changes: Get recently modified files in the vault
@@ -36,6 +37,7 @@ The use prompts like this:
 - Rename my file 'draft-proposal.md' to 'final-proposal-2024.md'
 - Move 'inbox/todo.md' to 'projects/active/todo.md' to reorganize it
 - Move all files from the 'inbox' folder to 'processed/2024' folder
+- Move the entire 'drafts/2023' directory to 'archive/2023/drafts' to organize old content
 
 ## Configuration
 
@@ -47,10 +49,10 @@ There are two ways to configure the environment with the Obsidian REST API Key.
 
 ```json
 {
-  "mcp-obsidian": {
-    "command": "uvx",
+  "obsidian-mcp-ts": {
+    "command": "npx",
     "args": [
-      "mcp-obsidian"
+      "obsidian-mcp-ts"
     ],
     "env": {
       "OBSIDIAN_API_KEY": "<your_api_key_here>",
@@ -73,6 +75,12 @@ Note: You can find the key in the Obsidian plugin config.
 
 ### Install
 
+#### Install from npm
+
+```bash
+npm install -g obsidian-mcp-ts
+```
+
 #### Obsidian REST API
 
 You need the Obsidian REST API community plugin running: https://github.com/coddingtonbear/obsidian-local-rest-api
@@ -91,14 +99,14 @@ On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 ```json
 {
   "mcpServers": {
-    "mcp-obsidian": {
-      "command": "uv",
+    "obsidian-mcp-ts": {
+      "command": "node",
       "args": [
-        "--directory",
-        "<dir_to>/mcp-obsidian",
-        "run",
-        "mcp-obsidian"
-      ]
+        "<path_to>/obsidian-mcp-ts/dist/index.js"
+      ],
+      "env": {
+        "OBSIDIAN_API_KEY": "<YOUR_OBSIDIAN_API_KEY>"
+      }
     }
   }
 }
@@ -111,13 +119,13 @@ On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 ```json
 {
   "mcpServers": {
-    "mcp-obsidian": {
-      "command": "uvx",
+    "obsidian-mcp-ts": {
+      "command": "npx",
       "args": [
-        "mcp-obsidian"
+        "obsidian-mcp-ts"
       ],
       "env": {
-        "OBSIDIAN_API_KEY" : "<YOUR_OBSIDIAN_API_KEY>"
+        "OBSIDIAN_API_KEY": "<YOUR_OBSIDIAN_API_KEY>"
       }
     }
   }
@@ -131,9 +139,14 @@ On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 
 To prepare the package for distribution:
 
-1. Sync dependencies and update lockfile:
+1. Install dependencies:
 ```bash
-uv sync
+npm install
+```
+
+2. Build the TypeScript code:
+```bash
+npm run build
 ```
 
 ### Testing
@@ -141,17 +154,19 @@ uv sync
 Run the test suite:
 
 ```bash
-# Run all tests (unit tests only, unless OBSIDIAN_API_KEY is set)
-uv run pytest
+# Run all tests
+npm test
 
-# Run only unit tests
-uv run pytest tests/test_obsidian_client.py
+# Run integration tests (requires compiled code)
+npm run build
+npm run test:integration
 
-# Run integration tests (requires Obsidian with REST API plugin)
-OBSIDIAN_API_KEY=your-key uv run pytest tests/test_integration.py
+# Run E2E tests against real Obsidian API
+OBSIDIAN_API_KEY=your-key npm run test:e2e
+
+# Run tests in watch mode during development
+npm run test -- --watch
 ```
-
-See [TESTING.md](TESTING.md) for detailed testing instructions.
 
 ### Debugging
 
@@ -161,7 +176,11 @@ experience, we strongly recommend using the [MCP Inspector](https://github.com/m
 You can launch the MCP Inspector via [`npm`](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) with this command:
 
 ```bash
-npx @modelcontextprotocol/inspector uv --directory /path/to/mcp-obsidian run mcp-obsidian
+# For development (with TypeScript)
+npx @modelcontextprotocol/inspector tsx src/index.ts
+
+# For production (compiled)
+npx @modelcontextprotocol/inspector node dist/index.js
 ```
 
 Upon launching, the Inspector will display a URL that you can access in your browser to begin debugging.
@@ -169,5 +188,21 @@ Upon launching, the Inspector will display a URL that you can access in your bro
 You can also watch the server logs with this command:
 
 ```bash
-tail -n 20 -f ~/Library/Logs/Claude/mcp-server-mcp-obsidian.log
+tail -n 20 -f ~/Library/Logs/Claude/mcp-server-obsidian-mcp-ts.log
+```
+
+### Development Commands
+
+```bash
+# Run in development mode with auto-reload
+npm run dev
+
+# Type check without building
+npm run typecheck
+
+# Build for production
+npm run build
+
+# Run the built server
+npm start
 ```

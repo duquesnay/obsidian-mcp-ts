@@ -1,4 +1,5 @@
 import { BaseTool } from './base.js';
+import { validatePath } from '../utils/pathValidator.js';
 
 export class GetFileContentsTool extends BaseTool {
   name = 'obsidian_get_file_contents';
@@ -20,6 +21,9 @@ export class GetFileContentsTool extends BaseTool {
       if (!args.filepath) {
         throw new Error('filepath argument missing in arguments');
       }
+      
+      // Validate the filepath
+      validatePath(args.filepath, 'filepath');
       
       const client = this.getClient();
       const content = await client.getFileContents(args.filepath);

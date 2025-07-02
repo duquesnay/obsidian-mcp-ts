@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import https from 'https';
 import { ObsidianError } from '../types/errors.js';
+import { validatePath, validatePaths } from '../utils/pathValidator.js';
 
 export interface ObsidianClientConfig {
   apiKey: string;
@@ -71,6 +72,7 @@ export class ObsidianClient {
   }
 
   async listFilesInDir(dirpath: string): Promise<string[]> {
+    validatePath(dirpath, 'dirpath');
     return this.safeCall(async () => {
       const response = await this.axiosInstance.get(`/vault/${dirpath}/`);
       return response.data.files;
@@ -78,6 +80,7 @@ export class ObsidianClient {
   }
 
   async getFileContents(filepath: string): Promise<string> {
+    validatePath(filepath, 'filepath');
     return this.safeCall(async () => {
       const response = await this.axiosInstance.get(`/vault/${filepath}`);
       return response.data;
@@ -85,6 +88,7 @@ export class ObsidianClient {
   }
 
   async getBatchFileContents(filepaths: string[]): Promise<string> {
+    validatePaths(filepaths, 'filepaths');
     // Process files in smaller batches to avoid token limits
     const BATCH_SIZE = 5; // Conservative batch size to stay under token limits
     const results: string[] = [];
@@ -139,6 +143,7 @@ export class ObsidianClient {
       blockRef?: string;
     } = {}
   ): Promise<any> {
+    validatePath(filepath, 'filepath');
     const payload: any = { content };
     
     if (options.heading) payload.heading = options.heading;
@@ -154,6 +159,7 @@ export class ObsidianClient {
   }
 
   async appendContent(filepath: string, content: string, createIfNotExists: boolean = true): Promise<void> {
+    validatePath(filepath, 'filepath');
     const encodedPath = encodeURIComponent(filepath);
     
     return this.safeCall(async () => {
@@ -175,6 +181,7 @@ export class ObsidianClient {
   }
 
   async createFile(filepath: string, content: string): Promise<void> {
+    validatePath(filepath, 'filepath');
     const encodedPath = encodeURIComponent(filepath);
     
     return this.safeCall(async () => {
@@ -189,6 +196,7 @@ export class ObsidianClient {
   }
 
   async deleteFile(filepath: string): Promise<void> {
+    validatePath(filepath, 'filepath');
     const encodedPath = encodeURIComponent(filepath);
     
     return this.safeCall(async () => {
@@ -197,6 +205,8 @@ export class ObsidianClient {
   }
 
   async renameFile(oldPath: string, newPath: string): Promise<void> {
+    validatePath(oldPath, 'oldPath');
+    validatePath(newPath, 'newPath');
     const encodedPath = encodeURIComponent(oldPath);
     
     // Extract just the filename from newPath if it's a full path
@@ -228,6 +238,8 @@ export class ObsidianClient {
   }
 
   async moveFile(sourcePath: string, destinationPath: string): Promise<void> {
+    validatePath(sourcePath, 'sourcePath');
+    validatePath(destinationPath, 'destinationPath');
     const encodedPath = encodeURIComponent(sourcePath);
     
     return this.safeCall(async () => {
@@ -291,6 +303,46 @@ export class ObsidianClient {
         filename: file,
         message: 'Recent changes functionality limited by API - modification times not available'
       }));
+    });
+  }
+
+  async moveDirectory(sourcePath: string, destinationPath: string): Promise<{ movedFiles: string[], failedFiles: string[] }> {
+    return this.safeCall(async () => {
+      // Get all files in the source directory recursively
+      const allFiles = await this.listFilesInVault();
+      const sourceFiles = allFiles.filter(file => 
+        file.startsWith(sourcePath + '/') || file === sourcePath
+      );
+
+      if (sourceFiles.length === 0) {
+        throw new ObsidianError(`No files found in directory: ${sourcePath}`, 404);
+      }
+
+      const movedFiles: string[] = [];
+      const failedFiles: string[] = [];
+
+      // Move each file maintaining the directory structure
+      for (const sourceFile of sourceFiles) {
+        try {
+          // Calculate the new path by replacing the source directory with destination
+          const relativePath = sourceFile.substring(sourcePath.length);
+          const destinationFile = destinationPath + relativePath;
+
+          // Move the file
+          await this.moveFile(sourceFile, destinationFile);
+          movedFiles.push(sourceFile);
+        } catch (error) {
+          console.error(`Failed to move ${sourceFile}:`, error);
+          failedFiles.push(sourceFile);
+        }
+      }
+
+      // If all files failed, throw an error
+      if (failedFiles.length === sourceFiles.length) {
+        throw new ObsidianError('Failed to move any files in the directory', 500);
+      }
+
+      return { movedFiles, failedFiles };
     });
   }
 }

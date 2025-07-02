@@ -1,4 +1,5 @@
 import { BaseTool } from './base.js';
+import { validatePath } from '../utils/pathValidator.js';
 
 export class DeleteFileTool extends BaseTool {
   name = 'obsidian_delete_file';
@@ -20,6 +21,9 @@ export class DeleteFileTool extends BaseTool {
       if (!args.filepath) {
         throw new Error('filepath argument missing in arguments');
       }
+      
+      // Validate the filepath
+      validatePath(args.filepath, 'filepath');
       
       const client = this.getClient();
       await client.deleteFile(args.filepath);
