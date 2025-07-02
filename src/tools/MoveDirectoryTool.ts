@@ -46,10 +46,13 @@ export class MoveDirectoryTool extends BaseTool {
       const result = await client.moveDirectory(sourcePath, destinationPath);
       
       return this.formatResponse({ 
-        success: true, 
-        message: `Directory moved from ${sourcePath} to ${destinationPath}`,
-        movedFiles: result.movedFiles,
-        failedFiles: result.failedFiles
+        success: result.success || true, 
+        message: result.message || `Directory moved from ${sourcePath} to ${destinationPath}`,
+        oldPath: result.oldPath,
+        newPath: result.newPath,
+        filesMovedCount: result.filesMovedCount,
+        movedFiles: result.movedFiles || [],
+        failedFiles: result.failedFiles || []
       });
     } catch (error) {
       return this.handleError(error);

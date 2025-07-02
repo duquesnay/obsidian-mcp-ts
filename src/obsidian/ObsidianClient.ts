@@ -306,75 +306,52 @@ export class ObsidianClient {
     });
   }
 
-  async moveDirectory(sourcePath: string, destinationPath: string): Promise<{ movedFiles: string[], failedFiles: string[] }> {
-    return this.safeCall(async () => {
-      // First, try to list files in the source directory to verify it exists
-      try {
-        await this.listFilesInDir(sourcePath);
-      } catch (error) {
-        throw new ObsidianError(`Source directory not found or empty: ${sourcePath}`, 404);
-      }
-
-      // Recursively collect all files in the directory and subdirectories
-      const sourceFiles = await this.collectAllFilesInDirectory(sourcePath);
-
-      if (sourceFiles.length === 0) {
-        throw new ObsidianError(`No files found in directory: ${sourcePath}`, 404);
-      }
-
-      const movedFiles: string[] = [];
-      const failedFiles: string[] = [];
-
-      // Move each file maintaining the directory structure
-      for (const sourceFile of sourceFiles) {
-        try {
-          // Calculate the new path by replacing the source directory with destination
-          const relativePath = sourceFile.substring(sourcePath.length);
-          const destinationFile = destinationPath + relativePath;
-
-          // Move the file
-          await this.moveFile(sourceFile, destinationFile);
-          movedFiles.push(sourceFile);
-        } catch (error) {
-          console.error(`Failed to move ${sourceFile}:`, error);
-          failedFiles.push(sourceFile);
-        }
-      }
-
-      // If all files failed, throw an error
-      if (failedFiles.length === sourceFiles.length) {
-        throw new ObsidianError('Failed to move any files in the directory', 500);
-      }
-
-      return { movedFiles, failedFiles };
-    });
-  }
-
-  private async collectAllFilesInDirectory(dirPath: string): Promise<string[]> {
-    const allFiles: string[] = [];
+  async moveDirectory(sourcePath: string, destinationPath: string): Promise<{ 
+    movedFiles: string[], 
+    failedFiles: string[], 
+    success?: boolean,
+    message?: string,
+    oldPath?: string,
+    newPath?: string,
+    filesMovedCount?: number
+  }> {
+    validatePath(sourcePath, 'sourcePath');
+    validatePath(destinationPath, 'destinationPath');
+    const encodedPath = encodeURIComponent(sourcePath);
     
-    try {
-      const files = await this.listFilesInDir(dirPath);
-      
-      for (const file of files) {
-        const fullPath = `${dirPath}/${file}`;
-        
-        // Check if this is a directory by trying to list its contents
-        try {
-          await this.listFilesInDir(fullPath);
-          // If successful, it's a directory - recursively collect its files
-          const subFiles = await this.collectAllFilesInDirectory(fullPath);
-          allFiles.push(...subFiles);
-        } catch (error) {
-          // If it fails, it's a file - add it to the list
-          allFiles.push(fullPath);
+    return this.safeCall(async () => {
+      try {
+        // Use the new directory move API endpoint
+        const response = await this.axiosInstance.patch(`/vault/${encodedPath}`, destinationPath, {
+          headers: {
+            'Content-Type': 'text/plain',
+            'Operation': 'move',
+            'Target-Type': 'directory',
+            'Target': 'path'
+          }
+        });
+
+        // Return the response in the expected format
+        const result = response.data;
+        return {
+          movedFiles: [], // API handles this internally
+          failedFiles: [], // API handles this internally
+          success: true,
+          message: result.message || `Directory moved from ${sourcePath} to ${destinationPath}`,
+          oldPath: result.oldPath || sourcePath,
+          newPath: result.newPath || destinationPath,
+          filesMovedCount: result.filesMovedCount || 0
+        };
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 400) {
+          throw new ObsidianError(
+            'Directory move operation requires an updated Obsidian REST API plugin that supports directory operations.',
+            400
+          );
+        } else {
+          throw error;
         }
       }
-    } catch (error) {
-      // Directory doesn't exist or is empty
-      throw error;
-    }
-
-    return allFiles;
+    });
   }
 }
