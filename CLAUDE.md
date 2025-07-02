@@ -171,6 +171,49 @@ OBSIDIAN_HOST=127.0.0.1
 - Large vaults may have performance implications
 - Some Obsidian-specific features (e.g., canvas) not accessible via REST API
 
+## Git Workflow for Claude Development
+
+### Commit Prefix Strategy (2025-07-02)
+
+**Strict Rule**: Always separate Claude-related changes from actual code changes using commit prefixes.
+
+#### For Feature/Bug Development:
+```bash
+git commit -m "feat: add new functionality"
+git commit -m "fix: resolve issue with X"
+git commit -m "refactor: improve code structure"
+git commit -m "docs: update API documentation"
+```
+
+#### For Claude-Related Files:
+```bash
+git commit -m "claude: add feature backlog"
+git commit -m "claude: update CLAUDE.md with insights"
+git commit -m "claude: add debugging notes"
+git commit -m "claude: document implementation patterns"
+```
+
+#### Files Considered Claude-Related:
+- `CLAUDE.md` (this file)
+- `BACKLOG.md` 
+- Development notes and insights
+- AI collaboration traces
+- Project memory updates
+
+#### Benefits:
+- **Clean PRs**: Cherry-pick only non-`claude:` commits for upstream
+- **Clear History**: Reviewers focus on actual code changes
+- **Easy Filtering**: `git log --grep="^(?!claude:)"` shows only code commits
+
+#### Cherry-pick for PRs:
+```bash
+# Create PR branch with only code changes
+git checkout -b pr/feature-name
+git cherry-pick $(git rev-list --grep="^(?!claude:)" main..source-branch)
+```
+
+**This strategy is MANDATORY for all future commits in this repository.**
+
 ## Development Learnings
 
 ### TypeScript Conversion and Repository Separation (2025-06-24)
