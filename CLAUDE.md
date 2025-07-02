@@ -216,6 +216,15 @@ git cherry-pick $(git rev-list --grep="^(?!claude:)" main..source-branch)
 
 ## Development Learnings
 
+### Move Directory Implementation (2025-07-02)
+
+**Methodological insights**:
+- **Direct API Testing Over Complex Debugging**: When move_directory failed with "No files found" errors, testing the actual API endpoint with curl immediately revealed the real issue (endpoint didn't exist) rather than building elaborate debugging tools or fallback mechanisms. This saved hours of complex workaround development.
+- **Commit Prefix Strategy for AI-Human Collaboration**: Separating code changes from AI collaboration artifacts using strict commit prefixes (`feat:` vs `claude:`) enables clean cherry-picking for upstream PRs. This solves the fundamental problem of contributing AI-assisted work to open source projects while maintaining professional commit history.
+
+**Technical insights**:
+- **Request-Specific Timeouts for Heavy Operations**: Directory operations (40+ seconds for 214 files) require different timeout values than regular file operations (6 seconds). Using axios request-specific timeout options `{ timeout: 120000 }` allows granular control without affecting the entire client configuration, preventing timeout failures on substantial directory moves.
+
 ### TypeScript Conversion and Repository Separation (2025-06-24)
 
 **Technical insights**:
