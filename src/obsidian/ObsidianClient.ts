@@ -321,14 +321,15 @@ export class ObsidianClient {
     
     return this.safeCall(async () => {
       try {
-        // Use the new directory move API endpoint
+        // Use the new directory move API endpoint with extended timeout for large directories
         const response = await this.axiosInstance.patch(`/vault/${encodedPath}`, destinationPath, {
           headers: {
             'Content-Type': 'text/plain',
             'Operation': 'move',
             'Target-Type': 'directory',
             'Target': 'path'
-          }
+          },
+          timeout: 120000 // 2 minutes for directory operations
         });
 
         // Return the response in the expected format
