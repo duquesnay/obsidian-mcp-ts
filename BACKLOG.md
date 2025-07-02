@@ -15,7 +15,7 @@ This document tracks potential features and enhancements for the Obsidian MCP se
 
 | Feature | Status | Description | Technical Notes |
 |---------|--------|-------------|-----------------|
-| `create_directory` | ❌ | Create new directories in the vault | API may not support; workaround: create file in path |
+| `create_directory` | ✅ | Create new directories in the vault | Implemented using new REST API endpoint |
 | `delete_directory` | ❌ | Remove empty directories | API limitation; may need enhanced REST API |
 | `move_directory` | ✅ | Move entire folder structures with contents | Implemented using recursive file operations |
 | `copy_directory` | ❌ | Duplicate folder structures | Requires recursive file operations |

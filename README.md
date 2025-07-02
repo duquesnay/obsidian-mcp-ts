@@ -24,6 +24,7 @@ The server implements multiple tools to interact with Obsidian:
 - move_directory: Move an entire directory and all its contents to a different location while preserving the internal structure and updating all links
 - copy_file: Copy a file to a new location within the vault, creating a duplicate with all content preserved
 - check_path_exists: Check if a file or directory exists in the vault and determine its type
+- create_directory: Create a new directory in the vault, with support for creating nested directory structures
 - get_periodic_note: Get current periodic note for the specified period (daily, weekly, monthly, quarterly, yearly)
 - get_recent_periodic_notes: Get most recent periodic notes for the specified period type
 - get_recent_changes: Get recently modified files in the vault
@@ -42,6 +43,7 @@ The use prompts like this:
 - Move the entire 'drafts/2023' directory to 'archive/2023/drafts' to organize old content
 - Copy 'templates/meeting-template.md' to 'meetings/2024-07-02-standup.md' for today's meeting
 - Check if 'projects/important-project/' directory exists before creating new files there
+- Create a new directory 'projects/2024/q3-initiatives' for organizing quarterly work
 
 ## Configuration
 

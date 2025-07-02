@@ -402,4 +402,49 @@ export class ObsidianClient {
       }
     });
   }
+
+  async createDirectory(directoryPath: string, createParents: boolean = true): Promise<{ 
+    created: boolean,
+    message?: string,
+    parentsCreated?: boolean
+  }> {
+    validatePath(directoryPath, 'directoryPath');
+    const encodedPath = encodeURIComponent(directoryPath);
+    
+    return this.safeCall(async () => {
+      try {
+        // Use the new directory create API endpoint
+        const response = await this.axiosInstance.post(`/vault/${encodedPath}`, '', {
+          headers: {
+            'Content-Type': 'text/plain',
+            'Operation': 'create',
+            'Target-Type': 'directory',
+            'Create-Parents': createParents.toString()
+          }
+        });
+
+        // Return the response in the expected format
+        const result = response.data;
+        return {
+          created: true,
+          message: result.message || `Directory created: ${directoryPath}`,
+          parentsCreated: result.parentsCreated || false
+        };
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 400) {
+          throw new ObsidianError(
+            'Directory creation requires an updated Obsidian REST API plugin that supports directory operations.',
+            400
+          );
+        } else if (axios.isAxiosError(error) && error.response?.status === 409) {
+          throw new ObsidianError(
+            `Directory already exists: ${directoryPath}`,
+            409
+          );
+        } else {
+          throw error;
+        }
+      }
+    });
+  }
 }
