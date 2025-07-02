@@ -500,4 +500,56 @@ export class ObsidianClient {
       }
     });
   }
+
+  async copyDirectory(sourcePath: string, destinationPath: string, overwrite: boolean = false): Promise<{ 
+    filesCopied: number,
+    failedFiles: string[],
+    message?: string
+  }> {
+    validatePath(sourcePath, 'sourcePath');
+    validatePath(destinationPath, 'destinationPath');
+    const encodedDestPath = encodeURIComponent(destinationPath);
+    
+    return this.safeCall(async () => {
+      try {
+        // Use the new directory copy API endpoint
+        const response = await this.axiosInstance.post(`/vault/${encodedDestPath}`, sourcePath, {
+          headers: {
+            'Content-Type': 'text/plain',
+            'Operation': 'copy',
+            'Target-Type': 'directory',
+            'Overwrite': overwrite.toString()
+          },
+          timeout: 120000 // 2 minutes for directory operations
+        });
+
+        // Return the response in the expected format
+        const result = response.data;
+        return {
+          filesCopied: result.filesCopied || 0,
+          failedFiles: result.failedFiles || [],
+          message: result.message || `Directory copied from ${sourcePath} to ${destinationPath}`
+        };
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 400) {
+          throw new ObsidianError(
+            'Directory copy operation requires an updated Obsidian REST API plugin that supports directory operations.',
+            400
+          );
+        } else if (axios.isAxiosError(error) && error.response?.status === 404) {
+          throw new ObsidianError(
+            `Source directory not found: ${sourcePath}`,
+            404
+          );
+        } else if (axios.isAxiosError(error) && error.response?.status === 409) {
+          throw new ObsidianError(
+            `Destination already exists: ${destinationPath}. Use overwrite=true to replace existing files.`,
+            409
+          );
+        } else {
+          throw error;
+        }
+      }
+    });
+  }
 }

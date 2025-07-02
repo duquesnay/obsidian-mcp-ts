@@ -23,6 +23,7 @@ The server implements multiple tools to interact with Obsidian:
 - move_file: Move a file to a different location (can move between directories, rename in place, or both) while preserving history and updating links (requires updated REST API plugin)
 - move_directory: Move an entire directory and all its contents to a different location while preserving the internal structure and updating all links
 - copy_file: Copy a file to a new location within the vault, creating a duplicate with all content preserved
+- copy_directory: Copy an entire directory and all its contents to a new location, preserving the internal structure
 - check_path_exists: Check if a file or directory exists in the vault and determine its type
 - create_directory: Create a new directory in the vault, with support for creating nested directory structures
 - delete_directory: Delete a directory from the vault, with optional recursive deletion of contents
@@ -47,6 +48,7 @@ The use prompts like this:
 - Create a new directory 'projects/2024/q3-initiatives' for organizing quarterly work
 - Delete the empty 'old-drafts/' directory (moves to trash by default)
 - Permanently delete 'temp-folder/' and all its contents with recursive=true and permanent=true
+- Copy 'projects/template-structure/' to 'projects/new-client/' to reuse project structure
 
 ## Configuration
 

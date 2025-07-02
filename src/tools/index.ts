@@ -13,6 +13,7 @@ import { RenameFileTool } from './RenameFileTool.js';
 import { MoveFileTool } from './MoveFileTool.js';
 import { MoveDirectoryTool } from './MoveDirectoryTool.js';
 import { CopyFileTool } from './CopyFileTool.js';
+import { CopyDirectoryTool } from './CopyDirectoryTool.js';
 import { CheckPathExistsTool } from './CheckPathExistsTool.js';
 import { CreateDirectoryTool } from './CreateDirectoryTool.js';
 import { DeleteDirectoryTool } from './DeleteDirectoryTool.js';
@@ -35,6 +36,7 @@ const tools: BaseTool[] = [
   new MoveFileTool(),
   new MoveDirectoryTool(),
   new CopyFileTool(),
+  new CopyDirectoryTool(),
   new CheckPathExistsTool(),
   new CreateDirectoryTool(),
   new DeleteDirectoryTool(),
