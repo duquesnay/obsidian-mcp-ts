@@ -28,7 +28,7 @@ This document tracks potential features and enhancements for the Obsidian MCP se
 | `check_path_exists` | ✅ | Verify if file/directory exists | Implemented with type detection |
 | `get_file_metadata` | ❌ | Get size, dates, permissions | API may need enhancement |
 
-### 3. Bulk Operations (High Priority)
+### 3. Bulk Operations (Medium Priority - Can implement with existing APIs)
 
 | Feature | Status | Description | Technical Notes |
 |---------|--------|-------------|-----------------|
@@ -46,7 +46,7 @@ This document tracks potential features and enhancements for the Obsidian MCP se
 | `export_vault_data` | ❌ | Export vault in various formats | Format converters needed |
 | `validate_vault_integrity` | ❌ | Check broken links, orphans | Link parser + validator |
 
-### 5. Link Management (Medium Priority)
+### 5. Link Management (High Priority - User Interest)
 
 | Feature | Status | Description | Technical Notes |
 |---------|--------|-------------|-----------------|
@@ -65,7 +65,7 @@ This document tracks potential features and enhancements for the Obsidian MCP se
 | `create_from_template` | ❌ | Create new file from template | Variable substitution |
 | `manage_template_variables` | ❌ | Handle template placeholders | Parser for variables |
 
-### 7. Tag Management (Medium Priority)
+### 7. Tag Management (High Priority - User Interest)
 
 | Feature | Status | Description | Technical Notes |
 |---------|--------|-------------|-----------------|
@@ -75,7 +75,7 @@ This document tracks potential features and enhancements for the Obsidian MCP se
 | `add_tags_to_file` | ❌ | Add tags to files | Frontmatter manipulation |
 | `remove_tags_from_file` | ❌ | Remove tags from files | Frontmatter parsing |
 
-### 8. Advanced Search (Medium Priority)
+### 8. Advanced Search (High Priority - User Interest)
 
 | Feature | Status | Description | Technical Notes |
 |---------|--------|-------------|-----------------|
@@ -118,6 +118,31 @@ This document tracks potential features and enhancements for the Obsidian MCP se
 | `set_permissions` | ❌ | Modify permissions | Security implications |
 | `encrypt_content` | ❌ | Encrypt sensitive notes | Crypto library |
 | `audit_log` | ❌ | Track MCP operations | Logging framework |
+
+## Next Priority Features (User Interest)
+
+Based on user feedback, the following features are prioritized for next implementation:
+
+### 1. Tag Management
+- `get_all_tags` - List all tags in the vault
+- `get_files_by_tag` - Find all files with specific tags
+- `rename_tag` - Rename tags across all files
+- `add_tags_to_file` - Add tags to files
+- `remove_tags_from_file` - Remove tags from files
+
+### 2. Link Management  
+- `get_file_backlinks` - Get all files linking to a specific file
+- `get_file_forward_links` - Get all files linked from a specific file
+- `find_broken_links` - Identify broken internal links
+- `batch_update_links` - Update multiple links at once
+
+### 3. Advanced Search
+- `search_by_frontmatter` - Search by frontmatter fields
+- `regex_search` - Regular expression search
+- `search_with_filters` - Date ranges, file types, paths
+
+### 4. File Metadata
+- `get_file_metadata` - Get size, creation/modification dates, permissions
 
 ## Implementation Guidelines
 
