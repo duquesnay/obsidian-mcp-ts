@@ -26,7 +26,7 @@ This document tracks potential features and enhancements for the Obsidian MCP se
 |---------|--------|-------------|-----------------|
 | `copy_file` | ✅ | Duplicate files within the vault | Implemented with overwrite protection |
 | `check_path_exists` | ✅ | Verify if file/directory exists | Implemented with type detection |
-| `get_file_metadata` | ❌ | Get size, dates, permissions | API may need enhancement |
+| `get_file_metadata` | ✅ | Get size, dates, permissions | Implemented with content negotiation |
 
 ### 3. Bulk Operations (Medium Priority - Can implement with existing APIs)
 
@@ -140,8 +140,12 @@ Based on user feedback, the following features are prioritized for next implemen
 Status: **COMPLETED** ✅
 - `advanced_search` - Comprehensive search with all filters combined
 
-### 4. File Metadata
-- `get_file_metadata` - Get size, creation/modification dates, permissions
+### 4. File Metadata & Content Negotiation
+Status: **COMPLETED** ✅
+- `get_file_metadata` - Get size, creation/modification dates without content
+- `get_file_frontmatter` - Extract only frontmatter for efficient metadata analysis 
+- `get_file_formatted` - Retrieve files in different formats (plain, HTML) for token optimization
+- Enhanced `get_file_contents` - Now supports format parameter for all content types
 
 ## Implementation Guidelines
 

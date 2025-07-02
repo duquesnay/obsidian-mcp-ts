@@ -35,6 +35,9 @@ The server implements multiple tools to interact with Obsidian:
 - get_recent_periodic_notes: Get most recent periodic notes for the specified period type
 - get_recent_changes: Get recently modified files in the vault
 - advanced_search: Advanced search with comprehensive filtering options including content, frontmatter, file metadata, and tags
+- get_file_metadata: Get file metadata (size, dates, permissions) without retrieving content - efficient for large files
+- get_file_frontmatter: Get only the frontmatter of a file without content - efficient for metadata analysis
+- get_file_formatted: Get file in different formats (plain text, HTML, etc.) for token optimization
 
 ### Example prompts
 
@@ -61,6 +64,10 @@ The use prompts like this:
 - Search for files containing "API" that were modified in the last week
 - Find all notes with frontmatter field "status" equal to "in-progress"
 - Search for markdown files larger than 10KB containing regex pattern "TODO|FIXME"
+- Get just the metadata for large-notes.md to check its size before reading
+- Extract only the frontmatter from meeting-notes.md to analyze the tags and status
+- Get today's daily note in plain text format without markdown formatting
+- Retrieve project-readme.md as HTML for sharing outside Obsidian
 
 ## Configuration
 

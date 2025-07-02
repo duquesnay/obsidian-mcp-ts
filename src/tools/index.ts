@@ -25,6 +25,9 @@ import { GetPeriodicNoteTool } from './GetPeriodicNoteTool.js';
 import { GetRecentPeriodicNotesTool } from './GetRecentPeriodicNotesTool.js';
 import { GetRecentChangesTool } from './GetRecentChangesTool.js';
 import { AdvancedSearchTool } from './AdvancedSearchTool.js';
+import { GetFileMetadataTool } from './GetFileMetadataTool.js';
+import { GetFileFrontmatterTool } from './GetFileFrontmatterTool.js';
+import { GetFileFormattedTool } from './GetFileFormattedTool.js';
 import { BaseTool } from './base.js';
 
 const tools: BaseTool[] = [
@@ -53,6 +56,9 @@ const tools: BaseTool[] = [
   new GetRecentPeriodicNotesTool(),
   new GetRecentChangesTool(),
   new AdvancedSearchTool(),
+  new GetFileMetadataTool(),
+  new GetFileFrontmatterTool(),
+  new GetFileFormattedTool(),
 ];
 
 export async function registerTools(server: Server): Promise<void> {

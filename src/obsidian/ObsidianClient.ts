@@ -79,10 +79,11 @@ export class ObsidianClient {
     });
   }
 
-  async getFileContents(filepath: string): Promise<string> {
+  async getFileContents(filepath: string, format?: 'content' | 'metadata' | 'frontmatter' | 'plain' | 'html'): Promise<any> {
     validatePath(filepath, 'filepath');
     return this.safeCall(async () => {
-      const response = await this.axiosInstance.get(`/vault/${filepath}`);
+      const url = format ? `/vault/${filepath}?format=${format}` : `/vault/${filepath}`;
+      const response = await this.axiosInstance.get(url);
       return response.data;
     });
   }
