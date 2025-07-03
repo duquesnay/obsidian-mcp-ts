@@ -26,8 +26,25 @@ export class ListFilesInDirTool extends BaseTool {
       validatePath(args.dirpath, 'dirpath');
       
       const client = this.getClient();
-      const files = await client.listFilesInDir(args.dirpath);
-      return this.formatResponse(files);
+      
+      try {
+        const files = await client.listFilesInDir(args.dirpath);
+        return this.formatResponse(files);
+      } catch (error: any) {
+        // If we get a 404 error, check if it's an empty directory
+        if (error.message?.includes('404') || error.message?.includes('Not Found')) {
+          // Check if the path exists and is a directory
+          const pathInfo = await client.checkPathExists(args.dirpath);
+          
+          if (pathInfo.exists && pathInfo.type === 'directory') {
+            // It's an empty directory, return empty array
+            return this.formatResponse([]);
+          }
+        }
+        
+        // Re-throw the error if it's not an empty directory case
+        throw error;
+      }
     } catch (error) {
       return this.handleError(error);
     }
