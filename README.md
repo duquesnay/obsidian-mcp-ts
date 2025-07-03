@@ -11,7 +11,8 @@ A TypeScript MCP server to interact with Obsidian via the Local REST API communi
 The server implements multiple tools to interact with Obsidian:
 
 - list_files_in_vault: Lists all files and directories in the root directory of your Obsidian vault
-- list_files_in_dir: Lists all files and directories in a specific Obsidian directory
+- list_files_in_dir: Lists all files and directories in a specific Obsidian directory (now returns empty array for empty directories instead of error)
+- find_empty_directories: Find all empty directories in your vault by scanning the directory structure
 - get_file_contents: Return the content of a single file in your vault
 - batch_get_file_contents: Return the contents of multiple files in your vault, concatenated with headers
 - simple_search: Simple search for documents matching a specified text query across all files in the vault
@@ -68,6 +69,9 @@ The use prompts like this:
 - Extract only the frontmatter from meeting-notes.md to analyze the tags and status
 - Get today's daily note in plain text format without markdown formatting
 - Retrieve project-readme.md as HTML for sharing outside Obsidian
+- Find all empty directories in my vault for cleanup
+- Search for empty directories within the 'archive' folder only
+- List files in 'projects/drafts/' - will return empty array if the directory is empty
 
 ## Configuration
 
