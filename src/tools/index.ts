@@ -28,6 +28,7 @@ import { AdvancedSearchTool } from './AdvancedSearchTool.js';
 import { GetFileMetadataTool } from './GetFileMetadataTool.js';
 import { GetFileFrontmatterTool } from './GetFileFrontmatterTool.js';
 import { GetFileFormattedTool } from './GetFileFormattedTool.js';
+import { FindEmptyDirectoriesTool } from './FindEmptyDirectoriesTool.js';
 import { BaseTool } from './base.js';
 
 const tools: BaseTool[] = [
@@ -59,6 +60,7 @@ const tools: BaseTool[] = [
   new GetFileMetadataTool(),
   new GetFileFrontmatterTool(),
   new GetFileFormattedTool(),
+  new FindEmptyDirectoriesTool(),
 ];
 
 export async function registerTools(server: Server): Promise<void> {
