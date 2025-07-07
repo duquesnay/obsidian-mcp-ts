@@ -380,21 +380,29 @@ export class ObsidianClient {
     validatePath(destinationPath, 'destinationPath');
     
     return this.safeCall(async () => {
+      // First, verify source file exists and read its content
+      let content: string;
+      try {
+        content = await this.getFileContents(sourcePath);
+      } catch (error) {
+        if (error instanceof ObsidianError && error.code === 404) {
+          throw new ObsidianError(`Source file not found: ${sourcePath}`, 404);
+        }
+        throw error;
+      }
+      
       // Check if destination exists and handle overwrite logic
       if (!overwrite) {
         try {
           await this.getFileContents(destinationPath);
           throw new ObsidianError(`Destination file already exists: ${destinationPath}. Use overwrite=true to replace it.`, 409);
         } catch (error) {
-          // If file doesn't exist, that's what we want for non-overwrite
-          if (!(error instanceof ObsidianError && error.message.includes('does not exist'))) {
+          // If file doesn't exist (404), that's what we want for non-overwrite
+          if (!(error instanceof ObsidianError && error.code === 404)) {
             throw error;
           }
         }
       }
-
-      // Read source file content
-      const content = await this.getFileContents(sourcePath);
       
       // Create the new file at destination
       await this.createFile(destinationPath, content);
