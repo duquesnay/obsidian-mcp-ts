@@ -114,7 +114,7 @@ export class ObsidianClient {
     return results.join('');
   }
 
-  async search(query: string, contextLength: number = 100): Promise<any> {
+  async search(query: string, contextLength: number = 100, limit?: number, offset?: number): Promise<any> {
     return this.safeCall(async () => {
       const response = await this.axiosInstance.post('/search/simple/', null, {
         params: {
@@ -122,7 +122,25 @@ export class ObsidianClient {
           contextLength
         }
       });
-      return response.data;
+      
+      // Handle pagination in-memory since the REST API doesn't support it
+      const allResults = response.data;
+      if (!Array.isArray(allResults)) {
+        return allResults;
+      }
+      
+      const totalResults = allResults.length;
+      const startIndex = offset || 0;
+      const endIndex = limit ? startIndex + limit : totalResults;
+      const paginatedResults = allResults.slice(startIndex, endIndex);
+      
+      return {
+        results: paginatedResults,
+        totalResults: totalResults,
+        hasMore: endIndex < totalResults,
+        offset: startIndex,
+        limit: limit || totalResults
+      };
     });
   }
 
