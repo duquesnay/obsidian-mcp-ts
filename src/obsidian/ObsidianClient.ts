@@ -160,11 +160,28 @@ export class ObsidianClient {
       insertBefore?: boolean;
       createIfNotExists?: boolean;
       blockRef?: string;
+      oldText?: string;
+      newText?: string;
+      targetType?: 'text' | 'heading' | 'block' | 'frontmatter';
     } = {}
   ): Promise<any> {
     validatePath(filepath, 'filepath');
     const payload: any = { content };
+    const headers: any = {};
     
+    // Handle find/replace mode
+    if (options.oldText !== undefined && options.newText !== undefined) {
+      payload.oldText = options.oldText;
+      payload.newText = options.newText;
+      delete payload.content; // Remove content when using oldText/newText
+    }
+    
+    // Set Target-Type header if specified
+    if (options.targetType) {
+      headers['Target-Type'] = options.targetType;
+    }
+    
+    // Handle other options
     if (options.heading) payload.heading = options.heading;
     if (options.insertAfter) payload.insertAfter = options.insertAfter;
     if (options.insertBefore) payload.insertBefore = options.insertBefore;
@@ -172,7 +189,11 @@ export class ObsidianClient {
     if (options.blockRef) payload.blockRef = options.blockRef;
 
     return this.safeCall(async () => {
-      const response = await this.axiosInstance.patch(`/vault/${filepath}`, payload);
+      const response = await this.axiosInstance.patch(
+        `/vault/${filepath}`, 
+        payload,
+        Object.keys(headers).length > 0 ? { headers } : {}
+      );
       return response.data;
     });
   }

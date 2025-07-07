@@ -298,4 +298,94 @@ describe('ObsidianClient', () => {
       expect(mockAxiosInstance.delete).not.toHaveBeenCalled();
     });
   });
+
+  describe('patchContent', () => {
+    it('should handle traditional insert at heading', async () => {
+      (mockAxiosInstance.patch as any).mockResolvedValue({
+        data: { success: true }
+      });
+
+      await client.patchContent('test.md', 'New content', {
+        heading: '## Section',
+        insertAfter: true
+      });
+
+      expect(mockAxiosInstance.patch).toHaveBeenCalledWith(
+        '/vault/test.md',
+        {
+          content: 'New content',
+          heading: '## Section',
+          insertAfter: true
+        },
+        {}
+      );
+    });
+
+    it('should handle find/replace operations', async () => {
+      (mockAxiosInstance.patch as any).mockResolvedValue({
+        data: { success: true }
+      });
+
+      await client.patchContent('test.md', '', {
+        oldText: 'old text',
+        newText: 'new text',
+        targetType: 'text'
+      });
+
+      expect(mockAxiosInstance.patch).toHaveBeenCalledWith(
+        '/vault/test.md',
+        {
+          oldText: 'old text',
+          newText: 'new text'
+        },
+        {
+          headers: {
+            'Target-Type': 'text'
+          }
+        }
+      );
+    });
+
+    it('should handle find/replace without targetType', async () => {
+      (mockAxiosInstance.patch as any).mockResolvedValue({
+        data: { success: true }
+      });
+
+      await client.patchContent('test.md', '', {
+        oldText: '![[old.png]]',
+        newText: '![[new.png]]'
+      });
+
+      expect(mockAxiosInstance.patch).toHaveBeenCalledWith(
+        '/vault/test.md',
+        {
+          oldText: '![[old.png]]',
+          newText: '![[new.png]]'
+        },
+        {}
+      );
+    });
+
+    it('should handle frontmatter updates', async () => {
+      (mockAxiosInstance.patch as any).mockResolvedValue({
+        data: { success: true }
+      });
+
+      await client.patchContent('test.md', 'tags: [tag1, tag2]', {
+        targetType: 'frontmatter'
+      });
+
+      expect(mockAxiosInstance.patch).toHaveBeenCalledWith(
+        '/vault/test.md',
+        {
+          content: 'tags: [tag1, tag2]'
+        },
+        {
+          headers: {
+            'Target-Type': 'frontmatter'
+          }
+        }
+      );
+    });
+  });
 });

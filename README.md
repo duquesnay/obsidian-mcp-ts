@@ -17,7 +17,7 @@ The server implements multiple tools to interact with Obsidian:
 - batch_get_file_contents: Return the contents of multiple files in your vault, concatenated with headers
 - simple_search: Simple search for documents matching a specified text query across all files in the vault
 - complex_search: Complex search for documents using a JsonLogic query
-- patch_content: Insert content into an existing note relative to a heading, block reference, or frontmatter field
+- patch_content: Insert or replace content in a note - supports find/replace operations, inserting at headings/blocks, and frontmatter updates
 - append_content: Append content to a new or existing file in the vault
 - delete_file: Delete a file or directory from your vault
 - rename_file: Rename a file within the same directory while preserving history and updating links (requires updated REST API plugin)
@@ -49,6 +49,8 @@ The use prompts like this:
 - Search for all files where Azure CosmosDb is mentioned and quickly explain to me the context in which it is mentioned
 - Summarize the last meeting notes and put them into a new note 'summary meeting.md'. Add an introduction so that I can send it via email.
 - Rename my file 'draft-proposal.md' to 'final-proposal-2024.md'
+- Replace all occurrences of '![[old-image.png]]' with '![[new-image.png]]' in my notes
+- Find and replace 'TODO:' with '- [ ]' in meeting-notes.md to convert to checkboxes
 - Move 'inbox/todo.md' to 'projects/active/todo.md' to reorganize it
 - Move all files from the 'inbox' folder to 'processed/2024' folder
 - Move the entire 'drafts/2023' directory to 'archive/2023/drafts' to organize old content
