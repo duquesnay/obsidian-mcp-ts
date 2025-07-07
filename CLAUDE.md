@@ -243,3 +243,12 @@ git cherry-pick $(git rev-list --grep="^(?!claude:)" main..source-branch)
 **Methodological insights**:
 - **Systematic API endpoint verification**: When converting between languages, systematically testing each endpoint revealed multiple breaking changes in the original Python implementation. The TypeScript conversion became an opportunity to fix longstanding bugs rather than just a language port.
 - **Repository separation strategy**: Rather than trying to force both Python improvements and TypeScript conversion into the same project timeline, cleanly separating them into distinct contributions (Python PR for upstream, TypeScript as independent project) avoided the complexity of mixed concerns and maintained clear project boundaries.
+
+### MCP Bug Analysis and Git Atomic Commits (2025-01-07)
+
+**Methodological insights**:
+- **Verify API endpoints with live testing before assuming implementation errors**: The advanced search "bug" turned out to be an API version mismatch during refactoring. Testing the live API revealed the endpoint actually works, preventing unnecessary code removal. Always test against the actual running service when analyzing bug reports.
+
+**Technical insights**:
+- **Use git stash selectively to separate mixed changes**: When faced with multiple fixes in the same files, `git stash push -m "description" -- specific/file.ts` allows surgical separation of changes for atomic commits without interactive staging. This enables clean PR preparation even with interleaved changes.
+- **Error detection should use status codes, not message parsing**: The copyFile fix showed that checking `error.code === 404` is more reliable than `error.message.includes('does not exist')` which is fragile and locale-dependent. Status codes are part of the API contract, while error messages are implementation details.
