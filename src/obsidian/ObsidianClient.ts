@@ -174,9 +174,13 @@ export class ObsidianClient {
       payload.oldText = options.oldText;
       payload.newText = options.newText;
       delete payload.content; // Remove content when using oldText/newText
+      
+      // Set required headers for find/replace
+      headers['Target-Type'] = 'text';
+      headers['Operation'] = 'replace';
     }
     
-    // Set Target-Type header if specified
+    // Set Target-Type header if explicitly specified (overrides default)
     if (options.targetType) {
       headers['Target-Type'] = options.targetType;
     }

@@ -328,8 +328,7 @@ describe('ObsidianClient', () => {
 
       await client.patchContent('test.md', '', {
         oldText: 'old text',
-        newText: 'new text',
-        targetType: 'text'
+        newText: 'new text'
       });
 
       expect(mockAxiosInstance.patch).toHaveBeenCalledWith(
@@ -340,7 +339,8 @@ describe('ObsidianClient', () => {
         },
         {
           headers: {
-            'Target-Type': 'text'
+            'Target-Type': 'text',
+            'Operation': 'replace'
           }
         }
       );
@@ -362,7 +362,12 @@ describe('ObsidianClient', () => {
           oldText: '![[old.png]]',
           newText: '![[new.png]]'
         },
-        {}
+        {
+          headers: {
+            'Target-Type': 'text',
+            'Operation': 'replace'
+          }
+        }
       );
     });
 
