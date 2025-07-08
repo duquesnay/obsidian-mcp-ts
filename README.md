@@ -18,6 +18,8 @@ The server implements multiple tools to interact with Obsidian:
 - simple_search: Simple search for documents matching a specified text query across all files in the vault
 - complex_search: Complex search for documents using a JsonLogic query
 - patch_content: Insert or replace content in a note - supports find/replace operations, inserting at headings/blocks, and frontmatter updates
+- query_structure: Query document structure to get headings, blocks, and sections - useful for LLMs to build unambiguous references before modifying content
+- patch_content_v2: LLM-ergonomic content modification with explicit operations and deterministic targeting - use query_structure first for unambiguous references
 - append_content: Append content to a new or existing file in the vault
 - delete_file: Delete a file or directory from your vault
 - rename_file: Rename a file within the same directory while preserving history and updating links (requires updated REST API plugin)
