@@ -65,7 +65,18 @@ This document tracks potential features and enhancements for the Obsidian MCP se
 | `create_from_template` | ❌ | Create new file from template | Variable substitution |
 | `manage_template_variables` | ❌ | Handle template placeholders | Parser for variables |
 
-### 7. Tag Management (High Priority - User Interest)
+### 7. Content Modification (High Priority - LLM Ergonomics)
+
+| Feature | Status | Description | Technical Notes |
+|---------|--------|-------------|-----------------|
+| `patch_content` | ⚠️ | Legacy content patching | DEPRECATED - Remove in v1.0.0 |
+| `query_structure` | ✅ | Query document structure for references | Returns headings, blocks, paths |
+| `patch_content_v2` | ✅ | LLM-ergonomic content modification | Explicit operations, deterministic |
+| Section-scoped replace | 🚧 | Replace within specific sections | Needs AST parsing |
+| Frontmatter merge/append | 🚧 | Advanced frontmatter operations | Partial implementation |
+| Pattern-based insert | ❌ | Insert at regex matches | Needs implementation |
+
+### 8. Tag Management (High Priority - User Interest)
 
 | Feature | Status | Description | Technical Notes |
 |---------|--------|-------------|-----------------|
@@ -74,7 +85,7 @@ This document tracks potential features and enhancements for the Obsidian MCP se
 | `rename_tag` | ✅ | Rename tags across files | Implemented using PATCH /tags/{tagname} |
 | `manage_file_tags` | ✅ | Add/remove tags from files | Implemented using PATCH /vault/{filepath} with Target-Type: tag |
 
-### 8. Advanced Search (High Priority - User Interest)
+### 9. Advanced Search (High Priority - User Interest)
 
 | Feature | Status | Description | Technical Notes |
 |---------|--------|-------------|-----------------|
@@ -84,7 +95,7 @@ This document tracks potential features and enhancements for the Obsidian MCP se
 | `search_with_filters` | ✅ | Date, type, path filters | Part of advanced_search |
 | `search_history` | ❌ | Track recent searches | Local storage needed |
 
-### 9. Content Operations (Low Priority)
+### 10. Content Operations (Low Priority)
 
 | Feature | Status | Description | Technical Notes |
 |---------|--------|-------------|-----------------|
@@ -93,7 +104,7 @@ This document tracks potential features and enhancements for the Obsidian MCP se
 | `merge_files` | ❌ | Combine multiple files | Content concatenation |
 | `split_file` | ❌ | Split by headings/criteria | Content analysis |
 
-### 10. Integration Features (Low Priority)
+### 11. Integration Features (Low Priority)
 
 | Feature | Status | Description | Technical Notes |
 |---------|--------|-------------|-----------------|
@@ -102,7 +113,7 @@ This document tracks potential features and enhancements for the Obsidian MCP se
 | `sync_status` | ❌ | Check cloud sync status | Plugin API access |
 | `plugin_interaction` | ❌ | Interact with other plugins | Plugin bridge API |
 
-### 11. Performance & Caching (Low Priority)
+### 12. Performance & Caching (Low Priority)
 
 | Feature | Status | Description | Technical Notes |
 |---------|--------|-------------|-----------------|
@@ -110,7 +121,7 @@ This document tracks potential features and enhancements for the Obsidian MCP se
 | `batch_prefetch` | ❌ | Prefetch multiple files | Async optimization |
 | `incremental_updates` | ❌ | Get only changed content | Change detection |
 
-### 12. Security & Access (Low Priority)
+### 13. Security & Access (Low Priority)
 
 | Feature | Status | Description | Technical Notes |
 |---------|--------|-------------|-----------------|
@@ -172,9 +183,34 @@ Some features may require enhancements to the Obsidian Local REST API plugin:
 - Bulk operations with transaction support
 - Plugin interaction APIs
 
+## Recent Updates
+
+### LLM-Ergonomic Content Patching (2025-01-08)
+Status: **IMPLEMENTED** ✅
+
+Added new tools designed specifically for LLM consumers:
+- `query_structure` - Query document structure to build unambiguous references
+- `patch_content_v2` - Deterministic content modification with explicit operations
+
+Key improvements:
+- Explicit operation types (replace, insert, update_frontmatter)
+- Deterministic heading references using paths and occurrence numbers
+- Structured error responses for programmatic handling
+- Query-first workflow for accurate targeting
+
+The original `patch_content` is now deprecated and will be removed in v1.0.0.
+
 ## Next Steps
 
-1. Start with high-priority directory management features
-2. Investigate API limitations and workarounds
-3. Implement features incrementally with proper testing
-4. Consider contributing to REST API plugin for missing endpoints
+1. Complete full implementation of patch_content_v2 features:
+   - Section-scoped replacements
+   - Advanced frontmatter operations (append, remove, merge)
+   - Pattern-based insertion
+   - Full AST-based document parsing
+
+2. Continue with high-priority features:
+   - Remaining link management tools
+   - Bulk operations
+   - Vault statistics
+
+3. Consider contributing to REST API plugin for missing endpoints
