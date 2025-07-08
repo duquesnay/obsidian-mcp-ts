@@ -3,7 +3,7 @@ import { validatePath } from '../utils/pathValidator.js';
 
 export class PatchContentTool extends BaseTool {
   name = 'obsidian_patch_content';
-  description = 'Insert or replace content in a note. Supports find/replace operations, inserting at headings/blocks, and frontmatter updates. Note: All operations require specifying a target (heading, block, or frontmatter field). Examples: Replace text in heading: use targetType="heading", target="Heading Name", oldText/newText. Insert at heading: use targetType="heading", target="Heading Name", content. Update frontmatter: use targetType="frontmatter", target="fieldname".';
+  description = '[DEPRECATED - Use obsidian_patch_content_v2 with obsidian_query_structure for better LLM ergonomics] Insert or replace content in a note. Supports find/replace operations, inserting at headings/blocks, and frontmatter updates. Note: All operations require specifying a target (heading, block, or frontmatter field). Examples: Replace text in heading: use targetType="heading", target="Heading Name", oldText/newText. Insert at heading: use targetType="heading", target="Heading Name", content. Update frontmatter: use targetType="frontmatter", target="fieldname".';
   
   inputSchema = {
     type: 'object' as const,

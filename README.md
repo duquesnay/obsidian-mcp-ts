@@ -17,7 +17,7 @@ The server implements multiple tools to interact with Obsidian:
 - batch_get_file_contents: Return the contents of multiple files in your vault, concatenated with headers
 - simple_search: Simple search for documents matching a specified text query across all files in the vault
 - complex_search: Complex search for documents using a JsonLogic query
-- patch_content: Insert or replace content in a note - supports find/replace operations, inserting at headings/blocks, and frontmatter updates
+- patch_content: [DEPRECATED - Use patch_content_v2 instead] Insert or replace content in a note - supports find/replace operations, inserting at headings/blocks, and frontmatter updates
 - query_structure: Query document structure to get headings, blocks, and sections - useful for LLMs to build unambiguous references before modifying content
 - patch_content_v2: LLM-ergonomic content modification with explicit operations and deterministic targeting - use query_structure first for unambiguous references
 - append_content: Append content to a new or existing file in the vault
@@ -76,6 +76,57 @@ The use prompts like this:
 - Find all empty directories in my vault for cleanup
 - Search for empty directories within the 'archive' folder only
 - List files in 'projects/drafts/' - will return empty array if the directory is empty
+
+## Important: Deprecation Notice
+
+### `patch_content` is DEPRECATED
+
+The `obsidian_patch_content` tool is deprecated as of v0.5.0 and will be removed in v1.0.0.
+
+**Why deprecated:**
+- Ambiguous parameters (`target` vs `heading` vs `targetType`)
+- Cannot handle duplicate headings reliably
+- Confusing for LLM consumers
+
+**Use instead:**
+1. `obsidian_query_structure` - Query document structure first
+2. `obsidian_patch_content_v2` - Make modifications with deterministic targeting
+
+**Migration example:**
+```typescript
+// OLD (deprecated)
+await patch_content({
+  filepath: "note.md",
+  targetType: "heading",
+  target: "Overview",
+  content: "New text"
+});
+
+// NEW (recommended)
+// Step 1: Query structure
+const structure = await query_structure({
+  filepath: "note.md",
+  query: { type: "headings" }
+});
+
+// Step 2: Use v2 with explicit path
+await patch_content_v2({
+  filepath: "note.md",
+  operation: {
+    type: "insert",
+    insert: {
+      content: "New text",
+      location: {
+        type: "heading",
+        heading: { path: ["Section", "Overview"] },
+        position: "after"
+      }
+    }
+  }
+});
+```
+
+See the [migration guide](docs/llm-ergonomic-migration-guide.md) for details.
 
 ## Configuration
 

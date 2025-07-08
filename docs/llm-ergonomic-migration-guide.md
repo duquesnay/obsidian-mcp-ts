@@ -237,9 +237,22 @@ if (result.error?.code === "AMBIGUOUS_HEADING_PATH") {
 
 ## Backward Compatibility
 
-The original `obsidian_patch_content` remains available but should be considered deprecated. New implementations should use:
+The original `obsidian_patch_content` remains available but is **DEPRECATED**. 
+
+### Deprecation Notice
+- **Status**: Deprecated as of v0.5.0
+- **Replacement**: Use `obsidian_patch_content_v2` with `obsidian_query_structure`
+- **Removal**: Will be removed in v1.0.0
+
+### New implementations should use:
 - `obsidian_query_structure` - To inspect document structure
 - `obsidian_patch_content_v2` - For modifications
+
+### Why v1 is Deprecated
+1. **Ambiguous Parameters**: Overlapping `target`, `heading`, `targetType` confuse LLMs
+2. **Non-deterministic**: Can't handle duplicate headings reliably
+3. **Poor Error Handling**: Unclear error messages without recovery suggestions
+4. **Mixed Operations**: Single tool trying to do too many different things
 
 ## Summary
 
