@@ -3,7 +3,7 @@ import { validatePath } from '../utils/pathValidator.js';
 
 export class PatchContentTool extends BaseTool {
   name = 'obsidian_patch_content';
-  description = 'Insert or replace content in a note. Supports find/replace operations, inserting at headings/blocks, and frontmatter updates. Examples: Replace text: use oldText/newText. Insert at heading: use heading + content. Update frontmatter: use targetType="frontmatter".';
+  description = 'Insert or replace content in a note. Supports find/replace operations, inserting at headings/blocks, and frontmatter updates. Note: All operations require specifying a target (heading, block, or frontmatter field). Examples: Replace text in heading: use targetType="heading", target="Heading Name", oldText/newText. Insert at heading: use targetType="heading", target="Heading Name", content. Update frontmatter: use targetType="frontmatter", target="fieldname".';
   
   inputSchema = {
     type: 'object' as const,
@@ -26,8 +26,12 @@ export class PatchContentTool extends BaseTool {
       },
       targetType: {
         type: 'string',
-        enum: ['text', 'heading', 'block', 'frontmatter'],
-        description: 'Optional: Type of operation - "text" for find/replace, "heading" for heading operations, "block" for block references, "frontmatter" for frontmatter updates.'
+        enum: ['heading', 'block', 'frontmatter'],
+        description: 'Required: Type of target - "heading" for heading operations, "block" for block references, "frontmatter" for frontmatter updates.'
+      },
+      target: {
+        type: 'string',
+        description: 'Required: The target to operate on (heading name, block ID, or frontmatter field name)'
       },
       heading: {
         type: 'string',
@@ -53,7 +57,7 @@ export class PatchContentTool extends BaseTool {
         description: 'Optional: The block reference (^blockid) relative to which the content will be inserted.'
       }
     },
-    required: ['filepath']
+    required: ['filepath', 'targetType', 'target']
   };
 
   async execute(args: {
@@ -61,7 +65,8 @@ export class PatchContentTool extends BaseTool {
     content?: string;
     oldText?: string;
     newText?: string;
-    targetType?: 'text' | 'heading' | 'block' | 'frontmatter';
+    targetType: 'heading' | 'block' | 'frontmatter';
+    target: string;
     heading?: string;
     insertAfter?: boolean;
     insertBefore?: boolean;
@@ -71,6 +76,14 @@ export class PatchContentTool extends BaseTool {
     try {
       if (!args.filepath) {
         throw new Error('filepath argument missing in arguments');
+      }
+      
+      if (!args.targetType) {
+        throw new Error('targetType argument missing - must be one of: heading, block, frontmatter');
+      }
+      
+      if (!args.target) {
+        throw new Error('target argument missing - specify the heading name, block ID, or frontmatter field');
       }
       
       // Validate based on operation mode
@@ -98,7 +111,8 @@ export class PatchContentTool extends BaseTool {
           blockRef: args.blockRef,
           oldText: args.oldText,
           newText: args.newText,
-          targetType: args.targetType
+          targetType: args.targetType,
+          target: args.target
         }
       );
       

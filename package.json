@@ -1,6 +1,6 @@
 {
   "name": "obsidian-mcp-ts",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "MCP server to work with Obsidian via the remote REST plugin",
   "type": "module",
   "main": "./dist/index.js",

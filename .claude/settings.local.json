@@ -32,7 +32,9 @@
       "mcp__obsidian__obsidian_append_content",
       "mcp__obsidian__obsidian_get_file_contents",
       "Bash(./run-test.sh:*)",
-      "Bash(./stage-search-changes.sh:*)"
+      "Bash(./stage-search-changes.sh:*)",
+      "Bash(node:*)",
+      "Bash(curl:*)"
     ],
     "deny": []
   }

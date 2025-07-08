@@ -162,41 +162,52 @@ export class ObsidianClient {
       blockRef?: string;
       oldText?: string;
       newText?: string;
-      targetType?: 'text' | 'heading' | 'block' | 'frontmatter';
-    } = {}
+      targetType: 'heading' | 'block' | 'frontmatter';
+      target: string;
+    }
   ): Promise<any> {
     validatePath(filepath, 'filepath');
-    const payload: any = { content };
-    const headers: any = {};
+    const encodedPath = encodeURIComponent(filepath);
     
-    // Handle find/replace mode
+    // Required headers for PATCH operation
+    const headers: any = {
+      'Target-Type': options.targetType,
+      'Target': options.target
+    };
+    
+    // Determine operation based on parameters
     if (options.oldText !== undefined && options.newText !== undefined) {
-      payload.oldText = options.oldText;
-      payload.newText = options.newText;
-      delete payload.content; // Remove content when using oldText/newText
-      
-      // Set required headers for find/replace
-      headers['Target-Type'] = 'text';
       headers['Operation'] = 'replace';
+    } else if (options.insertBefore) {
+      headers['Operation'] = 'prepend';
+    } else {
+      headers['Operation'] = 'append';
     }
     
-    // Set Target-Type header if explicitly specified (overrides default)
-    if (options.targetType) {
-      headers['Target-Type'] = options.targetType;
-    }
+    // Content is passed in the body
+    // For find/replace operations, the API will replace oldText with newText within the target
+    let body = content;
     
-    // Handle other options
-    if (options.heading) payload.heading = options.heading;
-    if (options.insertAfter) payload.insertAfter = options.insertAfter;
-    if (options.insertBefore) payload.insertBefore = options.insertBefore;
-    if (options.createIfNotExists) payload.createIfNotExists = options.createIfNotExists;
-    if (options.blockRef) payload.blockRef = options.blockRef;
+    // For frontmatter operations, the content might need to be JSON
+    if (options.targetType === 'frontmatter') {
+      headers['Content-Type'] = 'application/json';
+      // If the content is not already JSON, try to parse it
+      try {
+        JSON.parse(content);
+        body = content; // Already valid JSON
+      } catch {
+        // If not JSON, wrap as a string value
+        body = JSON.stringify(content);
+      }
+    } else {
+      headers['Content-Type'] = 'text/markdown';
+    }
 
     return this.safeCall(async () => {
       const response = await this.axiosInstance.patch(
-        `/vault/${filepath}`, 
-        payload,
-        Object.keys(headers).length > 0 ? { headers } : {}
+        `/vault/${encodedPath}`, 
+        body,
+        { headers }
       );
       return response.data;
     });
