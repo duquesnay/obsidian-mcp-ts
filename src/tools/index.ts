@@ -31,6 +31,9 @@ import { GetFileFormattedTool } from './GetFileFormattedTool.js';
 import { FindEmptyDirectoriesTool } from './FindEmptyDirectoriesTool.js';
 import { QueryStructureTool } from './QueryStructureTool.js';
 import { PatchContentToolV2 } from './PatchContentToolV2.js';
+import { SimpleAppendTool } from './SimpleAppendTool.js';
+import { InsertAfterHeadingTool } from './InsertAfterHeadingTool.js';
+import { SimpleReplaceTool } from './SimpleReplaceTool.js';
 import { BaseTool } from './base.js';
 
 const tools: BaseTool[] = [
@@ -65,6 +68,9 @@ const tools: BaseTool[] = [
   new FindEmptyDirectoriesTool(),
   new QueryStructureTool(),
   new PatchContentToolV2(),
+  new SimpleAppendTool(),
+  new InsertAfterHeadingTool(),
+  new SimpleReplaceTool(),
 ];
 
 export async function registerTools(server: Server): Promise<void> {

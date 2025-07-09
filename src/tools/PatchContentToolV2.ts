@@ -1081,11 +1081,16 @@ export class PatchContentToolV2 extends BaseTool {
   }
 
   private getQuickWinSuggestion(args: any): { hint?: string; example?: any } | null {
-    // Provide immediate success patterns for common scenarios
+    // Only suggest quick wins for unnecessarily complex operations
+    // Don't suggest for legitimate advanced operations
     
-    // If user has operation.type but no simple parameters, suggest shortcuts
-    if (args.operation?.type === 'insert' && args.operation.insert?.location?.type === 'document') {
-      const position = args.operation.insert.location.document?.position;
+    // Only suggest if it's a very simple document operation without any advanced features
+    if (args.operation?.type === 'insert' && 
+        args.operation.insert?.location?.type === 'document' &&
+        !args.operation.insert.location.position && // No generic position specified
+        args.operation.insert.location.document?.position) {
+      
+      const position = args.operation.insert.location.document.position;
       if (position === 'end') {
         return {
           hint: '🚀 Quick win: Use the simple append shortcut instead of complex operation',
@@ -1106,27 +1111,6 @@ export class PatchContentToolV2 extends BaseTool {
             use_simple: { 
               filepath: args.filepath, 
               prepend: args.operation.insert.content || 'your text here' 
-            }
-          }
-        };
-      }
-    }
-    
-    // If user has operation.type = 'insert' with heading location
-    if (args.operation?.type === 'insert' && args.operation.insert?.location?.type === 'heading') {
-      const heading = args.operation.insert.location.heading?.path?.[0];
-      const position = args.operation.insert.location.position;
-      if (heading && position === 'after') {
-        return {
-          hint: '🚀 Quick win: Use the simple insertAfterHeading shortcut',
-          example: {
-            instead_of_complex: args.operation,
-            use_simple: {
-              filepath: args.filepath,
-              insertAfterHeading: {
-                heading: heading,
-                content: args.operation.insert.content || 'your text here'
-              }
             }
           }
         };
