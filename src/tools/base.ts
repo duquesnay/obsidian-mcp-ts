@@ -1,7 +1,13 @@
 import { ObsidianClient } from '../obsidian/ObsidianClient.js';
+import { ConfigLoader } from '../utils/configLoader.js';
 
 export abstract class BaseTool {
   protected obsidianClient: ObsidianClient | null = null;
+  protected configLoader: ConfigLoader;
+
+  constructor() {
+    this.configLoader = ConfigLoader.getInstance();
+  }
 
   abstract name: string;
   abstract description: string;
@@ -12,15 +18,11 @@ export abstract class BaseTool {
   };
 
   protected getApiKey(): string {
-    const apiKey = process.env.OBSIDIAN_API_KEY;
-    if (!apiKey) {
-      throw new Error(`OBSIDIAN_API_KEY environment variable required. Working directory: ${process.cwd()}`);
-    }
-    return apiKey;
+    return this.configLoader.getApiKey();
   }
 
   protected getObsidianHost(): string {
-    return process.env.OBSIDIAN_HOST || '127.0.0.1';
+    return this.configLoader.getHost();
   }
 
   protected getClient(): ObsidianClient {

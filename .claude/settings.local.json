@@ -34,7 +34,8 @@
       "Bash(./run-test.sh:*)",
       "Bash(./stage-search-changes.sh:*)",
       "Bash(node:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(echo $OBSIDIAN_HOST)"
     ],
     "deny": []
   }

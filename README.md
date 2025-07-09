@@ -79,33 +79,44 @@ The use prompts like this:
 
 ### Obsidian REST API Key
 
-There are two ways to configure the environment with the Obsidian REST API Key. 
+The MCP server needs an API key to connect to Obsidian. There are multiple ways to provide it (in order of precedence):
 
-1. Add to server config (preferred)
+1. **Environment variables** (highest priority)
+   ```bash
+   export OBSIDIAN_API_KEY=your_api_key_here
+   export OBSIDIAN_HOST=127.0.0.1  # optional, defaults to 127.0.0.1
+   ```
 
-```json
-{
-  "obsidian-mcp-ts": {
-    "command": "npx",
-    "args": [
-      "obsidian-mcp-ts"
-    ],
-    "env": {
-      "OBSIDIAN_API_KEY": "<your_api_key_here>",
-      "OBSIDIAN_HOST": "<your_obsidian_host>"
-    }
-  }
-}
-```
+2. **External config file** (recommended for persistent setup)
+   
+   Create `~/.config/mcp/obsidian.json`:
+   ```json
+   {
+     "apiKey": "your_api_key_here",
+     "host": "127.0.0.1"
+   }
+   ```
+   
+   Or use a custom location:
+   ```bash
+   export OBSIDIAN_CONFIG_FILE=/path/to/your/config.json
+   ```
 
-2. Create a `.env` file in the working directory with the following required variable:
+3. **Claude Desktop config** (for Claude Desktop users)
+   ```json
+   {
+     "obsidian-mcp-ts": {
+       "command": "npx",
+       "args": ["obsidian-mcp-ts"],
+       "env": {
+         "OBSIDIAN_API_KEY": "<your_api_key_here>",
+         "OBSIDIAN_HOST": "<your_obsidian_host>"
+       }
+     }
+   }
+   ```
 
-```
-OBSIDIAN_API_KEY=your_api_key_here
-OBSIDIAN_HOST=your_obsidian_host
-```
-
-Note: You can find the key in the Obsidian plugin config.
+Note: You can find the API key in the Obsidian Local REST API plugin settings.
 
 ## Quickstart
 
@@ -162,6 +173,45 @@ On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
       ],
       "env": {
         "OBSIDIAN_API_KEY": "<YOUR_OBSIDIAN_API_KEY>"
+      }
+    }
+  }
+}
+```
+</details>
+
+<details>
+  <summary>Using External Config File (Recommended)</summary>
+  
+First, create the config file at `~/.config/mcp/obsidian.json`:
+```json
+{
+  "apiKey": "your-obsidian-api-key-here",
+  "host": "127.0.0.1"
+}
+```
+
+Then in Claude Desktop config, you only need:
+```json
+{
+  "mcpServers": {
+    "obsidian-mcp-ts": {
+      "command": "npx",
+      "args": ["obsidian-mcp-ts"]
+    }
+  }
+}
+```
+
+The server will automatically load the API key from the config file. You can also use a custom config location:
+```json
+{
+  "mcpServers": {
+    "obsidian-mcp-ts": {
+      "command": "npx",
+      "args": ["obsidian-mcp-ts"],
+      "env": {
+        "OBSIDIAN_CONFIG_FILE": "/path/to/your/config.json"
       }
     }
   }
