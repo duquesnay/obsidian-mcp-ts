@@ -1,0 +1,1 @@
+I need permission to use the Obsidian MCP tools to add tags to your note. Please grant permission when prompted, then I'll be able to add the tags "technical", "integration", and "mcp" to the frontmatter of test-docs/mcp-guide.md.

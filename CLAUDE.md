@@ -252,3 +252,16 @@ git cherry-pick $(git rev-list --grep="^(?!claude:)" main..source-branch)
 **Technical insights**:
 - **Use git stash selectively to separate mixed changes**: When faced with multiple fixes in the same files, `git stash push -m "description" -- specific/file.ts` allows surgical separation of changes for atomic commits without interactive staging. This enables clean PR preparation even with interleaved changes.
 - **Error detection should use status codes, not message parsing**: The copyFile fix showed that checking `error.code === 404` is more reliable than `error.message.includes('does not exist')` which is fragile and locale-dependent. Status codes are part of the API contract, while error messages are implementation details.
+
+### LLM Ergonomics Improvement Cycle Design (2025-01-09)
+
+**Methodological insights**:
+- **Real LLM Testing Reveals Different Issues Than Simulated Analysis**: Actual Claude processes behave differently than simulated LLM behavior. When testing patch_content_v2 improvements, Claude chose `append_content` over the complex tool for simple operations, revealing that the issue wasn't just technical complexity but tool positioning and cognitive overhead. Ergonomic improvements must be tested with actual LLM processes, not theoretical analysis.
+- **Tool Ergonomics Should Match Use Case Complexity**: LLMs naturally gravitate toward tools whose complexity matches their task complexity. For simple appends, they prefer simple tools even when complex tools are available. This suggests ergonomic design should focus on making complex tools excellent for complex operations, rather than trying to make them universal replacements for simpler tools.
+
+**Technical insights**:
+- **Permission Configuration Required for MCP Tool Testing**: Testing MCP tools with separate Claude processes requires explicit permission configuration using either `--allowedTools` flags or settings.json configuration. The tools list must include full MCP tool names like `mcp__obsidian-ts-0_5-alpha__obsidian_patch_content_v2`. Without proper permissions, Claude processes will ask for permission but cannot execute, making testing ineffective.
+
+## Insights and Memories
+
+- **Obsidian MCP is only for obsidian notes, not filesystem access**

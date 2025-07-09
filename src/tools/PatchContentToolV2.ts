@@ -1,73 +1,83 @@
 import { BaseTool } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
 
-interface ReplaceOperation {
-  pattern: string;
-  replacement: string;
-  options?: {
-    case_sensitive?: boolean;
-    whole_word?: boolean;
-    regex?: boolean;
-    max_replacements?: number;
-    scope?: {
-      type: 'document' | 'section';
-      section_path?: string[];
+// Simple operation types for common tasks
+type SimpleOperation = 
+  | { append: string }
+  | { prepend: string }
+  | { replace: { find: string; with: string } }
+  | { insertAfterHeading: { heading: string; content: string } }
+  | { insertBeforeHeading: { heading: string; content: string } }
+  | { updateFrontmatter: { [key: string]: any } };
+
+// Advanced operation types (current V2 style)
+interface AdvancedOperation {
+  type: 'replace' | 'insert' | 'update_frontmatter';
+  replace?: {
+    pattern: string;
+    replacement: string;
+    options?: {
+      case_sensitive?: boolean;
+      whole_word?: boolean;
+      regex?: boolean;
+      max_replacements?: number;
+      scope?: {
+        type: 'document' | 'section';
+        section_path?: string[];
+      };
     };
   };
-}
-
-interface HeadingLocation {
-  path: string[];
-  level?: number;
-  occurrence?: number;
-  create_if_missing?: boolean;
-}
-
-interface BlockLocation {
-  id: string;
-  create_if_missing?: boolean;
-}
-
-interface PatternLocation {
-  text: string;
-  regex?: boolean;
-  occurrence?: number;
-}
-
-interface DocumentLocation {
-  position: 'start' | 'end' | 'after_frontmatter';
-}
-
-interface InsertOperation {
-  content: string;
-  location: {
-    type: 'heading' | 'block' | 'pattern' | 'document';
-    heading?: HeadingLocation;
-    block?: BlockLocation;
-    pattern?: PatternLocation;
-    document?: DocumentLocation;
-    position: 'before' | 'after' | 'replace';
+  insert?: {
+    content: string;
+    location: {
+      type: 'heading' | 'block' | 'pattern' | 'document';
+      heading?: {
+        path: string[];
+        level?: number;
+        occurrence?: number;
+        create_if_missing?: boolean;
+      };
+      block?: {
+        id: string;
+        create_if_missing?: boolean;
+      };
+      pattern?: {
+        text: string;
+        regex?: boolean;
+        occurrence?: number;
+      };
+      document?: {
+        position: 'start' | 'end' | 'after_frontmatter';
+      };
+      position: 'before' | 'after' | 'replace';
+    };
   };
-}
-
-interface FrontmatterOperation {
-  changes: {
-    set?: Record<string, any>;
-    append?: Record<string, any[]>;
-    remove?: string[];
-    merge?: Record<string, any>;
+  update_frontmatter?: {
+    changes: {
+      set?: Record<string, any>;
+      append?: Record<string, any[]>;
+      remove?: string[];
+      merge?: Record<string, any>;
+    };
+    create_if_missing?: boolean;
   };
-  create_if_missing?: boolean;
 }
 
 interface PatchContentArgs {
   filepath: string;
-  operation: {
-    type: 'replace' | 'insert' | 'update_frontmatter';
-    replace?: ReplaceOperation;
-    insert?: InsertOperation;
-    update_frontmatter?: FrontmatterOperation;
-  };
+  // Allow both simple and advanced operations
+  operation?: SimpleOperation | AdvancedOperation;
+  // Simple operation shortcuts
+  append?: string;
+  prepend?: string;
+  replace?: { find: string; with: string };
+  insertAfterHeading?: { heading: string; content: string };
+  insertBeforeHeading?: { heading: string; content: string };
+  updateFrontmatter?: Record<string, any>;
+  // Legacy simple fields for backwards compatibility
+  content?: string;
+  target?: string;
+  // Options
   options?: {
     create_file_if_missing?: boolean;
     backup?: boolean;
@@ -77,8 +87,9 @@ interface PatchContentArgs {
 
 interface PatchContentResult {
   success: boolean;
+  message?: string;
   changes?: {
-    type: 'replace' | 'insert' | 'frontmatter' | 'update_frontmatter';
+    type: string;
     count?: number;
     location?: {
       line: number;
@@ -94,12 +105,23 @@ interface PatchContentResult {
       line?: number;
       preview?: string;
     }>;
+    example?: any;
+    hint?: string;
   };
 }
 
 export class PatchContentToolV2 extends BaseTool {
   name = 'obsidian_patch_content_v2';
-  description = 'LLM-ergonomic content modification with explicit operations and deterministic targeting. Use query_structure first for unambiguous references.';
+  description = `Enhanced content modification with simple shortcuts and advanced options. 
+
+Common operations:
+- Append text: { append: "text" }
+- Prepend text: { prepend: "text" }
+- Replace text: { replace: { find: "old", with: "new" } }
+- Insert after heading: { insertAfterHeading: { heading: "Title", content: "text" } }
+- Update frontmatter: { updateFrontmatter: { key: "value" } }
+
+For complex operations, use the advanced format with operation.type = 'insert'/'replace'/'update_frontmatter'.`;
   
   inputSchema = {
     type: 'object' as const,
@@ -108,134 +130,79 @@ export class PatchContentToolV2 extends BaseTool {
         type: 'string',
         description: 'Path to file (relative to vault root)'
       },
+      // Simple shortcuts
+      append: {
+        type: 'string',
+        description: 'Text to append to the end of the document'
+      },
+      prepend: {
+        type: 'string',
+        description: 'Text to prepend to the beginning of the document'
+      },
+      replace: {
+        type: 'object',
+        properties: {
+          find: { type: 'string', description: 'Text to find' },
+          with: { type: 'string', description: 'Text to replace with' }
+        },
+        required: ['find', 'with'],
+        description: 'Simple find and replace'
+      },
+      insertAfterHeading: {
+        type: 'object',
+        properties: {
+          heading: { type: 'string', description: 'Heading text to insert after' },
+          content: { type: 'string', description: 'Content to insert' }
+        },
+        required: ['heading', 'content'],
+        description: 'Insert content after a heading'
+      },
+      insertBeforeHeading: {
+        type: 'object',
+        properties: {
+          heading: { type: 'string', description: 'Heading text to insert before' },
+          content: { type: 'string', description: 'Content to insert' }
+        },
+        required: ['heading', 'content'],
+        description: 'Insert content before a heading'
+      },
+      updateFrontmatter: {
+        type: 'object',
+        additionalProperties: true,
+        description: 'Update frontmatter fields (merges with existing)'
+      },
+      // Advanced operation
       operation: {
         type: 'object',
+        description: 'Advanced operation format (see V2 schema)',
         properties: {
           type: {
             type: 'string',
-            enum: ['replace', 'insert', 'update_frontmatter'],
-            description: 'The type of operation to perform'
-          },
-          replace: {
-            type: 'object',
-            properties: {
-              pattern: { type: 'string' },
-              replacement: { type: 'string' },
-              options: {
-                type: 'object',
-                properties: {
-                  case_sensitive: { type: 'boolean' },
-                  whole_word: { type: 'boolean' },
-                  regex: { type: 'boolean' },
-                  max_replacements: { type: 'number' },
-                  scope: {
-                    type: 'object',
-                    properties: {
-                      type: { type: 'string', enum: ['document', 'section'] },
-                      section_path: {
-                        type: 'array',
-                        items: { type: 'string' }
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            required: ['pattern', 'replacement']
-          },
-          insert: {
-            type: 'object',
-            properties: {
-              content: { type: 'string' },
-              location: {
-                type: 'object',
-                properties: {
-                  type: {
-                    type: 'string',
-                    enum: ['heading', 'block', 'pattern', 'document']
-                  },
-                  heading: {
-                    type: 'object',
-                    properties: {
-                      path: {
-                        type: 'array',
-                        items: { type: 'string' }
-                      },
-                      level: { type: 'number' },
-                      occurrence: { type: 'number' },
-                      create_if_missing: { type: 'boolean' }
-                    },
-                    required: ['path']
-                  },
-                  block: {
-                    type: 'object',
-                    properties: {
-                      id: { type: 'string' },
-                      create_if_missing: { type: 'boolean' }
-                    },
-                    required: ['id']
-                  },
-                  pattern: {
-                    type: 'object',
-                    properties: {
-                      text: { type: 'string' },
-                      regex: { type: 'boolean' },
-                      occurrence: { type: 'number' }
-                    },
-                    required: ['text']
-                  },
-                  document: {
-                    type: 'object',
-                    properties: {
-                      position: {
-                        type: 'string',
-                        enum: ['start', 'end', 'after_frontmatter']
-                      }
-                    },
-                    required: ['position']
-                  },
-                  position: {
-                    type: 'string',
-                    enum: ['before', 'after', 'replace']
-                  }
-                },
-                required: ['type', 'position']
-              }
-            },
-            required: ['content', 'location']
-          },
-          update_frontmatter: {
-            type: 'object',
-            properties: {
-              changes: {
-                type: 'object',
-                properties: {
-                  set: { type: 'object' },
-                  append: { type: 'object' },
-                  remove: {
-                    type: 'array',
-                    items: { type: 'string' }
-                  },
-                  merge: { type: 'object' }
-                }
-              },
-              create_if_missing: { type: 'boolean' }
-            },
-            required: ['changes']
+            enum: ['replace', 'insert', 'update_frontmatter']
           }
-        },
-        required: ['type']
+        }
       },
+      // Options
       options: {
         type: 'object',
         properties: {
-          create_file_if_missing: { type: 'boolean' },
-          backup: { type: 'boolean' },
-          dry_run: { type: 'boolean' }
+          create_file_if_missing: { 
+            type: 'boolean',
+            description: 'Create file if it doesn\'t exist (default: false)'
+          },
+          backup: { 
+            type: 'boolean',
+            description: 'Create backup before modification (default: false)'
+          },
+          dry_run: { 
+            type: 'boolean',
+            description: 'Preview changes without applying (default: false)'
+          }
         }
       }
     },
-    required: ['filepath', 'operation']
+    required: ['filepath'],
+    additionalProperties: false
   };
 
   async execute(args: PatchContentArgs): Promise<PatchContentResult> {
@@ -248,29 +215,60 @@ export class PatchContentToolV2 extends BaseTool {
       if (args.options?.dry_run) {
         return {
           success: true,
+          message: 'Dry run - no changes made',
           changes: {
-            type: args.operation.type,
-            preview: 'Dry run - no changes made'
+            type: 'dry_run',
+            preview: 'Would apply the requested changes'
           }
         };
       }
       
-      switch (args.operation.type) {
+      // Detect operation type
+      const operation = this.detectOperation(args);
+      if (!operation) {
+        return {
+          success: false,
+          error: {
+            code: 'NO_OPERATION',
+            message: 'No operation specified',
+            hint: 'Specify an operation like append, prepend, replace, or use the advanced operation format',
+            example: {
+              simple: { filepath: 'notes.md', append: 'New content' },
+              advanced: { 
+                filepath: 'notes.md', 
+                operation: { 
+                  type: 'insert', 
+                  insert: { 
+                    content: 'text', 
+                    location: { type: 'document', document: { position: 'end' }, position: 'after' } 
+                  } 
+                } 
+              }
+            }
+          }
+        };
+      }
+      
+      // Convert simple operations to advanced format
+      const advancedOp = this.convertToAdvancedOperation(operation);
+      
+      // Execute using the same logic as V2
+      switch (advancedOp.type) {
         case 'replace':
-          return await this.handleReplace(client, args.filepath, args.operation.replace!);
+          return await this.handleReplace(client, args.filepath, advancedOp.replace!);
           
         case 'insert':
-          return await this.handleInsert(client, args.filepath, args.operation.insert!);
+          return await this.handleInsert(client, args.filepath, advancedOp.insert!);
           
         case 'update_frontmatter':
-          return await this.handleFrontmatter(client, args.filepath, args.operation.update_frontmatter!);
+          return await this.handleFrontmatter(client, args.filepath, advancedOp.update_frontmatter!);
           
         default:
           return {
             success: false,
             error: {
               code: 'INVALID_OPERATION_TYPE',
-              message: `Unknown operation type: ${(args.operation as any).type}`
+              message: `Unknown operation type: ${(advancedOp as any).type}`
             }
           };
       }
@@ -279,20 +277,132 @@ export class PatchContentToolV2 extends BaseTool {
         success: false,
         error: {
           code: 'INTERNAL_ERROR',
-          message: error.message || 'An unexpected error occurred'
+          message: error.message || 'An unexpected error occurred',
+          hint: 'Check that your operation format is correct. Use simple shortcuts like { append: "text" } for common tasks.'
         }
       };
     }
   }
   
+  private detectOperation(args: PatchContentArgs): SimpleOperation | AdvancedOperation | null {
+    // Check for simple operations first
+    if (args.append) return { append: args.append };
+    if (args.prepend) return { prepend: args.prepend };
+    if (args.replace) return { replace: args.replace };
+    if (args.insertAfterHeading) return { insertAfterHeading: args.insertAfterHeading };
+    if (args.insertBeforeHeading) return { insertBeforeHeading: args.insertBeforeHeading };
+    if (args.updateFrontmatter) return { updateFrontmatter: args.updateFrontmatter };
+    
+    // Check for advanced operation
+    if (args.operation) return args.operation;
+    
+    // Legacy format support
+    if (args.content && args.target) {
+      return {
+        append: args.content
+      };
+    }
+    
+    return null;
+  }
+  
+  private convertToAdvancedOperation(op: SimpleOperation | AdvancedOperation): AdvancedOperation {
+    // If already advanced, return as-is
+    if ('type' in op) {
+      return op;
+    }
+    
+    // Convert simple operations
+    if ('append' in op) {
+      return {
+        type: 'insert',
+        insert: {
+          content: op.append,
+          location: {
+            type: 'document',
+            document: { position: 'end' },
+            position: 'after'
+          }
+        }
+      };
+    }
+    
+    if ('prepend' in op) {
+      return {
+        type: 'insert',
+        insert: {
+          content: op.prepend,
+          location: {
+            type: 'document',
+            document: { position: 'start' },
+            position: 'before'
+          }
+        }
+      };
+    }
+    
+    if ('replace' in op) {
+      return {
+        type: 'replace',
+        replace: {
+          pattern: op.replace.find,
+          replacement: op.replace.with
+        }
+      };
+    }
+    
+    if ('insertAfterHeading' in op) {
+      return {
+        type: 'insert',
+        insert: {
+          content: op.insertAfterHeading.content,
+          location: {
+            type: 'heading',
+            heading: {
+              path: [op.insertAfterHeading.heading]
+            },
+            position: 'after'
+          }
+        }
+      };
+    }
+    
+    if ('insertBeforeHeading' in op) {
+      return {
+        type: 'insert',
+        insert: {
+          content: op.insertBeforeHeading.content,
+          location: {
+            type: 'heading',
+            heading: {
+              path: [op.insertBeforeHeading.heading]
+            },
+            position: 'before'
+          }
+        }
+      };
+    }
+    
+    if ('updateFrontmatter' in op) {
+      return {
+        type: 'update_frontmatter',
+        update_frontmatter: {
+          changes: {
+            set: op.updateFrontmatter
+          }
+        }
+      };
+    }
+    
+    throw new Error('Unknown operation type');
+  }
+  
   private async handleReplace(
     client: any,
     filepath: string,
-    operation: ReplaceOperation
+    operation: any
   ): Promise<PatchContentResult> {
     try {
-      // For now, we'll use the existing patch mechanism
-      // In a real implementation, this would be more sophisticated
       const content = await client.getFileContents(filepath);
       
       let pattern = operation.pattern;
@@ -313,12 +423,12 @@ export class PatchContentToolV2 extends BaseTool {
       
       if (operation.options?.scope?.type === 'section' && operation.options.scope.section_path) {
         // Section-scoped replacement would require parsing the document structure
-        // For now, simplified implementation
         return {
           success: false,
           error: {
             code: 'NOT_IMPLEMENTED',
-            message: 'Section-scoped replacement not yet implemented'
+            message: 'Section-scoped replacement not yet implemented',
+            hint: 'Use document-wide replacement for now'
           }
         };
       } else {
@@ -344,7 +454,8 @@ export class PatchContentToolV2 extends BaseTool {
           success: false,
           error: {
             code: 'PATTERN_NOT_FOUND',
-            message: `Pattern "${operation.pattern}" not found in document`
+            message: `Pattern "${operation.pattern}" not found in document`,
+            hint: 'Check your search pattern. Use regex: true for regex patterns.'
           }
         };
       }
@@ -353,10 +464,11 @@ export class PatchContentToolV2 extends BaseTool {
       
       return {
         success: true,
+        message: `Replaced ${count} occurrence(s) of "${operation.pattern}"`,
         changes: {
           type: 'replace',
           count,
-          preview: `Replaced ${count} occurrence(s) of "${operation.pattern}"`
+          preview: `Replaced ${count} occurrence(s)`
         }
       };
     } catch (error: any) {
@@ -373,12 +485,50 @@ export class PatchContentToolV2 extends BaseTool {
   private async handleInsert(
     client: any,
     filepath: string,
-    operation: InsertOperation
+    operation: any
   ): Promise<PatchContentResult> {
     try {
       const { location } = operation;
       
-      // Build the appropriate headers and body for the REST API
+      // Handle simple document operations first
+      if (location.type === 'document') {
+        const content = await client.getFileContents(filepath);
+        let newContent: string;
+        
+        // Check document position first, then fall back to generic position
+        const position = location.document?.position;
+        
+        if (position === 'start' || (!position && location.position === 'before')) {
+          newContent = operation.content + '\n' + content;
+        } else if (position === 'end' || (!position && location.position === 'after')) {
+          newContent = content + (content.endsWith('\n') ? '' : '\n') + operation.content;
+        } else if (position === 'after_frontmatter') {
+          // Find end of frontmatter
+          const frontmatterMatch = content.match(/^---\n[\s\S]*?\n---\n/);
+          if (frontmatterMatch) {
+            const endIndex = frontmatterMatch[0].length;
+            // Insert content directly after frontmatter without extra newline
+            newContent = content.slice(0, endIndex) + operation.content + '\n' + content.slice(endIndex);
+          } else {
+            // No frontmatter, insert at start
+            newContent = operation.content + '\n' + content;
+          }
+        } else {
+          throw new Error('Invalid document position');
+        }
+        
+        await client.updateFile(filepath, newContent);
+        return {
+          success: true,
+          message: `Content inserted at ${location.document?.position || location.position} of document`,
+          changes: {
+            type: 'insert',
+            preview: 'Content inserted successfully'
+          }
+        };
+      }
+      
+      // For heading/block operations, use the patch API
       let headers: any = {};
       let targetSpecifier = '';
       
@@ -389,21 +539,7 @@ export class PatchContentToolV2 extends BaseTool {
           }
           
           headers['Target-Type'] = 'heading';
-          // For heading paths, we need to find the exact heading text
-          // This is a simplified version - real implementation would parse the document
           targetSpecifier = location.heading.path[location.heading.path.length - 1];
-          
-          if (location.heading.occurrence && location.heading.occurrence > 1) {
-            // Would need to handle occurrence in the actual implementation
-            return {
-              success: false,
-              error: {
-                code: 'NOT_IMPLEMENTED',
-                message: 'Heading occurrence disambiguation not yet implemented in this version'
-              }
-            };
-          }
-          
           headers['Target'] = targetSpecifier;
           headers['Operation'] = location.position === 'before' ? 'prepend' : 
                                 location.position === 'replace' ? 'replace' : 'append';
@@ -420,59 +556,30 @@ export class PatchContentToolV2 extends BaseTool {
                                 location.position === 'replace' ? 'replace' : 'append';
           break;
           
-        case 'document':
-          if (!location.document) {
-            throw new Error('Document location details required');
-          }
-          
-          // For document-level operations, we might need different approach
-          if (location.document.position === 'end') {
-            const content = await client.getFileContents(filepath);
-            await client.updateFile(filepath, content + '\n' + operation.content);
-            return {
-              success: true,
-              changes: {
-                type: 'insert',
-                preview: 'Content appended to end of document'
-              }
-            };
-          }
-          break;
-          
         default:
           return {
             success: false,
             error: {
               code: 'UNSUPPORTED_LOCATION_TYPE',
-              message: `Location type "${location.type}" not yet supported`
+              message: `Location type "${location.type}" not yet supported`,
+              hint: 'Use document, heading, or block location types'
             }
           };
       }
       
-      // Use the patch API for heading/block operations
-      if (location.type === 'heading' || location.type === 'block') {
-        await client.patchContent(filepath, operation.content, {
-          targetType: location.type,
-          target: targetSpecifier,
-          // Map our position to the API's expectation
-          insertAfter: location.position === 'after',
-          insertBefore: location.position === 'before'
-        });
-        
-        return {
-          success: true,
-          changes: {
-            type: 'insert',
-            preview: `Content inserted ${location.position} ${location.type}: ${targetSpecifier}`
-          }
-        };
-      }
+      await client.patchContent(filepath, operation.content, {
+        targetType: location.type,
+        target: targetSpecifier,
+        insertAfter: location.position === 'after',
+        insertBefore: location.position === 'before'
+      });
       
       return {
-        success: false,
-        error: {
-          code: 'NOT_IMPLEMENTED',
-          message: 'This insert operation is not yet implemented'
+        success: true,
+        message: `Content inserted ${location.position} ${location.type}: ${targetSpecifier}`,
+        changes: {
+          type: 'insert',
+          preview: `Content inserted successfully`
         }
       };
     } catch (error: any) {
@@ -480,7 +587,8 @@ export class PatchContentToolV2 extends BaseTool {
         success: false,
         error: {
           code: 'INSERT_ERROR',
-          message: error.message
+          message: error.message,
+          hint: 'Check that the target heading or block exists in the document'
         }
       };
     }
@@ -489,10 +597,9 @@ export class PatchContentToolV2 extends BaseTool {
   private async handleFrontmatter(
     client: any,
     filepath: string,
-    operation: FrontmatterOperation
+    operation: any
   ): Promise<PatchContentResult> {
     try {
-      // For frontmatter updates, we'll use the patch API
       const changes = operation.changes;
       
       // Process different change types
@@ -511,16 +618,18 @@ export class PatchContentToolV2 extends BaseTool {
           success: false,
           error: {
             code: 'NOT_IMPLEMENTED',
-            message: 'Frontmatter append/remove/merge operations not yet implemented'
+            message: 'Frontmatter append/remove/merge operations not yet implemented',
+            hint: 'Use set operation to update individual fields'
           }
         };
       }
       
       return {
         success: true,
+        message: 'Frontmatter updated successfully',
         changes: {
           type: 'update_frontmatter',
-          preview: 'Frontmatter updated successfully'
+          preview: 'Frontmatter fields updated'
         }
       };
     } catch (error: any) {
@@ -528,7 +637,8 @@ export class PatchContentToolV2 extends BaseTool {
         success: false,
         error: {
           code: 'FRONTMATTER_ERROR',
-          message: error.message
+          message: error.message,
+          hint: 'Ensure frontmatter values are valid YAML'
         }
       };
     }

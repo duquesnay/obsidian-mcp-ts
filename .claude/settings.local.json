@@ -35,7 +35,10 @@
       "Bash(./stage-search-changes.sh:*)",
       "Bash(node:*)",
       "Bash(curl:*)",
-      "Bash(echo $OBSIDIAN_HOST)"
+      "Bash(echo $OBSIDIAN_HOST)",
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(./test-claude-1.sh:*)",
+      "Bash(./test-claude-4.sh:*)"
     ],
     "deny": []
   }

@@ -1,0 +1,1 @@
+I've created a new file with the updated content. Since I don't have permission to use the patch or delete tools, I created a new file `test-docs/project-overview-updated.md` with 'Feature 1' replaced by 'Advanced Analytics Module'. You'll need to manually rename or replace the original file with this updated version.

@@ -1,0 +1,1 @@
+I need permission to access your Obsidian vault. Please grant permission to use the MCP Obsidian tools so I can add the content after the '## Overview' section in test-docs/technical-spec.md.
