@@ -6,16 +6,18 @@ Continuous improvement cycle for patch_content_v2 using real LLM feedback from s
 
 ## Execution Model
 
-This process uses a hybrid approach:
-
-- **Steps 1, 2, 3, and 5**: Use the Task tool to spawn a subagent, passing the step's "Subtask Prompt" section as the prompt
-- **Step 4**: Execute as a subprocess using `claude --permission-mode acceptEdits` (as specified in that step)
+All steps run as subprocesses for full visibility:
 
 The orchestrator (you) should:
-1. For Steps 1,2,3,5: Use Task tool with the subtask prompt
-2. For Step 4: Use Bash tool to run the claude subprocess command
+1. Execute each step using the Bash tool to run the claude subprocess command
+2. Use `--verbose` flag to see detailed execution logs
 3. Wait for each step to complete before proceeding to the next
 4. Continue the cycle until termination criteria are met
+5. At the end of each cycle (after Step 4 or Step 5), append a summary log to Obsidian at "/Coding/AI/Obsidian MCP Ergo refinement log" with:
+   - Cycle number and timestamp
+   - Which path was taken (1→5 or 1→2→3→4→1)
+   - Key findings and changes made
+   - Current success metrics
 
 ## CRITICAL: Step 4 Requirements
 
@@ -31,81 +33,83 @@ CRITICAL: Each step is a sub agent and must be completed in order.
 
 ## Step 1: Quick Decision Check (Sonnet 4)
 
-**Simple Decision Task:**
-Read the latest entry in local project file ./user-feedback.md.
-Did the LLM successfully use patch_content_v2 for operations that require its capabilities (complex insertions,
-structured operations, multi-step edits)?
+**Execute:**
+```bash
+claude --model sonnet --permission-mode acceptEdits --verbose --print << 'EOF'
+Read the latest entry in local project file ./user-feedback.md. 
 
-Note: Using append_content for simple appends is acceptable and expected.
+Did the LLM successfully use patch_content_v2 for operations that require its capabilities (complex insertions, structured operations, multi-step edits)? 
 
-- YES (LLM used patch_content_v2 for complex operations) → Go to Step 5
-- NO (LLM avoided patch_content_v2 for operations it should handle) → Proceed to Step 2, 3, 4, come back to Step 1
+Note: Using append_content for simple appends is acceptable and expected. 
+
+Answer with: YES (LLM used patch_content_v2 for complex operations) or NO (LLM avoided patch_content_v2 for operations it should handle)
+EOF
+```
+
+- If YES → Go to Step 5
+- If NO → Proceed to Step 2, 3, 4, then return to Step 1
 
   ---
 
 ## Step 2: Ergonomics Analysis (Opus 4 Deep Thinking)
 
-**Subtask Prompt:**
-You are an LLM ergonomics specialist. Read ONLY the latest user feedback entry from local project file ./user-feedback.md
+**Execute:**
+```bash
+claude --model opus --permission-mode acceptEdits --verbose --print << 'EOF'
+You are an LLM ergonomics specialist. Read ONLY the latest user feedback entry from local project file ./user-feedback.md. 
 
-Focus on the most recent "## User Report YYYY-MM-DD HH:MM" section.
+Focus on the most recent '## User Report YYYY-MM-DD HH:MM' section.
 
 Analyze the LLM's experience with patch_content_v2:
-
 1. What complex operations did the LLM attempt?
 2. For which operations did they avoid patch_content_v2 when they should have used it?
 3. What specific friction points prevented successful use?
 4. What mental model did they have vs. what the tool required?
 
 Consider:
-
 - Schema complexity vs task complexity
 - Error message effectiveness
 - Parameter discovery friction
 - Tool selection reasoning
 
-Provide improvements either ergonomical or technical that would have led to successful patch_content_v2 adoption for complex
-operations.
+Provide improvements either ergonomical or technical that would have led to successful patch_content_v2 adoption for complex operations.
 
-**CRITICAL: Document your analysis by enriching the local project file ./worktrees/llm-ergonomic-patch/llm-ergonomics-analysis.md. Add a new section with the CURRENT timestamp in format "## LLM Ergonomics Analysis 2025-01-09 14:30" (use actual current date/time) with your findings and improvement recommendations.**
+CRITICAL: Document your analysis by enriching the local project file ./worktrees/llm-ergonomic-patch/llm-ergonomics-analysis.md. Add a new section with the CURRENT timestamp (use the actual current date and time when you write this, not the example). Format: '## LLM Ergonomics Analysis YYYY-MM-DD HH:MM' with your findings and improvement recommendations.
+EOF
+```
 
   ---
 
 ## Step 3: Implementation (Sonnet 4)
 
-**Subtask Prompt:**
-Based on the ergonomics analysis, implement improvements to patch_content_v2, use sub agents at each phase 
+**Execute:**
+```bash
+claude --model sonnet --permission-mode acceptEdits --verbose --print << 'EOF'
+Based on the ergonomics analysis in ./worktrees/llm-ergonomic-patch/llm-ergonomics-analysis.md, implement improvements to patch_content_v2.
 
-Target file:
-- Source file ./src/tools/PatchContentToolV2.ts
-- Constants and types associated with it
+Target files:
+- ./src/tools/PatchContentToolV2.ts
+- Any constants/types associated with it
 
-Focus on the specific friction points identified in the analysis.
+Focus on the specific friction points identified in the latest analysis entry.
 Let the ergonomic analysis guide your changes - don't over-engineer.
 
-CRITICAL: After implementation, run:
-npm run build
-
-Verify the build succeeds before proceeding. If build fails, fix errors and rebuild.
-The Claude process in Step 4 will only see changes after successful build.
+CRITICAL: After implementation, run 'npm run build' and verify the build succeeds. If build fails, fix errors and rebuild. The Claude process in Step 4 will only see changes after successful build.
+EOF
+```
 
   ---
 
 ## Step 4: Real Claude User Testing (Sonnet 4)
 
-**Execute this step as a subprocess using:**
+**Execute:**
 ```bash
-claude --permission-mode acceptEdits --print "Run Step 4 user testing as described below"
-```
+claude --model sonnet --permission-mode acceptEdits --allowedTools "Write,Edit,mcp__obsidian-ts-0_5-alpha__obsidian_append_content,mcp__obsidian-ts-0_5-alpha__obsidian_patch_content_v2,mcp__obsidian-ts-0_5-alpha__obsidian_get_file_contents" --verbose --print << 'EOF'
+First, create test files by running:
 
-**Subtask Prompt:**
-Create test files and run a single Claude session to test patch_content_v2:
-
-1. First, create test files:
-```bash
 mkdir -p ~/ObsidianNotes/test-docs
-cat > ~/ObsidianNotes/test-docs/technical-spec.md << 'EOF'
-# Architecture
+
+echo '# Architecture
 
 This section describes the system architecture.
 
@@ -115,11 +119,9 @@ The system consists of multiple components.
 
 ## Implementation
 
-TBD
-EOF
+TBD' > ~/ObsidianNotes/test-docs/technical-spec.md
 
-cat > ~/ObsidianNotes/test-docs/project-overview.md << 'EOF'
-# Project Overview
+echo '# Project Overview
 
 This project implements document management.
 
@@ -130,45 +132,55 @@ This project implements document management.
 
 ## Status
 
-In development
+In development' > ~/ObsidianNotes/test-docs/project-overview.md
+
+Then complete these tasks on the Obsidian notes:
+
+1. In test-docs/technical-spec.md, insert the following after the ## Implementation heading:
+   ### Database Layer
+   Uses PostgreSQL with connection pooling.
+   
+   ### API Layer
+   REST API with rate limiting.
+
+2. In test-docs/project-overview.md:
+   - Replace 'Feature 1' with 'Advanced Analytics'
+   - Add a new section after the Status section:
+     ## Conclusion
+     Project shows promising results.
+
+3. After completing these tasks, report your experience completing these tasks and append to the LOCAL PROJECT FILE ./user-feedback.md (NOT in Obsidian, but in the current working directory) with a section titled '## User Report' followed by the ACTUAL CURRENT timestamp (do not use '2025-01-09 14:30' - that's just an example format). Use the Write or Edit tool, not Obsidian tools.
 EOF
 ```
-
-2. Run a single test session:
-```bash
-claude --permission-mode acceptEdits --print "Please complete these tasks on my Obsidian notes:
-1. In test-docs/technical-spec.md, insert '### Database Layer\nUses PostgreSQL with connection pooling.\n\n### API Layer\nREST API with rate limiting.' after the ## Implementation heading
-2. In test-docs/project-overview.md, replace 'Feature 1' with 'Advanced Analytics' and add a new section '## Conclusion\nProject shows promising results.' after the Status section
-3. After completing these tasks, report your experience completing these tasks and append to user-feedback.md with a section titled '## User Report' followed by the CURRENT timestamp (e.g., '## User Report 2025-01-09 14:30')"
-```
-
-3. Verify user-feedback.md was updated with the test experience.
 
 **Return to Step 1 for next iteration.**
 
 ## Step 5: Code Review and Quality (Sonnet 4)
 
-Subtask Prompt:
-Review the current patch_content_v2 implementation focusing on:
+**Execute:**
+```bash
+claude --model sonnet --permission-mode acceptEdits --verbose --print << 'EOF'
+Review the current patch_content_v2 implementation in ./src/tools/PatchContentToolV2.ts focusing on:
 
-1. **Tool Positioning**: Does the tool description clearly indicate when to use it vs simpler alternatives?
+1. Tool Positioning: Does the tool description clearly indicate when to use it vs simpler alternatives?
 
-2. **Complex Operation Ergonomics**: For multi-step or structured operations, is the interface intuitive?
+2. Complex Operation Ergonomics: For multi-step or structured operations, is the interface intuitive?
 
-3. **Error Guidance**: Do errors help LLMs succeed on retry?
+3. Error Guidance: Do errors help LLMs succeed on retry?
 
-4. **Discoverability**: Can LLMs easily understand when this tool is the right choice?
+4. Discoverability: Can LLMs easily understand when this tool is the right choice?
 
 Examine:
-
 - Tool description and examples
 - Error message quality
 - Parameter validation
 - Code maintainability
 
-Suggest specific refinements focused on complex operation scenarios.
+Suggest specific refinements focused on complex operation scenarios and document them in ./worktrees/llm-ergonomic-patch/llm-ergonomics-analysis.md.
+EOF
+```
 
-After improvements, return to Step 1 for next iteration.
+**After improvements, return to Step 1 for next iteration.**
 
   ---
 ## Termination Criteria:
