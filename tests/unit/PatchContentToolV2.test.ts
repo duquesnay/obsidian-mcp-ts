@@ -20,6 +20,7 @@ describe('PatchContentToolV2', () => {
       getFileContents: vi.fn(),
       updateFile: vi.fn(),
       patchContent: vi.fn(),
+      queryStructure: vi.fn(),
     };
     
     // Mock the ObsidianClient constructor to return our mock
@@ -181,8 +182,9 @@ describe('PatchContentToolV2', () => {
       
       expect(result.success).toBe(false);
       expect(result.error?.code).toBe('NO_OPERATION');
-      expect(result.error?.hint).toContain('append, prepend, replace');
-      expect(result.error?.example).toBeDefined();
+      expect(result.error?.hint).toContain('QUICK START');
+      expect(result.error?.example.immediate_use).toBeDefined();
+      expect(result.error?.example.tip).toContain('append_content');
     });
 
     it('should provide helpful error when pattern not found', async () => {
@@ -198,8 +200,10 @@ describe('PatchContentToolV2', () => {
       expect(result.error?.hint).toContain('Check your search pattern');
     });
 
-    it('should handle file read errors gracefully', async () => {
-      mockClient.getFileContents.mockRejectedValue(new Error('File not found'));
+    it('should handle file not found errors with helpful message', async () => {
+      const error = new Error('File not found');
+      (error as any).response = { status: 404 };
+      mockClient.getFileContents.mockRejectedValue(error);
       
       const result = await tool.execute({
         filepath: 'test.md',
@@ -207,8 +211,46 @@ describe('PatchContentToolV2', () => {
       });
       
       expect(result.success).toBe(false);
-      expect(result.error?.code).toBe('INSERT_ERROR');
+      expect(result.error?.code).toBe('FILE_NOT_FOUND');
       expect(result.error?.message).toContain('File not found');
+      expect(result.error?.hint).toContain('create_file_if_missing');
+    });
+
+    it('should handle other file read errors as internal error', async () => {
+      mockClient.getFileContents.mockRejectedValue(new Error('Timeout error'));
+      
+      const result = await tool.execute({
+        filepath: 'test.md',
+        append: 'New content'
+      });
+      
+      expect(result.success).toBe(false);
+      expect(result.error?.code).toBe('INTERNAL_ERROR');
+      expect(result.error?.message).toContain('Timeout error');
+    });
+    
+    it('should provide intelligent guidance for content format errors', async () => {
+      const result = await tool.execute({
+        filepath: 'test.md',
+        append: [{type: 'text', text: 'content'}]
+      });
+      
+      expect(result.success).toBe(false);
+      expect(result.error?.code).toBe('PARAMETER_SUGGESTION');
+      expect(result.error?.hint).toContain('just use a string');
+      expect(result.error?.example.correct.append).toBe('content');
+    });
+    
+    it('should warn about mixed operation formats', async () => {
+      const result = await tool.execute({
+        filepath: 'test.md',
+        append: 'text',
+        operation: { type: 'insert', insert: { content: 'other', location: { type: 'document', document: { position: 'end' }, position: 'after' } } }
+      });
+      
+      expect(result.success).toBe(false);
+      expect(result.error?.code).toBe('PARAMETER_SUGGESTION');
+      expect(result.error?.hint).toContain('Use either simple shortcuts');
     });
   });
 
@@ -276,6 +318,53 @@ describe('PatchContentToolV2', () => {
       expect(result.message).toContain('Dry run');
       expect(mockClient.updateFile).not.toHaveBeenCalled();
       expect(mockClient.getFileContents).not.toHaveBeenCalled();
+    });
+  });
+  
+  describe('Content Normalization', () => {
+    it('should handle array content format automatically', async () => {
+      mockClient.getFileContents.mockResolvedValue('Existing content');
+      
+      const result = await tool.execute({
+        filepath: 'test.md',
+        operation: {
+          type: 'insert',
+          insert: {
+            content: [{type: 'text', text: 'Line 1'}, {type: 'text', text: 'Line 2'}],
+            location: {
+              type: 'document',
+              document: { position: 'end' },
+              position: 'after'
+            }
+          }
+        }
+      });
+      
+      expect(result.success).toBe(true);
+      expect(mockClient.updateFile).toHaveBeenCalledWith('test.md', 'Existing content\nLine 1\nLine 2');
+    });
+    
+    it('should detect simple operations in complex format', async () => {
+      mockClient.getFileContents.mockResolvedValue('Content');
+      const warnSpy = vi.spyOn(console, 'warn');
+      
+      const result = await tool.execute({
+        filepath: 'test.md',
+        operation: {
+          type: 'insert',
+          insert: {
+            content: 'New content',
+            location: {
+              type: 'document',
+              document: { position: 'end' },
+              position: 'after'
+            }
+          }
+        }
+      });
+      
+      expect(result.success).toBe(true);
+      expect(warnSpy).toHaveBeenCalledWith('Simple operation detected in complex format. Consider using shortcuts.');
     });
   });
 });
