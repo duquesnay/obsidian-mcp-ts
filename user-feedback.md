@@ -573,3 +573,13 @@ The `obsidian_edit` tool performed well for complex document modifications. The 
 - The tool handled markdown formatting correctly throughout
 
 The experience demonstrates that the ergonomic improvements to the editing tools are effective for real-world document editing scenarios.
+## User Report 2025-07-10 17:48
+
+### UnifiedEditTool Test Results
+
+**CRITICAL FAILURE**: UnifiedEditTool (obsidian_edit) failed with 100% failure rate
+- Every operation failed with 'Request failed: self-signed certificate' error
+- Tool is completely unusable in current state
+- Cannot perform any document operations
+
+**Recommendation**: DO NOT center architecture around UnifiedEditTool. Keep simple tools as primary interface.

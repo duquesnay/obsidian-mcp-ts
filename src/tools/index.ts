@@ -7,12 +7,12 @@ import { GetFileContentsTool } from './GetFileContentsTool.js';
 import { SimpleSearchTool } from './SimpleSearchTool.js';
 import { SimpleAppendTool } from './SimpleAppendTool.js';
 import { SimpleReplaceTool } from './SimpleReplaceTool.js';
-import { InsertAfterHeadingTool } from './InsertAfterHeadingTool.js';
 import { AppendContentTool } from './AppendContentTool.js';
 import { DeleteFileTool } from './DeleteFileTool.js';
+import { UnifiedEditTool } from './UnifiedEditTool.js';
 import { BaseTool } from './base.js';
 
-// Core 8 tools optimized for LLM ergonomics and reliability
+// Core tools optimized for LLM ergonomics and reliability
 const tools: BaseTool[] = [
   // File operations - essential and reliable
   new ListFilesInVaultTool(),
@@ -22,11 +22,13 @@ const tools: BaseTool[] = [
   // Search - simple and effective
   new SimpleSearchTool(),
   
-  // Editing - proven reliable tools from user feedback
+  // Editing - progressive reliability architecture
+  new UnifiedEditTool(),       // Progressive complexity: 100% simple → 90% structure → 80% complex
+  
+  // Editing - proven reliable tools from user feedback (backup/fallback)
   new SimpleAppendTool(),      // 100% success rate in testing
   new SimpleReplaceTool(),     // 100% success rate in testing  
-  new AppendContentTool(),     // Backup append tool
-  new InsertAfterHeadingTool() // Structure-aware editing (recently improved)
+  new AppendContentTool()      // Backup append tool
 ];
 
 export async function registerTools(server: Server): Promise<void> {
