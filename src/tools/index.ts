@@ -34,6 +34,8 @@ import { PatchContentToolV2 } from './PatchContentToolV2.js';
 import { SimpleAppendTool } from './SimpleAppendTool.js';
 import { InsertAfterHeadingTool } from './InsertAfterHeadingTool.js';
 import { SimpleReplaceTool } from './SimpleReplaceTool.js';
+import { ObsidianNaturalEditTool } from './ObsidianNaturalEditTool.js';
+import { ObsidianSectionTool } from './ObsidianSectionTool.js';
 import { BaseTool } from './base.js';
 
 const tools: BaseTool[] = [
@@ -71,6 +73,8 @@ const tools: BaseTool[] = [
   new SimpleAppendTool(),
   new InsertAfterHeadingTool(),
   new SimpleReplaceTool(),
+  new ObsidianNaturalEditTool(),
+  new ObsidianSectionTool(),
 ];
 
 export async function registerTools(server: Server): Promise<void> {
