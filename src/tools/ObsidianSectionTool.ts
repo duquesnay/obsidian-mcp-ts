@@ -1,4 +1,4 @@
-import { BaseTool } from './base.js';
+, import { BaseTool } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
 
 interface SectionArgs {
@@ -79,9 +79,9 @@ Create new section intelligently:
   async execute(args: SectionArgs): Promise<SectionResult> {
     try {
       validatePath(args.file, 'file');
-      
+
       const client = this.getClient();
-      
+
       // Get file content
       let content: string;
       try {
@@ -105,27 +105,27 @@ Create new section intelligently:
         }
         throw error;
       }
-      
+
       // Parse sections
       const sections = this.parseSections(content);
       const targetSection = sections.find(s => s.heading.toLowerCase() === args.section.toLowerCase());
-      
+
       switch (args.action) {
         case 'append':
           return await this.handleAppend(client, args, content, sections, targetSection);
-          
+
         case 'prepend':
           return await this.handlePrepend(client, args, content, sections, targetSection);
-          
+
         case 'replace':
           return await this.handleReplace(client, args, content, sections, targetSection);
-          
+
         case 'create':
           return await this.handleCreate(client, args, content, sections, targetSection);
-          
+
         case 'delete':
           return await this.handleDelete(client, args, content, sections, targetSection);
-          
+
         default:
           return {
             success: false,
@@ -133,7 +133,7 @@ Create new section intelligently:
             hint: 'Use one of: append, prepend, replace, create, delete'
           };
       }
-      
+
     } catch (error: any) {
       return {
         success: false,
@@ -142,13 +142,13 @@ Create new section intelligently:
       };
     }
   }
-  
+
   private parseSections(content: string): Array<{heading: string; level: number; start: number; end: number; content: string}> {
     const lines = content.split('\n');
     const sections: Array<{heading: string; level: number; start: number; end: number; content: string}> = [];
-    
+
     let currentSection: any = null;
-    
+
     lines.forEach((line, index) => {
       const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
       if (headingMatch) {
@@ -158,7 +158,7 @@ Create new section intelligently:
           currentSection.content = lines.slice(currentSection.start, currentSection.end + 1).join('\n');
           sections.push(currentSection);
         }
-        
+
         // Start new section
         currentSection = {
           heading: headingMatch[2],
@@ -169,17 +169,17 @@ Create new section intelligently:
         };
       }
     });
-    
+
     // Save last section
     if (currentSection) {
       currentSection.end = lines.length - 1;
       currentSection.content = lines.slice(currentSection.start, currentSection.end + 1).join('\n');
       sections.push(currentSection);
     }
-    
+
     return sections;
   }
-  
+
   private async handleAppend(
     client: any,
     args: SectionArgs,
@@ -195,7 +195,7 @@ Create new section intelligently:
         suggestions: this.getSimilarSections(sections, args.section)
       };
     }
-    
+
     if (!args.content) {
       return {
         success: false,
@@ -203,24 +203,24 @@ Create new section intelligently:
         hint: 'Provide content parameter with the text to append'
       };
     }
-    
+
     const lines = content.split('\n');
     const insertLine = targetSection.end + 1;
-    
+
     // Ensure proper spacing
     const contentToInsert = lines[targetSection.end]?.trim() ? '\n' + args.content : args.content;
-    
+
     lines.splice(insertLine, 0, ...contentToInsert.split('\n'));
     const newContent = lines.join('\n');
-    
+
     await client.updateFile(args.file, newContent);
-    
+
     return {
       success: true,
       message: `Appended content to section "${args.section}"`
     };
   }
-  
+
   private async handlePrepend(
     client: any,
     args: SectionArgs,
@@ -236,7 +236,7 @@ Create new section intelligently:
         suggestions: this.getSimilarSections(sections, args.section)
       };
     }
-    
+
     if (!args.content) {
       return {
         success: false,
@@ -244,24 +244,24 @@ Create new section intelligently:
         hint: 'Provide content parameter with the text to prepend'
       };
     }
-    
+
     const lines = content.split('\n');
     const insertLine = targetSection.start + 1; // After the heading
-    
+
     // Ensure proper spacing
     const contentToInsert = '\n' + args.content + (lines[insertLine]?.trim() ? '\n' : '');
-    
+
     lines.splice(insertLine, 0, ...contentToInsert.split('\n'));
     const newContent = lines.join('\n');
-    
+
     await client.updateFile(args.file, newContent);
-    
+
     return {
       success: true,
       message: `Prepended content to section "${args.section}"`
     };
   }
-  
+
   private async handleReplace(
     client: any,
     args: SectionArgs,
@@ -277,7 +277,7 @@ Create new section intelligently:
         suggestions: this.getSimilarSections(sections, args.section)
       };
     }
-    
+
     if (!args.content) {
       return {
         success: false,
@@ -285,29 +285,29 @@ Create new section intelligently:
         hint: 'Provide content parameter with the new section content'
       };
     }
-    
+
     const lines = content.split('\n');
-    
+
     // Keep the heading, replace everything else in the section
     const headingLine = lines[targetSection.start];
     const newSectionLines = [headingLine, '', ...args.content.split('\n')];
-    
+
     // Find the actual content range (skip the heading line)
     const contentStart = targetSection.start + 1;
     const contentEnd = targetSection.end;
     const deleteCount = contentEnd - contentStart + 1;
-    
+
     lines.splice(contentStart, deleteCount, ...newSectionLines.slice(1));
     const newContent = lines.join('\n');
-    
+
     await client.updateFile(args.file, newContent);
-    
+
     return {
       success: true,
       message: `Replaced content in section "${args.section}"`
     };
   }
-  
+
   private async handleCreate(
     client: any,
     args: SectionArgs,
@@ -322,14 +322,14 @@ Create new section intelligently:
         hint: 'Use action: "append" or "replace" to modify existing section'
       };
     }
-    
+
     const lines = content.split('\n');
     const position = args.position || 'end';
-    
+
     // Create section content
     const sectionContent = this.createSectionContent(args.section, args.content || '');
     let insertLine: number;
-    
+
     if (position === 'end') {
       insertLine = lines.length;
     } else if (position === 'start') {
@@ -365,23 +365,23 @@ Create new section intelligently:
         hint: 'Use "end", "start", "before:SectionName", or "after:SectionName"'
       };
     }
-    
+
     // Ensure proper spacing
-    const contentToInsert = (insertLine > 0 && lines[insertLine - 1]?.trim() ? '\n' : '') + 
+    const contentToInsert = (insertLine > 0 && lines[insertLine - 1]?.trim() ? '\n' : '') +
                            sectionContent +
                            (insertLine < lines.length && lines[insertLine]?.trim() ? '\n' : '');
-    
+
     lines.splice(insertLine, 0, ...contentToInsert.split('\n'));
     const newContent = lines.join('\n');
-    
+
     await client.updateFile(args.file, newContent);
-    
+
     return {
       success: true,
       message: `Created section "${args.section}" at ${position}`
     };
   }
-  
+
   private async handleDelete(
     client: any,
     args: SectionArgs,
@@ -397,30 +397,30 @@ Create new section intelligently:
         suggestions: this.getSimilarSections(sections, args.section)
       };
     }
-    
+
     const lines = content.split('\n');
-    
+
     // Delete the entire section including the heading
     const deleteCount = targetSection.end - targetSection.start + 1;
     lines.splice(targetSection.start, deleteCount);
-    
+
     // Clean up extra blank lines
     const newContent = lines.join('\n').replace(/\n{3,}/g, '\n\n');
-    
+
     await client.updateFile(args.file, newContent);
-    
+
     return {
       success: true,
       message: `Deleted section "${args.section}"`
     };
   }
-  
+
   private createSectionContent(heading: string, content: string): string {
     // Auto-detect heading level if provided
     const headingLine = heading.match(/^#{1,6}\s+/) ? heading : `## ${heading}`;
     return `${headingLine}\n\n${content}`;
   }
-  
+
   private getSimilarSections(sections: any[], target: string): string[] {
     const lower = target.toLowerCase();
     return sections

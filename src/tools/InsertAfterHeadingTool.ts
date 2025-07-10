@@ -39,6 +39,23 @@ export class InsertAfterHeadingTool extends BaseTool {
     const { filepath, heading, content, create_file_if_missing = false } = args;
 
     try {
+      // Enhanced input validation with recovery
+      if (!filepath || !heading || !content) {
+        return this.handleErrorWithRecovery(
+          new Error('Missing required parameters'),
+          {
+            suggestion: 'Provide filepath, heading, and content parameters',
+            workingAlternative: 'Use obsidian_list_files_in_vault to browse available files if you need to find the target file',
+            example: {
+              filepath: 'notes/example.md',
+              heading: 'Section Title',
+              content: 'Content to insert',
+              create_file_if_missing: false
+            }
+          }
+        );
+      }
+
       const client = this.getClient();
       
       // Use the existing patch_content functionality with insertAfterHeading
@@ -57,20 +74,71 @@ export class InsertAfterHeadingTool extends BaseTool {
         heading
       });
     } catch (error: any) {
-      // Enhanced error handling with recovery suggestions
-      if (error.message?.includes('invalid-target') || error.message?.includes('heading not found')) {
-        return this.formatResponse({
-          success: false,
-          error: `Heading "${heading}" not found in ${filepath}`,
-          suggestion: `Try using obsidian_simple_replace instead. Find the heading with context like "## ${heading}\\n\\nExisting content" and replace with "## ${heading}\\n\\nExisting content\\n\\n${content}"`,
-          alternative_approach: "Use obsidian_simple_append to add content at the end of the document, or obsidian_simple_replace with specific text patterns.",
-          operation: 'insert_after_heading',
-          filepath,
-          heading
-        });
+      // Enhanced error handling with HTTP status codes
+      if (error.response?.status === 404) {
+        return this.handleErrorWithRecovery(
+          error,
+          {
+            suggestion: 'File does not exist. Check the filepath or set create_file_if_missing to true',
+            workingAlternative: 'Use obsidian_list_files_in_vault to find the correct file path',
+            example: {
+              filepath: 'corrected/file/path.md',
+              heading: heading,
+              content: content,
+              create_file_if_missing: true
+            }
+          }
+        );
       }
       
-      return this.handleError(error);
+      if (error.response?.status === 403) {
+        return this.handleErrorWithRecovery(
+          error,
+          {
+            suggestion: 'Permission denied. Check your API key and ensure the Obsidian Local REST API plugin is running',
+            workingAlternative: 'Verify your OBSIDIAN_API_KEY environment variable and plugin status',
+            example: {
+              filepath: filepath,
+              heading: heading,
+              content: content
+            }
+          }
+        );
+      }
+      
+      if (error.message?.includes('invalid-target') || error.message?.includes('heading not found')) {
+        return this.handleErrorWithRecovery(
+          error,
+          {
+            suggestion: `Heading "${heading}" not found in ${filepath}. Try using obsidian_simple_replace instead with surrounding context`,
+            workingAlternative: `Use obsidian_simple_replace to find the heading with context like "## ${heading}\\n\\nExisting content" and replace with "## ${heading}\\n\\nExisting content\\n\\n${content}"`,
+            example: {
+              filepath: filepath,
+              find: `## ${heading}`,
+              replace: `## ${heading}\\n\\n${content}`
+            }
+          }
+        );
+      }
+      
+      // Fallback to basic error handling with alternatives
+      return this.handleError(error, [
+        {
+          description: 'Get file content to see available headings',
+          tool: 'obsidian_get_file_contents',
+          example: { filepath: filepath }
+        },
+        {
+          description: 'Use simple replace with heading context',
+          tool: 'obsidian_simple_replace',
+          example: { filepath: filepath, find: `## ${heading}`, replace: `## ${heading}\\n\\n${content}` }
+        },
+        {
+          description: 'Append content to end of file',
+          tool: 'obsidian_simple_append',
+          example: { filepath: filepath, content: content }
+        }
+      ]);
     }
   }
 }
