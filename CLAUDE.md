@@ -252,3 +252,14 @@ git cherry-pick $(git rev-list --grep="^(?!claude:)" main..source-branch)
 **Technical insights**:
 - **Use git stash selectively to separate mixed changes**: When faced with multiple fixes in the same files, `git stash push -m "description" -- specific/file.ts` allows surgical separation of changes for atomic commits without interactive staging. This enables clean PR preparation even with interleaved changes.
 - **Error detection should use status codes, not message parsing**: The copyFile fix showed that checking `error.code === 404` is more reliable than `error.message.includes('does not exist')` which is fragile and locale-dependent. Status codes are part of the API contract, while error messages are implementation details.
+
+### Multi-Agent Ergonomic Review Loop Creation (2025-01-10)
+
+**Methodological insights**:
+- **Subprocess Delegation vs. Single Agent Orchestration**: Initially attempted subprocess execution where the main agent spawns separate Claude processes for each step. This created permission barriers, context loss, and complexity. Pivoting to Task tool delegation with a single orchestrating agent maintained context while allowing focused sub-tasks. Prefer delegation over subprocess spawning for workflow coherence.
+- **Test Design Determines Outcome Validity**: When Step 4 promoted specific tools ("Try these new tools first"), it created confirmation bias - LLMs used tools because they were promoted, not because they were ergonomic. Only unbiased testing revealed true preferences (simple_replace/append over conversational interfaces). Agent cycles must have unbiased evaluation steps to produce valid insights.
+- **Implementation-Promise Mismatch Erodes Trust**: Multiple tools promised simple interfaces but failed with validation errors. LLMs abandon tools after first failure with no debugging phase. The most ergonomic tool isn't the most sophisticated; it's the one that works on first attempt.
+
+**Technical insights**:
+- **File Path Resolution Across Execution Contexts**: The @ reference system doesn't parse at prompt reading time. When agents run from different directories (worktrees/), relative paths break. Solution: explicit paths like `@../../docs/step4-prompt.txt`. Local .claude/settings.json doesn't inherit to subdirectories. Always consider execution context when designing multi-location workflows.
+- **No Wildcard for AllowedTools**: Despite online suggestions, `--allowedTools '*'` was never valid syntax. Tools must be listed explicitly or the parameter omitted entirely (relying on local settings). Permission configuration became a critical bottleneck that must be solved before ergonomics matter.
