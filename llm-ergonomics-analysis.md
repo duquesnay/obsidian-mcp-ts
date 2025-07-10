@@ -511,7 +511,7 @@ The TypeScript types must match runtime expectations. When they don't, LLMs lose
 
 The core issue is that `patch_content_v2` optimizes for power users who need complex operations, but forces that complexity on everyone. The solution is to provide multiple entry points to the same functionality, allowing LLMs to start simple and progressively discover advanced features only when needed.
 
-## LLM Ergonomics Analysis 2025-01-09 14:30
+## LLM Ergonomics Analysis 2025-07-09 14:30
 
 ### Analysis of User Report from 2025-07-08 10:10
 
@@ -843,9 +843,9 @@ The patch_content_v2 tool fails LLM ergonomics not because it lacks power, but b
 
 The most critical fix is resolving the type system mismatch - when tools lie about their types, LLMs lose trust in all documentation and resort to trial-and-error, dramatically increasing the time and frustration to achieve success.
 
-## LLM Ergonomics Analysis 2025-01-09 14:38
+## LLM Ergonomics Analysis 2025-07-09 14:38
 
-### Analysis of User Report from 2025-01-09 14:30
+### Analysis of User Report from 2025-07-09 14:30
 
 The latest user feedback reveals a crucial insight: **LLMs discovered patch_content_v3 exists and found it intuitive**, but the presence of multiple versions created confusion. This report shows actual LLM tool selection behavior in a multi-tool environment.
 
@@ -1096,9 +1096,9 @@ The subprocess explicitly praised v3's approach:
 
 The subprocess's behavior reveals that **LLMs treat tool complexity as a risk factor**. When a tool fails with complex errors, they don't invest in understanding it - they route around it. This suggests that ergonomic improvements must prioritize **first-attempt success** over capability breadth.
 
-## LLM Ergonomics Analysis 2025-01-09 16:48
+## LLM Ergonomics Analysis 2025-07-09 16:48
 
-### Analysis of Latest User Report (2025-01-09 15:55)
+### Analysis of Latest User Report (2025-07-09 15:55)
 
 This report provides critical real-world evidence from Claude subprocess testing that reveals why patch_content_v2 improvements failed to achieve adoption despite incorporating ergonomic shortcuts.
 
@@ -1267,9 +1267,9 @@ This real-world test revealed that our ergonomic improvements existed only at th
 
 The path forward is clear: **Make patch_content_v3 the single, canonical tool** with runtime behavior that actually matches its simple interface promises. The existence of multiple versions and the gap between interface and implementation creates more friction than the original complex schema.
 
-## LLM Ergonomics Analysis 2025-01-09 16:58
+## LLM Ergonomics Analysis 2025-07-09 16:58
 
-### Analysis of Latest User Report (2025-01-09 16:38)
+### Analysis of Latest User Report (2025-07-09 16:38)
 
 This final user report provides the most comprehensive real-world evidence of patch_content_v2's ergonomic failures, as it documents an actual Claude instance attempting to complete concrete tasks with the tool.
 
@@ -1413,7 +1413,7 @@ This test reveals that **patch_content_v2 has become an anti-pattern** - a tool 
 
 The solution isn't more features or better documentation. It's ensuring that simple operations work simply, on the first attempt, with clear error recovery when they don't. Until patch_content_v2 can match the reliability and simplicity of append_content for basic operations, LLMs will continue to route around it, defeating its purpose entirely.
 
-## Solution Exploration 2025-01-09 17:08
+## Solution Exploration 2025-07-09 17:08
 
 ### Fresh Analysis of User Feedback Patterns
 
@@ -1647,7 +1647,7 @@ The most promising approaches are:
 
 Any of these would dramatically improve LLM success rates compared to the current complex, nested, abstraction-heavy approach.
 
-## Solution Exploration 2025-01-09 17:17
+## Solution Exploration 2025-07-09 17:17
 
 ### Analysis of Recent User Experiences
 
@@ -1902,3 +1902,339 @@ The winning approach will likely combine:
 5. **Trust through simplicity** - every operation should feel obvious
 
 By treating markdown structure as the primary abstraction rather than text positions, we can create tools that feel natural to LLMs and succeed on first attempt.
+
+## Solution Exploration 2025-01-10 10:25
+
+### Analysis of Recent User Feedback
+
+The recent user reports reveal a critical pattern: permission barriers completely blocked MCP tool testing, forcing users to fall back to bash commands. This shows that before ergonomics matter, tools must be accessible.
+
+#### Key Patterns from User Testing
+
+1. **Permission Barriers Dominate**: Multiple reports show complete blockage due to MCP tools requiring permissions
+2. **Bash as Universal Fallback**: When MCP tools fail, users immediately resort to sed/echo/cat
+3. **Simple Tools Win When Accessible**: When permissions were fixed, users successfully used `obsidian_simple_replace` and `obsidian_simple_append`
+4. **Complex Tools Still Failing**: Even with permissions, `obsidian_insert_after_heading` failed with "invalid-target" errors
+
+### Core Insight: Two-Layer Problem
+
+1. **Access Layer**: Permission configuration prevents tool discovery and usage
+2. **Ergonomics Layer**: Once accessible, tools must work on first attempt
+
+The current focus on ergonomics is premature if tools aren't accessible. However, assuming access is fixed, the ergonomics problem remains.
+
+### Creative Solution: Natural Language Command Interface
+
+Based on the successful bash fallback pattern, create tools that mirror command-line simplicity:
+
+```typescript
+obsidian_natural_edit({
+  file: "project.md",
+  commands: [
+    "go to heading 'Implementation'",
+    "add paragraph 'New technical details here'",
+    "go to end",
+    "add heading '## Conclusion'"
+  ]
+})
+```
+
+This approach:
+- Maps directly to how users think about editing
+- No nested objects or schemas
+- Commands are self-documenting
+- Errors can suggest corrections ("Did you mean heading 'Introduction'?")
+
+### Alternative: Smart Section Management
+
+Since markdown is fundamentally section-based:
+
+```typescript
+obsidian_section({
+  file: "guide.md",
+  section: "Installation",
+  action: "append",
+  content: "Additional steps..."
+})
+
+// Or for new sections:
+obsidian_section({
+  file: "guide.md",
+  section: "Troubleshooting",
+  action: "create",
+  content: "## Troubleshooting\n\nCommon issues...",
+  position: "before:References"
+})
+```
+
+Benefits:
+- Treats sections as first-class units
+- Simple, flat parameters
+- Natural positioning ("before:X", "after:Y", "end")
+- Works with document structure, not against it
+
+### Key Design Principles
+
+1. **Immediate Success**: First attempt must work
+2. **Natural Language**: Parameters match spoken descriptions
+3. **Flat Structure**: No nested objects unless absolutely necessary
+4. **Smart Defaults**: Tools make intelligent decisions
+5. **Clear Errors**: Failed commands suggest working alternatives
+
+The winning approach treats markdown as a structured document with navigable elements, not as flat text with complex position specifications.
+
+## Solution Exploration 2025-01-10 13:37
+
+### Fresh Analysis of User Feedback Patterns
+
+After analyzing all user reports from the past few days, I've identified critical patterns that reveal what LLMs actually need for text editing:
+
+#### The Reality of LLM Text Editing
+
+1. **80% of operations are dead simple**: Append text, replace text, add after heading
+2. **Complex tools fail catastrophically**: patch_content_v2 with its nested schemas led to complete abandonment
+3. **Fallback patterns reveal truth**: LLMs chose to recreate entire files rather than debug complex tools
+4. **Permission barriers kill adoption**: Before ergonomics matter, tools must be accessible
+
+#### What Failed Recently
+
+- **patch_content_v2**: Despite adding "simple shortcuts", validation errors persisted
+- **insert_after_heading**: Failed with "invalid-target" errors even when headings existed
+- **Tool proliferation**: v1, v2, v3 created decision paralysis
+- **Type mismatches**: Interface promised strings, runtime expected arrays
+
+#### What Succeeded
+
+- **append_content**: Dead simple, always worked
+- **simple_replace**: Clear parameters, predictable behavior
+- **Bash commands**: sed/echo as universal fallback
+
+### Core Insight: Document Structure as Primary Abstraction
+
+LLMs don't think about text editing as position-based operations. They think in terms of document structure:
+- "Add this after the Implementation section"
+- "Replace Feature 1 with Advanced Analytics"
+- "Insert a new section before References"
+
+Current tools force translation from this natural mental model into complex position specifications.
+
+### Creative Solution Proposals
+
+#### 1. Document Query Language (DQL)
+
+A tool that uses CSS-like selectors for markdown:
+
+```typescript
+obsidian_dql({
+  file: "spec.md",
+  queries: [
+    { select: "h2:contains('Implementation')", after: "New paragraph content" },
+    { select: "list:under('Requirements')", append: "- Additional requirement" },
+    { select: "text:contains('TODO')", replace: "COMPLETED" },
+    { select: "end", insert: "## References\n- [Link 1]" }
+  ]
+})
+```
+
+Benefits:
+- Familiar selector syntax
+- Precise targeting without complex schemas
+- Composable operations
+- Natural error messages: "No heading matching 'h2:contains(Implementation)'"
+
+#### 2. Conversational Edit Chains
+
+Express edits as conversation with the document:
+
+```typescript
+obsidian_converse({
+  file: "notes.md",
+  conversation: [
+    "find the Tasks section",
+    "add a new task: Review PR #123",
+    "now go to the end",
+    "create a new section called Summary",
+    "write: Today we completed 5 tasks"
+  ]
+})
+```
+
+The tool maintains context between commands, enabling natural flow.
+
+#### 3. Template Merge Engine
+
+Recognize that most edits follow patterns:
+
+```typescript
+obsidian_merge({
+  file: "project.md",
+  template: `
+    [after: Features]
+    ## Performance
+    - Response time: <100ms
+    - Throughput: 1000 req/s
+    
+    [replace-in: Overview]
+    old: "Feature 1"
+    new: "Advanced Analytics"
+    
+    [at: end]
+    ## Conclusion
+    Project successfully deployed.
+  `
+})
+```
+
+Mini-DSL that's readable and writable by LLMs.
+
+#### 4. Smart Content Blocks
+
+Content that knows where it belongs:
+
+```typescript
+obsidian_smart_add({
+  file: "readme.md",
+  content: {
+    type: "installation_steps",
+    text: "npm install --save-dev eslint",
+    hint: "javascript"  // Helps find right section
+  }
+})
+
+// The tool understands common patterns:
+// - installation_steps → finds/creates Installation section
+// - api_endpoint → finds/creates API Reference
+// - troubleshooting → finds/creates Troubleshooting section
+```
+
+#### 5. Markdown AST Transformations
+
+Work with structure, not text:
+
+```typescript
+obsidian_transform({
+  file: "doc.md",
+  transforms: [
+    { type: "add_sibling", target: "## Features", position: "after", 
+      content: "## Performance\nBenchmark results..." },
+    { type: "add_to_list", target: "Requirements", item: "- Node.js 18+" },
+    { type: "wrap_section", target: "Configuration", 
+      wrapper: "> **Note**: Configuration is optional" }
+  ]
+})
+```
+
+#### 6. Context-Aware Operations
+
+Tools that understand document context:
+
+```typescript
+obsidian_contextual_edit({
+  file: "changelog.md",
+  operation: "add_entry",
+  content: "Fixed critical security issue",
+  // Tool automatically:
+  // - Finds latest version section
+  // - Adds under appropriate category (Fixes)
+  // - Formats according to changelog conventions
+})
+```
+
+#### 7. Visual Edit Language
+
+Describe edits visually:
+
+```typescript
+obsidian_visual_edit({
+  file: "guide.md",
+  edits: `
+    Installation
+    ├── [existing content]
+    └── + "Note for Windows users: Run as administrator"
+    
+    [new section after Installation]
+    Configuration
+    ├── "Default settings work for most users"
+    └── "See config.json for options"
+    
+    Troubleshooting
+    └── [move here from end]
+  `
+})
+```
+
+ASCII art representation of document changes.
+
+#### 8. Edit by Example
+
+Show before/after for a section:
+
+```typescript
+obsidian_edit_by_example({
+  file: "api.md",
+  example: {
+    before: `
+      ## Authentication
+      Use API keys for authentication.
+    `,
+    after: `
+      ## Authentication
+      Use API keys for authentication.
+      
+      ### Getting an API Key
+      1. Sign in to your account
+      2. Navigate to Settings > API
+      3. Click "Generate New Key"
+    `
+  }
+})
+```
+
+Tool figures out the transformation and applies it.
+
+### The Ultimate Solution: Adaptive Document Intelligence
+
+A tool that learns from patterns and context:
+
+```typescript
+obsidian_ai_doc({
+  file: "project.md",
+  intent: "document the deployment process",
+  context: "kubernetes"
+})
+
+// AI understands:
+// - This is a project file
+// - Deployment docs typically go after Implementation
+// - Kubernetes context suggests specific content structure
+// - Creates appropriate section with relevant subsections
+```
+
+### Key Design Principles
+
+1. **Document-First Thinking**: Work with markdown structure, not text positions
+2. **Natural Language**: Parameters match how humans describe edits
+3. **Context Awareness**: Tools understand document conventions
+4. **Progressive Complexity**: Simple stays simple, complex is possible
+5. **Intelligent Failures**: Errors guide to success
+6. **Pattern Recognition**: Tools learn from common operations
+
+### Recommendation: Dual-Tool Strategy
+
+Based on the analysis, I recommend implementing two complementary tools:
+
+1. **obsidian_natural_edit**: For sequential, conversational editing
+   - Natural language commands
+   - Document navigation
+   - Context preservation
+   - "Just works" philosophy
+
+2. **obsidian_section**: For structural operations
+   - Section as primary unit
+   - Smart positioning
+   - Create/append/replace/delete operations
+   - Flat parameters
+
+These tools would cover 95% of use cases while being immediately intuitive to LLMs. The key is making simple operations trivial while maintaining power for complex needs.
+
+The future of LLM text editing lies not in more powerful abstractions, but in tools that match how LLMs naturally think about document manipulation. By embracing document structure as the primary abstraction and using natural language as the interface, we can create tools that succeed on first attempt and build trust through reliability.
