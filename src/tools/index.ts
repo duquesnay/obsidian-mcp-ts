@@ -39,6 +39,7 @@ import { ObsidianSectionTool } from './ObsidianSectionTool.js';
 import { ObsidianConverseTool } from './ObsidianConverseTool.js';
 import { ObsidianSmartBlockTool } from './ObsidianSmartBlockTool.js';
 import { ObsidianDiffEditTool } from './ObsidianDiffEditTool.js';
+import { UnifiedEditTool } from './UnifiedEditTool.js';
 import { BaseTool } from './base.js';
 
 const tools: BaseTool[] = [
@@ -81,6 +82,7 @@ const tools: BaseTool[] = [
   new ObsidianConverseTool(),
   new ObsidianSmartBlockTool(),
   new ObsidianDiffEditTool(),
+  new UnifiedEditTool(),
 ];
 
 export async function registerTools(server: Server): Promise<void> {
