@@ -2,7 +2,7 @@ import { BaseTool } from './base.js';
 
 export class ListFilesInVaultTool extends BaseTool {
   name = 'obsidian_list_files_in_vault';
-  description = 'Lists all files and directories in the root directory of your Obsidian vault.';
+  description = 'List all files and directories in the root directory of your Obsidian vault.';
   
   inputSchema = {
     type: 'object' as const,
@@ -14,7 +14,14 @@ export class ListFilesInVaultTool extends BaseTool {
     try {
       const client = this.getClient();
       const files = await client.listFilesInVault();
-      return this.formatResponse(files);
+      
+      // Structure the response with files and count properties
+      const response = {
+        files,
+        count: files.length
+      };
+      
+      return this.formatResponse(response);
     } catch (error) {
       return this.handleError(error);
     }
