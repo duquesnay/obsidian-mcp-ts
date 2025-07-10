@@ -543,3 +543,33 @@ The simple tools (`obsidian_simple_replace` and `obsidian_simple_append`) provid
 1. **Prioritize simple tool reliability** - The simple replace and append tools are the most effective
 2. **Fix permission issues** - Tools should work without requiring additional permissions for basic operations
 3. **Simplify complex tools** - The validation errors on `obsidian_natural_edit` suggest the tool may be over-engineered for common use cases
+
+## User Report
+
+**Timestamp:** 2025-07-10 15:32
+
+**Task Completion Experience:**
+
+I successfully completed all the requested document editing tasks using the Obsidian MCP tools. The experience was largely positive with the following observations:
+
+**Successful Operations:**
+- Simple text replacement worked flawlessly (replacing "Feature 1" with "Advanced Analytics")
+- Appending content to the end of documents was reliable
+- Complex text replacement with multi-line content succeeded (inserting database and API layers)
+- Adding list items worked well (adding "Real-time Dashboards" to features)
+
+**Challenge Encountered:**
+- The `before` heading insertion initially failed when trying to insert content before the "Status" heading
+- The tool provided helpful error feedback and suggested alternatives
+- I successfully worked around this by using a more specific text replacement pattern that included the surrounding context
+
+**Overall Assessment:**
+The `obsidian_edit` tool performed well for complex document modifications. The tool's error handling was excellent - when the `before` operation failed, it provided clear error messages and suggested working alternatives. The ability to do complex multi-line replacements and append operations made most tasks straightforward.
+
+**Key Success Factors:**
+- Simple operations (append, basic replace) worked consistently
+- Complex operations succeeded when using precise text matching
+- Error recovery was smooth due to helpful error messages
+- The tool handled markdown formatting correctly throughout
+
+The experience demonstrates that the ergonomic improvements to the editing tools are effective for real-world document editing scenarios.
