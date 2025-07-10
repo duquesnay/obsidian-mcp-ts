@@ -12,7 +12,8 @@
       "Write",
       "Edit",
       "Bash(claude --model sonnet --permission-mode acceptEdits --allowedTools '*' --print @../../docs/step4-prompt.txt)",
-      "Bash(claude --model sonnet --permission-mode acceptEdits --print @../../docs/step4-prompt.txt)"
+      "Bash(claude --model sonnet --permission-mode acceptEdits --print @../../docs/step4-prompt.txt)",
+      "mcp__obsidian-ts-0_5-alpha__obsidian_simple_search"
     ],
     "deny": []
   }

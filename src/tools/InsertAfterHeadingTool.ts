@@ -9,7 +9,7 @@ interface InsertAfterHeadingArgs {
 
 export class InsertAfterHeadingTool extends BaseTool {
   name = 'obsidian_insert_after_heading';
-  description = 'Insert content after a specific heading. Use this to add content under a heading.';
+  description = 'Insert content after a specific heading. Use this to add content under a heading. If this fails, try obsidian_simple_replace with the heading text and surrounding context instead.';
 
   inputSchema = {
     type: 'object' as const,
@@ -57,6 +57,19 @@ export class InsertAfterHeadingTool extends BaseTool {
         heading
       });
     } catch (error: any) {
+      // Enhanced error handling with recovery suggestions
+      if (error.message?.includes('invalid-target') || error.message?.includes('heading not found')) {
+        return this.formatResponse({
+          success: false,
+          error: `Heading "${heading}" not found in ${filepath}`,
+          suggestion: `Try using obsidian_simple_replace instead. Find the heading with context like "## ${heading}\\n\\nExisting content" and replace with "## ${heading}\\n\\nExisting content\\n\\n${content}"`,
+          alternative_approach: "Use obsidian_simple_append to add content at the end of the document, or obsidian_simple_replace with specific text patterns.",
+          operation: 'insert_after_heading',
+          filepath,
+          heading
+        });
+      }
+      
       return this.handleError(error);
     }
   }
