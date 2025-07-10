@@ -1,0 +1,29 @@
+Read the last 3 entries in local project file ./user-feedback.md (focus on the most recent).
+
+Analyze:
+1) Did the LLM successfully complete the complex editing tasks (multi-step operations, structured insertions)?
+2) What was their experience like (smooth, frustrating, confusing)?
+3) What patterns emerge across these recent cycles?
+
+Based on the user's text editing needs, evaluate:
+
+EFFECTIVE criteria (ALL must be true):
+- LLM naturally used structured editing tools (insert after heading, replace in section)
+- No fallback to append/write for tasks that needed precise placement
+- LLM found the tools intuitive and natural to use
+- The editing approach matched how LLMs think about document structure
+
+NEEDS_IMPROVEMENT if ANY of these occur:
+- Gave up on structured editing and just appended content
+- Used Write tool to recreate entire files instead of surgical edits
+- Tools didn't match LLM's natural editing instincts
+- Had to work around the tools rather than with them
+
+Focus on: Did the LLM edit the document the way they naturally wanted to, or did they compromise?
+
+Answer: EFFECTIVE or NEEDS_IMPROVEMENT
+
+Also append a brief summary to the Obsidian note at "/Coding/AI/Obsidian MCP Ergo refinement log" with the cycle decision and timestamp.
+
+COMMIT GUIDANCE: When committing assessment results, use: "ergo: step1 - assess [outcome] due to [key finding]"
+Example: "ergo: step1 - assess NEEDS_IMPROVEMENT due to trust erosion from complex tool interfaces"

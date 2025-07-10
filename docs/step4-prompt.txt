@@ -1,0 +1,44 @@
+First, create test files by running:
+
+```bash
+mkdir -p ~/ObsidianNotes/test-docs && echo '# Architecture
+
+This section describes the system architecture.
+
+## Overview
+
+The system consists of multiple components.
+
+## Implementation
+
+TBD' > ~/ObsidianNotes/test-docs/technical-spec.md && echo '# Project Overview
+
+This project implements document management.
+
+## Features
+
+- Feature 1
+- Feature 2
+
+## Status
+
+In development' > ~/ObsidianNotes/test-docs/project-overview.md
+```
+
+Then complete these tasks on the Obsidian notes using the Obsidian MCP tools:
+
+1. In test-docs/technical-spec.md:
+   - Keep the existing "TBD" text under Implementation
+   - Insert '### Database Layer\nUses PostgreSQL with connection pooling.\n\n### API Layer\nREST API with rate limiting.' after the TBD line
+   - Add '### Cache Layer\nRedis for session management' at the end of the document
+
+2. In test-docs/project-overview.md:
+   - Replace 'Feature 1' with 'Advanced Analytics' in the features list
+   - Add '- Real-time Dashboards' as a new item in the features list
+   - Insert '## Technical Stack\n\n- Frontend: React\n- Backend: Node.js\n- Database: PostgreSQL' between the Features and Status sections
+   - Add '## Conclusion\nProject shows promising results.' after the Status section
+
+3. After completing these tasks, report your experience completing these tasks and append to the LOCAL PROJECT FILE ./user-feedback.md (NOT in Obsidian, but in the current working directory) with a section titled '## User Report' followed by the ACTUAL CURRENT timestamp. Use `date +"%Y-%m-%d %H:%M"` to get the timestamp. Use the Write or Edit tool, not Obsidian tools.
+
+COMMIT GUIDANCE: When committing your feedback, use: "ergo: step4 - user test feedback [brief summary of experience]"
+Example: "ergo: step4 - user test feedback shows natural editing tool succeeded for complex operations"

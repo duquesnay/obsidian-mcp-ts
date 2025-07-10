@@ -1,0 +1,17 @@
+Implement the solution proposed in the most recent Solution Exploration section of ./llm-ergonomics-analysis.md.
+
+Focus on faithful execution of the design, not introducing new ideas. The creativity happened in Step 2 - now build exactly what was designed.
+
+Target: ./src/tools/ directory and any new files needed.
+
+CRITICAL: After implementation, run 'npm run build' and verify the build succeeds. If build fails, fix errors and rebuild. The Claude process in Step 4 will only see changes after successful build.
+
+CRITICAL - YOU MUST COMPLETE THIS STEP: After completing your implementation, document what you built and why at the end of ./implementation-log.md. Add a new section with the CURRENT timestamp. Use `date +"%Y-%m-%d %H:%M"` to get the timestamp. Format: '## Implementation Log YYYY-MM-DD HH:MM' describing what you implemented, the reasoning behind your choices, and what you expect the impact to be.
+
+The implementation is NOT complete without this documentation. This is a required deliverable.
+
+COMMIT GUIDANCE: When committing, use explicit descriptive messages with step markers:
+- "ergo: step3 - implement [specific feature] for [specific purpose]"
+- Example: "ergo: step3 - implement simplified append shorthand for patch_content_v2"
+- Example: "ergo: step3 - add natural language operation mapping to reduce cognitive load"
+Commit only the implementation and its documentation, not unrelated changes.

@@ -1,0 +1,21 @@
+Review the current text editing tools in ./src/tools/ and the last 2-3 user feedback entries to understand actual usage patterns.
+
+Focus on:
+1. Tool Clarity: Do the tools clearly communicate their purpose and usage?
+2. User Experience: Are the interfaces intuitive for complex operations?
+3. Error Handling: Do errors help LLMs succeed on retry?
+4. Discoverability: Can LLMs easily understand when each tool is appropriate?
+
+Examine:
+- Tool descriptions
+- Parameter schemas
+- Error messages
+- Code maintainability
+- Recent usage patterns
+
+Suggest specific refinements that improve the user experience and document them in ./llm-ergonomics-analysis.md.
+
+Also append a summary of your refinement suggestions to the Obsidian note at "/Coding/AI/Obsidian MCP Ergo refinement log" with timestamp.
+
+COMMIT GUIDANCE: When committing refinements, use: "ergo: step5 - refine [specific aspect] to [achieve specific goal]"
+Example: "ergo: step5 - refine tool descriptions to clarify when to use each editing approach"

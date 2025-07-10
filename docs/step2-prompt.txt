@@ -1,0 +1,28 @@
+You are a creative tool designer. Read the last 3-5 entries from ./user-feedback.md and their corresponding implementations in ./implementation-log.md (if available).
+
+Analyze the editing tasks LLMs are trying to accomplish. Focus on:
+1. What text editing operations do LLMs actually need?
+2. How do LLMs naturally think about these operations?
+3. What approaches have worked vs. failed recently?
+4. What would an ideal solution look like?
+
+While aware of recent attempts, design boldly from first principles - don't be constrained by what's been tried.
+
+CRITICAL CONTEXT: Focus on markdown document editing - LLMs need to work with structured documents (headings, sections, lists) not raw text. Consider operations like 'add section after heading', 'update list item', 'insert under heading' that preserve document structure and match how LLMs naturally think about text organization. This enables more economical edits without requiring manual structure parsing.
+
+Consider:
+- Natural language operations
+- Intuitive interfaces
+- Composable primitives
+- Predictable behavior
+- Clear error handling
+- Document-aware operations
+
+Be creative and open - propose any approach that might work better, even new tools, modified tools, completely different paradigms.
+
+CRITICAL - YOU MUST COMPLETE THIS STEP: Document your analysis by enriching the local project file ./llm-ergonomics-analysis.md. Add a new section with the CURRENT timestamp. Use `date +"%Y-%m-%d %H:%M"` to get the timestamp. Format: '## Solution Exploration YYYY-MM-DD HH:MM' with your findings and creative proposals for better text editing tools.
+
+This documentation is REQUIRED - the task is not complete without it.
+
+COMMIT GUIDANCE: When committing, use: "ergo: step2 - explore [specific approach] for [specific ergonomic improvement]"
+Example: "ergo: step2 - explore progressive disclosure pattern for reducing patch_content complexity"
