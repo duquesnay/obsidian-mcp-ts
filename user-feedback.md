@@ -472,3 +472,74 @@ Successfully completed all requested tasks using the new ergonomic Obsidian MCP 
 
 ### Recommendation
 The obsidian_converse_with_doc tool is highly effective for complex document editing tasks that involve multiple operations. It's particularly good for content insertion and replacement operations.
+
+## User Report - 2025-07-10 14:48
+
+### Experience Summary
+Successfully completed all requested edits using the Obsidian MCP tools. The simple editing tools (simple_replace, simple_append) worked consistently well for straightforward operations.
+
+### Task Completion
+- ✅ Created test files in ~/ObsidianNotes/test-docs/
+- ✅ technical-spec.md: Added Database Layer and API Layer sections after TBD
+- ✅ technical-spec.md: Added Cache Layer section at end
+- ✅ project-overview.md: Replaced "Feature 1" with "Advanced Analytics"
+- ✅ project-overview.md: Added "Real-time Dashboards" to features list
+- ✅ project-overview.md: Inserted Technical Stack section between Features and Status
+- ✅ project-overview.md: Added Conclusion section at end
+
+### Tool Performance
+- **simple_replace**: Worked perfectly for text substitutions and inserting sections
+- **simple_append**: Excellent for adding content to file ends
+- **insert_after_heading**: Failed with "invalid-target" error, had to use workaround with simple_replace
+- **natural_edit**: Could not test due to permission errors
+
+### Issues Encountered
+1. Permission requests for some tools during testing
+2. insert_after_heading tool failed to locate target heading
+3. Had to use simple_replace workaround to insert Technical Stack section
+
+### Overall Assessment
+The simple editing tools provided reliable functionality for complex document editing tasks. The combination of simple_replace and simple_append handled all requirements effectively, even when the more sophisticated tools had issues.
+
+## User Report 2025-07-10 14:50
+
+### Task Completion Experience
+
+Successfully completed all three requested tasks:
+
+1. **Technical Spec Update**: Used `obsidian_simple_replace` to replace "TBD" with database and API layer content, then used `obsidian_simple_append` to add the Cache Layer section
+2. **Project Overview Updates**: Used `obsidian_simple_replace` for multiple edits including replacing "Feature 1" with "Advanced Analytics", adding "Real-time Dashboards", inserting the Technical Stack section, and used `obsidian_simple_append` for the Conclusion section  
+3. **User Feedback Report**: Updated this report in the local project directory
+
+### Tool Usage Pattern
+
+Successfully used:
+- `obsidian_simple_replace` - Worked perfectly for all text replacements, including complex multi-line insertions
+- `obsidian_simple_append` - Worked reliably for adding content to the end of files
+- Bash commands for initial file creation
+
+### What Worked Well
+
+1. **obsidian_simple_replace** - Intuitive and worked immediately for all text replacements, handled complex multi-line insertions seamlessly
+2. **obsidian_simple_append** - Reliable for adding content to the end of documents
+3. **Clear task structure** - Breaking down complex modifications into simple replace and append operations was highly effective
+
+### What Was Problematic
+
+1. **Initial tool choice** - Started with `obsidian_natural_edit` which had validation errors about content format
+2. **Permission barriers** - The `obsidian_patch_content_v2` tool required permissions that weren't granted  
+3. **Tool discovery** - Had to try multiple approaches to find the working tools
+
+### User Behavior
+
+When the complex `obsidian_natural_edit` tool failed with validation errors, I quickly switched to the simple tools (`obsidian_simple_replace` and `obsidian_simple_append`) which worked consistently. This demonstrates that reliability and simplicity are key factors in tool adoption.
+
+### Key Observation
+
+The simple tools (`obsidian_simple_replace` and `obsidian_simple_append`) provided the most reliable and intuitive experience for document modifications. They handled both simple and complex content changes effectively without requiring complex parameter structures or permissions.
+
+### Recommendations
+
+1. **Prioritize simple tool reliability** - The simple replace and append tools are the most effective
+2. **Fix permission issues** - Tools should work without requiring additional permissions for basic operations
+3. **Simplify complex tools** - The validation errors on `obsidian_natural_edit` suggest the tool may be over-engineered for common use cases

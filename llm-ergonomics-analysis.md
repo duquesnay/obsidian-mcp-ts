@@ -2618,3 +2618,60 @@ Beyond technical ergonomics, tools need "marketing" to LLMs:
 - Success stories that build confidence
 
 This insight suggests that tool adoption is as much about communication and trust as it is about technical design. The best ergonomics in the world don't matter if users never discover or attempt the tool.
+
+## Unbiased Testing Reveals True Ergonomics 2025-07-10 14:52
+
+### Critical Methodological Discovery
+
+After removing promotional bias from the Step 4 test prompt, we discovered a fundamental truth about LLM tool selection:
+
+**With Biased Prompt** (promoting new tools):
+- LLM used `obsidian_converse_with_doc` successfully (7/8 commands)
+- Seemed to validate our ergonomic improvements
+- Created false positive results
+
+**With Unbiased Prompt** (neutral presentation):
+- LLM never attempted new "ergonomic" tools (converse_with_doc, add_smart_block, apply_diff)
+- Started with `obsidian_natural_edit` → failed with validation errors
+- Immediately fell back to `obsidian_simple_replace` and `obsidian_simple_append`
+- Successfully completed all tasks with simple tools
+
+### Key Insights
+
+1. **Promotion ≠ Ergonomics**: Tools that succeed when promoted aren't necessarily ergonomic - they're just following instructions
+
+2. **Natural Selection Pattern**: Without bias, LLMs consistently choose:
+   - Simple tools over complex ones
+   - Reliable tools over powerful ones
+   - Familiar patterns over novel interfaces
+
+3. **The Simple Tools Won**: `obsidian_simple_replace` and `obsidian_simple_append` are the actual ergonomic winners because:
+   - They work on first attempt
+   - Clear, flat parameters
+   - No validation complexities
+   - Predictable behavior
+
+4. **Complex Tools Get Abandoned**: Even with better interfaces, tools that fail with validation errors get immediately abandoned
+
+### Methodological Lessons
+
+1. **Test Design Matters**: Promoting specific tools creates confirmation bias
+2. **Competitive Testing Required**: Tools must win on merit, not marketing
+3. **Natural Discovery**: True ergonomics means tools get chosen without promotion
+4. **Simplicity Wins**: LLMs optimize for task completion, not tool sophistication
+
+### The Real Ergonomic Pattern
+
+The unbiased tests reveal that LLMs want:
+- **Immediate success** (no debugging)
+- **Flat parameters** (no nested objects)
+- **Predictable behavior** (no surprises)
+- **Clear purpose** (single responsibility)
+
+Our complex "ergonomic" improvements (conversational interfaces, smart blocks, diff editing) solved imaginary problems while ignoring the real need: **simple tools that just work**.
+
+### Conclusion
+
+The most ergonomic tool isn't the most sophisticated - it's the one LLMs naturally reach for and succeed with on first attempt. In our case, that's `obsidian_simple_replace` and `obsidian_simple_append`, not the complex conversational interfaces we built.
+
+This validates the principle: **Test what users do, not what they can be taught to do**.
