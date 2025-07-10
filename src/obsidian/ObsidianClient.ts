@@ -24,7 +24,7 @@ export class ObsidianClient {
     this.protocol = config.protocol || 'https';
     this.host = config.host || '127.0.0.1';
     this.port = config.port || 27124;
-    this.verifySsl = config.verifySsl || false;
+    this.verifySsl = config.verifySsl ?? true;
 
     // Create axios instance with custom config
     this.axiosInstance = axios.create({

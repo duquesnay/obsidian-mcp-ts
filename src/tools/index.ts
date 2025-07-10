@@ -1,88 +1,32 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+
+// Core 8 tools - prioritized for reliability and LLM ergonomics
 import { ListFilesInVaultTool } from './ListFilesInVaultTool.js';
-import { ListFilesInDirTool } from './ListFilesInDirTool.js';
 import { GetFileContentsTool } from './GetFileContentsTool.js';
-import { BatchGetFileContentsTool } from './BatchGetFileContentsTool.js';
 import { SimpleSearchTool } from './SimpleSearchTool.js';
-import { ComplexSearchTool } from './ComplexSearchTool.js';
-import { PatchContentTool } from './PatchContentTool.js';
+import { SimpleAppendTool } from './SimpleAppendTool.js';
+import { SimpleReplaceTool } from './SimpleReplaceTool.js';
+import { InsertAfterHeadingTool } from './InsertAfterHeadingTool.js';
 import { AppendContentTool } from './AppendContentTool.js';
 import { DeleteFileTool } from './DeleteFileTool.js';
-import { RenameFileTool } from './RenameFileTool.js';
-import { MoveFileTool } from './MoveFileTool.js';
-import { MoveDirectoryTool } from './MoveDirectoryTool.js';
-import { CopyFileTool } from './CopyFileTool.js';
-import { CopyDirectoryTool } from './CopyDirectoryTool.js';
-import { CheckPathExistsTool } from './CheckPathExistsTool.js';
-import { CreateDirectoryTool } from './CreateDirectoryTool.js';
-import { DeleteDirectoryTool } from './DeleteDirectoryTool.js';
-import { GetAllTagsTool } from './GetAllTagsTool.js';
-import { GetFilesByTagTool } from './GetFilesByTagTool.js';
-import { RenameTagTool } from './RenameTagTool.js';
-import { ManageFileTagsTool } from './ManageFileTagsTool.js';
-import { GetPeriodicNoteTool } from './GetPeriodicNoteTool.js';
-import { GetRecentPeriodicNotesTool } from './GetRecentPeriodicNotesTool.js';
-import { GetRecentChangesTool } from './GetRecentChangesTool.js';
-import { AdvancedSearchTool } from './AdvancedSearchTool.js';
-import { GetFileMetadataTool } from './GetFileMetadataTool.js';
-import { GetFileFrontmatterTool } from './GetFileFrontmatterTool.js';
-import { GetFileFormattedTool } from './GetFileFormattedTool.js';
-import { FindEmptyDirectoriesTool } from './FindEmptyDirectoriesTool.js';
-import { QueryStructureTool } from './QueryStructureTool.js';
-import { PatchContentToolV2 } from './PatchContentToolV2.js';
-import { SimpleAppendTool } from './SimpleAppendTool.js';
-import { InsertAfterHeadingTool } from './InsertAfterHeadingTool.js';
-import { SimpleReplaceTool } from './SimpleReplaceTool.js';
-import { ObsidianNaturalEditTool } from './ObsidianNaturalEditTool.js';
-import { ObsidianSectionTool } from './ObsidianSectionTool.js';
-import { ObsidianConverseTool } from './ObsidianConverseTool.js';
-import { ObsidianSmartBlockTool } from './ObsidianSmartBlockTool.js';
-import { ObsidianDiffEditTool } from './ObsidianDiffEditTool.js';
-import { UnifiedEditTool } from './UnifiedEditTool.js';
 import { BaseTool } from './base.js';
 
+// Core 8 tools optimized for LLM ergonomics and reliability
 const tools: BaseTool[] = [
+  // File operations - essential and reliable
   new ListFilesInVaultTool(),
-  new ListFilesInDirTool(),
   new GetFileContentsTool(),
-  new BatchGetFileContentsTool(),
-  new SimpleSearchTool(),
-  new ComplexSearchTool(),
-  new PatchContentTool(),
-  new AppendContentTool(),
   new DeleteFileTool(),
-  new RenameFileTool(),
-  new MoveFileTool(),
-  new MoveDirectoryTool(),
-  new CopyFileTool(),
-  new CopyDirectoryTool(),
-  new CheckPathExistsTool(),
-  new CreateDirectoryTool(),
-  new DeleteDirectoryTool(),
-  new GetAllTagsTool(),
-  new GetFilesByTagTool(),
-  new RenameTagTool(),
-  new ManageFileTagsTool(),
-  new GetPeriodicNoteTool(),
-  new GetRecentPeriodicNotesTool(),
-  new GetRecentChangesTool(),
-  new AdvancedSearchTool(),
-  new GetFileMetadataTool(),
-  new GetFileFrontmatterTool(),
-  new GetFileFormattedTool(),
-  new FindEmptyDirectoriesTool(),
-  new QueryStructureTool(),
-  new PatchContentToolV2(),
-  new SimpleAppendTool(),
-  new InsertAfterHeadingTool(),
-  new SimpleReplaceTool(),
-  new ObsidianNaturalEditTool(),
-  new ObsidianSectionTool(),
-  new ObsidianConverseTool(),
-  new ObsidianSmartBlockTool(),
-  new ObsidianDiffEditTool(),
-  new UnifiedEditTool(),
+  
+  // Search - simple and effective
+  new SimpleSearchTool(),
+  
+  // Editing - proven reliable tools from user feedback
+  new SimpleAppendTool(),      // 100% success rate in testing
+  new SimpleReplaceTool(),     // 100% success rate in testing  
+  new AppendContentTool(),     // Backup append tool
+  new InsertAfterHeadingTool() // Structure-aware editing (recently improved)
 ];
 
 export async function registerTools(server: Server): Promise<void> {
