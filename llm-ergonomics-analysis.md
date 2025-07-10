@@ -2561,3 +2561,60 @@ The most promising approaches combine:
 - Progressive complexity
 
 By treating markdown documents as structured, semantic entities rather than flat text files, we can finally create editing tools that feel natural to LLMs and succeed consistently.
+
+## Discovery and Testing Insights 2025-07-10 14:28
+
+### Critical Finding: Permission Configuration Blocked Tool Discovery
+
+After implementing three new ergonomic tools (ObsidianConverseTool, ObsidianSmartBlockTool, ObsidianDiffEditTool), the test user didn't even attempt to use them. Analysis revealed two critical issues:
+
+1. **Missing from Allowed Tools List**: The new tools weren't included in the `--allowedTools` parameter passed to the test subprocess
+2. **No Discovery Hints**: The test prompt didn't mention these new tools existed
+
+### Key Pattern: Default Tool Preference
+
+The test LLM exhibited predictable behavior:
+- Started with `obsidian_natural_edit` (which had validation errors)
+- Tried `obsidian_patch_content_v2` (but lacked permissions)
+- Immediately fell back to `obsidian_simple_replace` and `obsidian_simple_append`
+- Never discovered or attempted the new tools
+
+### Core Insight: Tool Discovery is Part of Ergonomics
+
+**Tool ergonomics must include discoverability**. Even the best-designed tools fail if users don't know they exist or lack confidence to try them. The test revealed:
+
+1. **Permission barriers create pre-failure**: Before ergonomics matter, tools must be accessible
+2. **Tool proliferation creates paralysis**: Multiple versions/options increase cognitive load
+3. **First failure defines tool reputation**: LLMs don't retry after validation errors
+4. **Familiar tools win by default**: LLMs prefer known-working tools over exploring new ones
+
+### Broader Implications
+
+This discovery reveals a fundamental principle: **Ergonomic design must encompass the entire tool lifecycle**:
+
+1. **Discovery**: How do users find the tool?
+2. **Permission**: Can they access it?
+3. **Selection**: Why choose this tool over alternatives?
+4. **First Attempt**: Does it work immediately?
+5. **Error Recovery**: Do failures guide to success?
+6. **Trust Building**: Does success encourage future use?
+
+Our implementation focused on steps 4-6 but completely missed steps 1-3, rendering the ergonomic improvements invisible.
+
+### Recommendations for Testing Methodology
+
+1. **Include all tools in allowedTools**: Test configurations must grant access to tools being tested
+2. **Prompt engineering for discovery**: Explicitly mention new tools and their benefits
+3. **Measure discovery metrics**: Track which tools LLMs attempt, not just success rates
+4. **Test competitive scenarios**: Include both old and new tools to see natural selection
+5. **Permission-free testing**: Consider test modes that bypass permission requirements
+
+### The Missing Layer: Tool Marketing
+
+Beyond technical ergonomics, tools need "marketing" to LLMs:
+- Clear differentiation from existing tools
+- Compelling use case examples in descriptions
+- Explicit callouts in prompts when new tools are available
+- Success stories that build confidence
+
+This insight suggests that tool adoption is as much about communication and trust as it is about technical design. The best ergonomics in the world don't matter if users never discover or attempt the tool.
