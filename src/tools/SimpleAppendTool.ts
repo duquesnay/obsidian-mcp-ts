@@ -33,6 +33,17 @@ export class SimpleAppendTool extends BaseTool {
   async execute(args: SimpleAppendArgs): Promise<any> {
     const { filepath, content, create_file_if_missing = false } = args;
 
+    // Input validation
+    if (!filepath || content === undefined) {
+      return this.handleErrorWithRecovery(
+        new Error('Missing required parameters'),
+        {
+          suggestion: 'Provide filepath and content parameters',
+          example: { filepath: 'notes.md', content: 'Text to append' }
+        }
+      );
+    }
+
     try {
       const client = this.getClient();
       
@@ -46,7 +57,29 @@ export class SimpleAppendTool extends BaseTool {
         filepath
       });
     } catch (error: any) {
-      return this.handleError(error);
+      // Handle common error scenarios with specific recovery guidance
+      if (error.message?.includes('File not found') || error.response?.status === 404) {
+        return this.handleErrorWithRecovery(error, {
+          suggestion: 'File does not exist. Try setting create_file_if_missing to true.',
+          workingAlternative: 'Enable file creation',
+          example: { filepath, content, create_file_if_missing: true }
+        });
+      }
+
+      if (error.message?.includes('Permission denied') || error.response?.status === 403) {
+        return this.handleErrorWithRecovery(error, {
+          suggestion: 'Permission denied. Check API key and file permissions.',
+          workingAlternative: 'Verify Obsidian REST API plugin is running and API key is correct'
+        });
+      }
+
+      return this.handleError(error, [
+        {
+          description: 'Use obsidian_simple_replace to replace specific text',
+          tool: 'obsidian_simple_replace',
+          example: { filepath, find: 'old text', replace: 'new text' }
+        }
+      ]);
     }
   }
 }
