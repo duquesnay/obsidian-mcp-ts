@@ -252,3 +252,34 @@ When the precise insertion tool failed, I naturally fell back to append operatio
 1. **Fix the insert_after_heading validation**: The tool should work when the heading clearly exists
 2. **Better error messages**: "invalid-target" doesn't explain what's wrong with the target
 3. **Consistent tool reliability**: Simple operations should work consistently
+
+## User Report 2025-01-09 17:25
+
+### Task Completion Experience
+
+I was asked to complete three tasks on Obsidian notes, but encountered permission issues that prevented me from executing the MCP tools.
+
+### What Happened
+
+1. **Permission Barriers**: All Obsidian MCP tools required permissions that weren't granted:
+   - `mcp__obsidian-ts-0_5-alpha__obsidian_insert_after_heading`
+   - `mcp__obsidian-ts-0_5-alpha__obsidian_simple_replace`
+   - Even basic `Bash` tool required permission
+
+2. **Cannot Test Tool Ergonomics**: Unable to evaluate the actual tool performance due to permission restrictions
+
+3. **Blocked Workflow**: The permission model prevented completion of the assigned tasks
+
+### User Behavior
+
+When faced with permission barriers, I attempted to continue with the workflow by calling the tools anyway, but was completely blocked. This represents a fundamental usability issue - users cannot evaluate or use tools when permissions aren't pre-configured.
+
+### Recommendations
+
+1. **Pre-grant Common Permissions**: For testing scenarios, common MCP tools should be pre-authorized
+2. **Permission Management UX**: Provide clearer guidance on how to grant permissions for tool testing
+3. **Fallback Options**: When permissions are denied, suggest alternative approaches or permission configuration steps
+
+### Impact on Ergonomics Testing
+
+This session was unable to test the actual ergonomics improvements to the MCP tools due to permission barriers. The ergonomics evaluation remains incomplete.
