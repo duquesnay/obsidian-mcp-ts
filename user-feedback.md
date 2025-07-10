@@ -74,7 +74,7 @@ Got a complex validation error about `invalid_union` with multiple schema option
 
 The tool seems powerful for complex operations, but the learning curve for simple tasks is steep compared to existing tools. Making common operations simpler while keeping advanced capabilities would improve adoption.
 
-## User Report 2025-01-09 14:30
+## User Report 2025-07-09 14:30
 
 ### Tools Used for Content Manipulation
 
@@ -115,7 +115,7 @@ I primarily fell back to simpler tools:
 3. Add more examples in the tool descriptions showing common use cases
 4. Consider making patch_content_v3 the primary tool and deprecating v2 for LLM usage
 
-## User Report 2025-01-09 15:55
+## User Report 2025-07-09 15:55
 
 ### Test Results from Claude Subprocess
 
@@ -214,7 +214,7 @@ Used Write tool for file creation instead of Obsidian MCP tools due to parameter
 
 All tasks completed successfully with proper content insertion and file structure maintained.
 
-## User Report 2025-01-09 17:05
+## User Report 2025-07-09 17:05
 
 ### Task Completion Experience
 
@@ -253,7 +253,7 @@ When the precise insertion tool failed, I naturally fell back to append operatio
 2. **Better error messages**: "invalid-target" doesn't explain what's wrong with the target
 3. **Consistent tool reliability**: Simple operations should work consistently
 
-## User Report 2025-01-09 17:25
+## User Report 2025-07-09 17:25
 
 ### Task Completion Experience
 
@@ -284,7 +284,7 @@ When faced with permission barriers, I attempted to continue with the workflow b
 
 This session was unable to test the actual ergonomics improvements to the MCP tools due to permission barriers. The ergonomics evaluation remains incomplete.
 
-## User Report 2025-01-10 00:13
+## User Report 2025-07-10 00:13
 
 ### Task Completion Experience
 
@@ -315,7 +315,7 @@ When faced with permission barriers, I attempted to continue with the workflow b
 
 This session was unable to test the actual ergonomics improvements to the MCP tools due to permission barriers. The ergonomics evaluation remains incomplete.
 
-## User Report
+## User Report 2025-07-10 13:24
 
 **Timestamp:** Thu Jul 10 13:24:59 +07 2025
 
@@ -341,7 +341,7 @@ I successfully completed all the requested tasks on the Obsidian notes, but had 
 
 The tasks were completed successfully despite the MCP tool limitations.
 
-## User Report 2025-01-10 13:30
+## User Report 2025-07-10 13:30
 
 ### Task Completion Experience
 

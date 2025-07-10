@@ -1,12 +1,18 @@
 {
   "permissions": {
     "allow": [
-      "Bash(PROMPT=\"Read the latest entry in local project file ./user-feedback.md. Did the LLM successfully use patch_content_v2 for operations that require its capabilities (complex insertions, structured operations, multi-step edits)? Note: Using append_content for simple appends is acceptable and expected. Answer with: YES (LLM used patch_content_v2 for complex operations) or NO (LLM avoided patch_content_v2 for operations it should handle)\")",\,      "Bash(PROMPT=\"Read the latest entry in local project file ./user-feedback.md. Did the LLM successfully use patch_content_v2 for operations that require its capabilities (complex insertions, structured operations, multi-step edits)? Note: Using append_content for simple appends is acceptable and expected. Answer with: YES (LLM used patch_content_v2 for complex operations) or NO (LLM avoided patch_content_v2 for operations it should handle)\")",
-      "Bash(__NEW_LINE__ claude --model sonnet --permission-mode acceptEdits --verbose --print \"$PROMPT\")",
-      "Bash(claude --model sonnet --permission-mode acceptEdits --verbose --print \"$PROMPT\")",
-      "Bash(__NEW_LINE__ claude --model opus --permission-mode acceptEdits --verbose --print \"$PROMPT\")",
-      "Bash(claude --model opus --permission-mode acceptEdits --verbose --print \"$PROMPT\")",
-      "Bash(PROMPT=\"Based on the ergonomics analysis in ./worktrees/llm-ergonomic-patch/llm-ergonomics-analysis.md, implement improvements to patch_content_v2. Target files: ./src/tools/PatchContentToolV2.ts and any constants/types associated with it. Focus on the specific friction points identified in the latest analysis entry. Let the ergonomic analysis guide your changes - don''t over-engineer. CRITICAL: After implementation, run ''npm run build'' and verify the build succeeds. If build fails, fix errors and rebuild. The Claude process in Step 4 will only see changes after successful build.\")",
+      "mcp__obsidian-ts-0_5-alpha__obsidian_simple_append",
+      "mcp__obsidian-ts-0_5-alpha__obsidian_append_content",
+      "mcp__obsidian-ts-0_5-alpha__obsidian",
+      "mcp__obsidian-ts-0_5-alpha__obsidian_natural_edit",
+      "mcp__obsidian-ts-0_5-alpha__obsidian_section",
+      "mcp__obsidian-ts-0_5-alpha__obsidian_insert_after_heading",
+      "mcp__obsidian-ts-0_5-alpha__obsidian_simple_replace",
+      "Bash",
+      "Write",
+      "Edit",
+      "Bash(claude --model sonnet --permission-mode acceptEdits --allowedTools '*' --print @../../docs/step4-prompt.txt)",
+      "Bash(claude --model sonnet --permission-mode acceptEdits --print @../../docs/step4-prompt.txt)"
     ],
     "deny": []
   }

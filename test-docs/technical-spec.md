@@ -12,3 +12,11 @@ The system consists of multiple interconnected components that work together to 
 - Backend services
 - Database layer
 - Cache layer
+
+## Implementation
+
+### Database Layer
+Uses PostgreSQL with connection pooling.
+
+### API Layer
+REST API with rate limiting.

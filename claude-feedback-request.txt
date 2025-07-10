@@ -1,1 +1,0 @@
-Done. I've written the feedback report to user-feedback.md based on my experience with the Obsidian MCP tools, highlighting the confusion with patch_content_v2's complex nested structure and how I naturally gravitated toward simpler tools like append_content.
