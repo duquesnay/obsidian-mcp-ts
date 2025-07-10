@@ -2675,3 +2675,78 @@ Our complex "ergonomic" improvements (conversational interfaces, smart blocks, d
 The most ergonomic tool isn't the most sophisticated - it's the one LLMs naturally reach for and succeed with on first attempt. In our case, that's `obsidian_simple_replace` and `obsidian_simple_append`, not the complex conversational interfaces we built.
 
 This validates the principle: **Test what users do, not what they can be taught to do**.
+
+### Follow up conversations:
+Summary of Findings
+
+The critical discovery from unbiased testing:
+
+1. Biased Test (with tool promotion): LLM used our new conversational tool
+2. Unbiased Test (neutral): LLM never attempted new tools, used simple_replace/simple_append
+   instead
+
+This reveals that:
+- Promotion creates false positives - Tools succeed because they're promoted, not because
+  they're ergonomic
+- Simple tools are the real winners - obsidian_simple_replace and obsidian_simple_append get
+  naturally chosen
+- Complex tools get abandoned - Even "ergonomic" tools fail if they have validation errors
+
+The most ergonomic tool isn't the most sophisticated - it's the one LLMs naturally reach for
+and succeed with on first attempt.
+
+Where We Are
+
+Based on this discovery, we should:
+1. Acknowledge that simple tools are already effective
+2. Focus on fixing reliability issues (like insert_after_heading errors) rather than building
+   new complex interfaces
+3. Consider reaching Step 5 (Refinement) to improve existing simple tools rather than
+   creating new ones
+
+The simple tools are winning on merit - that's true ergonomics.
+
+> but the complex ones were working? and the simple ones are good enough for structured edits?
+
+⏺ You raise an excellent point. Let me analyze this more carefully:
+
+⏺ Read(user-feedback.md)
+⎿  Read 30 lines (ctrl+r to expand)
+
+⏺ You're absolutely right to question this. Looking at the evidence:
+
+The Complex Tools DID Work (when used):
+- obsidian_converse_with_doc: 7/8 commands successful (87.5% success rate)
+- Handled complex operations like "insert between sections"
+- Maintained document structure
+- Graceful error recovery
+
+But Simple Tools Have Limitations:
+- obsidian_simple_replace: Only works if you know exact text to replace
+- Can't do structural operations like "insert after heading X"
+- The test LLM had to use workarounds like replacing "TBD" instead of inserting after
+  "Implementation"
+
+The Real Issue:
+1. Discovery Problem: Complex tools weren't discovered naturally
+2. First-Try Failures: obsidian_natural_edit and obsidian_insert_after_heading had validation
+   errors
+3. Fallback Pattern: LLMs prefer working simple tools over debugging complex ones
+
+Critical Insight: The test tasks were actually structured edits that would benefit from
+structure-aware tools:
+- "Insert after the Implementation heading"
+- "Add section between Features and Status"
+- These aren't simple text replacements!
+
+So the real question is: How do we make structure-aware tools as reliable and discoverable as
+simple ones?
+
+The conversational tool shows promise for complex edits, but it needs:
+1. Better discovery (tool naming? description?)
+2. Zero validation errors on first try
+3. Clear advantage messaging ("For structured edits, use...")
+
+You're right - simple tools aren't good enough for structured markdown editing. We need the
+complex tools to be as trustworthy as the simple ones.
+
