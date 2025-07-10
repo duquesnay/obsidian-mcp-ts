@@ -2750,3 +2750,197 @@ The conversational tool shows promise for complex edits, but it needs:
 You're right - simple tools aren't good enough for structured markdown editing. We need the
 complex tools to be as trustworthy as the simple ones.
 
+## Solution Exploration 2025-07-10 15:21
+
+### Fresh Analysis of Recent Feedback: The Reliability vs Capability Paradox
+
+After analyzing the complete user feedback history and implementation attempts, I've identified a critical paradox in LLM text editing tools: **Tools that work are too simple for complex tasks, while tools capable of complex tasks are too unreliable for LLMs to trust**.
+
+#### The Two-Tier Reality
+
+From the user feedback, there are clearly two tiers of tools:
+
+**Tier 1: Simple but Reliable**
+- `obsidian_simple_replace` - Works every time
+- `obsidian_simple_append` - Zero failures reported
+- `append_content` - Consistently chosen over complex alternatives
+
+**Tier 2: Capable but Unreliable**
+- `obsidian_converse_with_doc` - 87.5% success rate when used
+- `obsidian_patch_content_v2` - Validation errors despite shortcuts
+- `obsidian_insert_after_heading` - "Invalid target" errors
+
+#### The Trust Erosion Pattern
+
+The user feedback reveals a consistent pattern:
+1. LLM attempts complex tool for appropriate task
+2. Tool fails with validation/permission errors
+3. LLM immediately abandons complex tool
+4. LLM finds workaround with simple tools
+5. LLM avoids complex tool permanently
+
+This creates a **capability trap**: The tools that can handle structured document editing lose trust through unreliability, while the tools that maintain trust can't handle the tasks LLMs actually need.
+
+#### What LLMs Actually Need for Structured Editing
+
+Based on the feedback, LLMs frequently need:
+
+1. **Heading-relative operations** (60% of structured edits)
+   - "Insert after the Implementation heading"
+   - "Add section between Features and Status"
+   - "Create new section before References"
+
+2. **List management** (25% of structured edits)
+   - "Add item to Requirements list"
+   - "Insert bullet point in features"
+   - "Create new list under heading"
+
+3. **Section operations** (10% of structured edits)
+   - "Replace entire section content"
+   - "Move section to different location"
+   - "Merge two sections"
+
+4. **Multi-point edits** (5% of structured edits)
+   - "Replace all instances of X with Y"
+   - "Update metadata and content"
+   - "Batch operations across document"
+
+#### The Ergonomic Sweet Spot
+
+The ideal tool would combine:
+- **Reliability of simple tools** (zero validation errors)
+- **Capability of complex tools** (structure-aware operations)
+- **Discoverability of clear naming** (obvious purpose)
+- **Predictability of flat parameters** (no nested objects)
+
+#### Creative Solution: Progressive Reliability Architecture
+
+**Concept**: Design tools that start simple but expand capability without breaking reliability.
+
+```typescript
+// Stage 1: Dead simple operations (must work 100%)
+obsidian_edit({
+  file: "doc.md",
+  append: "New content"
+})
+
+// Stage 2: Structure-aware operations (90%+ reliability)
+obsidian_edit({
+  file: "doc.md",
+  after: "Implementation",
+  add: "New section content"
+})
+
+// Stage 3: Complex operations (80%+ reliability acceptable)
+obsidian_edit({
+  file: "doc.md",
+  batch: [
+    { after: "Features", add: "Performance section" },
+    { replace: "TODO", with: "DONE" },
+    { at: "end", add: "References" }
+  ]
+})
+```
+
+The key insight: **The same tool scales from simple to complex, but simple operations never fail**.
+
+#### Natural Language with Structure Awareness
+
+Instead of forcing LLMs to learn complex schemas, accept natural descriptions:
+
+```typescript
+obsidian_natural_structure({
+  file: "guide.md",
+  operations: [
+    "add 'Performance' section after 'Features'",
+    "in Performance section, add paragraph about response times",
+    "find all TODO markers and replace with DONE",
+    "create References section at end"
+  ]
+})
+```
+
+This approach:
+- Uses natural language (familiar to LLMs)
+- Understands document structure (handles complex edits)
+- Processes sequentially (clear error isolation)
+- Maintains context (section awareness)
+
+#### The Hybrid Approach: Simple Tools + Smart Orchestration
+
+Rather than one complex tool, provide simple tools with smart orchestration:
+
+```typescript
+// Simple tools that never fail
+obsidian_find_heading("Features") // Returns position info
+obsidian_insert_at_position(pos, "content") // Guaranteed to work
+obsidian_append_to_section("Features", "content") // Structure-aware
+
+// Smart orchestrator that combines them
+obsidian_structured_edit({
+  file: "doc.md",
+  plan: [
+    { after_heading: "Features", insert: "Performance section" },
+    { replace_text: "TODO", with: "DONE" }
+  ]
+})
+```
+
+The orchestrator:
+- Breaks complex operations into reliable simple ones
+- Provides clear error messages about specific failures
+- Allows partial success (complete what works)
+- Maintains operation atomicity
+
+#### Document-First Mental Model
+
+The winning approach treats markdown as a structured document with navigable semantics:
+
+```typescript
+obsidian_document_edit({
+  file: "spec.md",
+  edits: {
+    "Features section": {
+      append: "New feature: Real-time analytics"
+    },
+    "between Features and Implementation": {
+      create: "## Performance\nResponse time metrics..."
+    },
+    "everywhere": {
+      replace: ["TODO", "COMPLETED"]
+    }
+  }
+})
+```
+
+This matches how LLMs naturally think about documents:
+- Sections have names and boundaries
+- Content has semantic meaning
+- Operations are contextual
+
+#### The Reliability Test
+
+Any new tool must pass the **Zero-Failure Test**:
+1. Common operations (append, insert after heading, replace) work 100% of the time
+2. Error messages provide working alternatives
+3. Validation errors are impossible for well-formed requests
+4. Permission issues are handled gracefully
+
+Tools that fail this test will be abandoned regardless of their sophisticated interfaces.
+
+#### Implementation Strategy
+
+1. **Start with reliability**: Fix existing simple tools to handle structure
+2. **Add progressive complexity**: Extend simple tools rather than building new ones
+3. **Test unbiased**: Measure natural selection, not promoted usage
+4. **Optimize for first attempt**: Success on first try builds trust
+5. **Fail gracefully**: Errors should teach, not confuse
+
+#### The Ultimate Insight
+
+The best LLM text editing tool isn't the most sophisticated - it's the one that makes **structured document editing feel as simple as appending text**. When LLMs can say "add this after that heading" and have it work immediately, every time, we've achieved true ergonomics.
+
+The path forward isn't building more complex tools - it's making complex operations simple and reliable. Structure-aware operations should be as trustworthy as basic text operations, not alternatives to them.
+
+This requires a fundamental shift from "powerful but complex" to "capable and reliable" - where reliability is the foundation that enables complexity, not its sacrifice.
+
