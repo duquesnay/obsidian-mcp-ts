@@ -20,7 +20,7 @@ export class RenameFileTool extends BaseTool {
     required: ['oldPath', 'newPath']
   };
 
-  async execute(args: { oldPath: string; newPath: string }): Promise<any> {
+  async executeTyped(args: { oldPath: string; newPath: string }): Promise<any> {
     try {
       if (!args.oldPath) {
         throw new Error('oldPath argument missing in arguments');

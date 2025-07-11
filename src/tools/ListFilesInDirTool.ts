@@ -16,7 +16,7 @@ export class ListFilesInDirTool extends BaseTool {
     required: ['dirpath']
   };
 
-  async execute(args: { dirpath: string }): Promise<any> {
+  async executeTyped(args: { dirpath: string }): Promise<any> {
     try {
       if (!args.dirpath) {
         throw new Error('dirpath argument missing in arguments');

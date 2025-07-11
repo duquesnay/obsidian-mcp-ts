@@ -1,4 +1,4 @@
-import { BaseTool } from './base.js';
+import { BaseTool, ToolResponse } from './base.js';
 
 interface SimpleReplaceArgs {
   filepath: string;
@@ -6,7 +6,7 @@ interface SimpleReplaceArgs {
   replace: string;
 }
 
-export class SimpleReplaceTool extends BaseTool {
+export class SimpleReplaceTool extends BaseTool<SimpleReplaceArgs> {
   name = 'obsidian_simple_replace';
   description = 'Replace text in a file. Use this for simple find-and-replace operations.';
 
@@ -29,7 +29,7 @@ export class SimpleReplaceTool extends BaseTool {
     required: ['filepath', 'find', 'replace']
   };
 
-  async execute(args: SimpleReplaceArgs): Promise<any> {
+  async executeTyped(args: SimpleReplaceArgs): Promise<ToolResponse> {
     const { filepath, find, replace } = args;
 
     // Input validation

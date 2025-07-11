@@ -237,7 +237,7 @@ export class AdvancedSearchTool extends BaseTool {
     required: ['filters']
   };
 
-  async execute(args: {
+  async executeTyped(args: {
     filters: SearchFilter;
     options?: SearchOptions;
   }): Promise<any> {

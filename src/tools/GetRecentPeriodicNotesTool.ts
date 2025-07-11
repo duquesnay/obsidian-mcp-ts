@@ -20,7 +20,7 @@ export class GetRecentPeriodicNotesTool extends BaseTool {
     required: ['period']
   };
 
-  async execute(args: { 
+  async executeTyped(args: { 
     period: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly';
     days?: number;
   }): Promise<any> {

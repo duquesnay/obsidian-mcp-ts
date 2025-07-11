@@ -25,7 +25,7 @@ export class AppendContentTool extends BaseTool {
     required: ['filepath', 'content']
   };
 
-  async execute(args: {
+  async executeTyped(args: {
     filepath: string;
     content: string;
     createIfNotExists?: boolean;

@@ -4,16 +4,53 @@ import { ConfigLoader } from '../utils/configLoader.js';
 export interface AlternativeAction {
   description: string;
   tool?: string;
-  example?: Record<string, any>;
+  example?: Record<string, unknown>;
 }
 
 export interface RecoveryOptions {
   suggestion: string;
   workingAlternative?: string;
-  example?: Record<string, any>;
+  example?: Record<string, unknown>;
 }
 
-export abstract class BaseTool {
+// MCP tool response format
+export interface ToolResponse {
+  type: 'text';
+  text: string;
+}
+
+// Common error response structure
+export interface ErrorResponse {
+  success: false;
+  error: string;
+  tool: string;
+  alternatives?: AlternativeAction[];
+  suggestion?: string;
+  working_alternative?: string;
+  example?: Record<string, unknown>;
+}
+
+// Success response structure
+export interface SuccessResponse {
+  success: true;
+  [key: string]: unknown;
+}
+
+export type ToolResult = SuccessResponse | ErrorResponse | ToolResponse;
+
+// Base interface for tool registration
+export interface ToolInterface {
+  name: string;
+  description: string;
+  inputSchema: {
+    type: 'object';
+    properties: Record<string, unknown>;
+    required?: string[];
+  };
+  execute(args: Record<string, unknown>): Promise<ToolResponse>;
+}
+
+export abstract class BaseTool<TArgs = Record<string, unknown>> implements ToolInterface {
   protected obsidianClient: ObsidianClient | null = null;
   protected configLoader: ConfigLoader;
 
@@ -25,7 +62,7 @@ export abstract class BaseTool {
   abstract description: string;
   abstract inputSchema: {
     type: 'object';
-    properties: Record<string, any>;
+    properties: Record<string, unknown>;
     required?: string[];
   };
 
@@ -47,21 +84,28 @@ export abstract class BaseTool {
     return this.obsidianClient;
   }
 
-  abstract execute(args: any): Promise<any>;
+  // Concrete execute method that subclasses implement
+  abstract executeTyped(args: TArgs): Promise<ToolResponse>;
+  
+  // Interface implementation with type casting
+  async execute(args: Record<string, unknown>): Promise<ToolResponse> {
+    return this.executeTyped(args as TArgs);
+  }
 
-  protected formatResponse(data: any): any {
+  protected formatResponse(data: unknown): ToolResponse {
     return {
       type: 'text',
       text: typeof data === 'string' ? data : JSON.stringify(data, null, 2)
     };
   }
 
-  protected handleError(error: any, alternatives?: AlternativeAction[]): any {
+  protected handleError(error: unknown, alternatives?: AlternativeAction[]): ToolResponse {
     console.error(`Error in ${this.name}:`, error);
     
-    const errorResponse: any = {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorResponse: ErrorResponse = {
       success: false,
-      error: error.message || String(error),
+      error: errorMessage,
       tool: this.name
     };
 
@@ -72,12 +116,13 @@ export abstract class BaseTool {
     return this.formatResponse(errorResponse);
   }
 
-  protected handleErrorWithRecovery(error: any, recovery: RecoveryOptions): any {
+  protected handleErrorWithRecovery(error: unknown, recovery: RecoveryOptions): ToolResponse {
     console.error(`Error in ${this.name}:`, error);
     
-    const errorResponse = {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorResponse: ErrorResponse = {
       success: false,
-      error: error.message || String(error),
+      error: errorMessage,
       tool: this.name,
       suggestion: recovery.suggestion,
       working_alternative: recovery.workingAlternative,

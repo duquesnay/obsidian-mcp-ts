@@ -21,7 +21,7 @@ export class GetFileContentsTool extends BaseTool {
     required: ['filepath']
   };
 
-  async execute(args: { filepath: string; format?: 'content' | 'metadata' | 'frontmatter' | 'plain' | 'html' }): Promise<any> {
+  async executeTyped(args: { filepath: string; format?: 'content' | 'metadata' | 'frontmatter' | 'plain' | 'html' }): Promise<any> {
     try {
       // Enhanced input validation with recovery
       if (!args.filepath) {

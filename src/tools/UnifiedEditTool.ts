@@ -1,4 +1,4 @@
-import { BaseTool } from './base.js';
+import { BaseTool, ToolResponse } from './base.js';
 
 interface SimpleEdit {
   append?: string;
@@ -36,7 +36,7 @@ type UnifiedEditArgs = {
   file: string;
 } & (SimpleEdit | StructureEdit | TextEdit | BatchEdit | NewSectionEdit);
 
-export class UnifiedEditTool extends BaseTool {
+export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
   name = 'obsidian_edit';
   description = `Smart content modification with progressive complexity. Start simple - the tool handles complexity automatically.
 
@@ -130,7 +130,7 @@ export class UnifiedEditTool extends BaseTool {
     required: ['file']
   };
 
-  async execute(args: UnifiedEditArgs): Promise<any> {
+  async executeTyped(args: UnifiedEditArgs): Promise<ToolResponse> {
     try {
       const client = this.getClient();
       

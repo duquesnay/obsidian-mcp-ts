@@ -10,7 +10,7 @@ export class ListFilesInVaultTool extends BaseTool {
     required: []
   };
 
-  async execute(args: any): Promise<any> {
+  async executeTyped(args: any): Promise<any> {
     try {
       const client = this.getClient();
       const files = await client.listFilesInVault();

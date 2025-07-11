@@ -27,7 +27,7 @@ export class BatchGetFileContentsTool extends BaseTool {
     required: ['filepaths']
   };
 
-  async execute(args: { filepaths: string[]; page?: number; pageSize?: number }): Promise<any> {
+  async executeTyped(args: { filepaths: string[]; page?: number; pageSize?: number }): Promise<any> {
     try {
       if (!args.filepaths || !Array.isArray(args.filepaths)) {
         throw new Error('filepaths argument must be an array');

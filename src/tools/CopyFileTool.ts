@@ -25,7 +25,7 @@ export class CopyFileTool extends BaseTool {
     required: ['sourcePath', 'destinationPath']
   };
 
-  async execute(args: { sourcePath: string; destinationPath: string; overwrite?: boolean }): Promise<any> {
+  async executeTyped(args: { sourcePath: string; destinationPath: string; overwrite?: boolean }): Promise<any> {
     try {
       if (!args.sourcePath) {
         throw new Error('sourcePath argument missing in arguments');

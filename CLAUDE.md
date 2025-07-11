@@ -262,6 +262,15 @@ git cherry-pick $(git rev-list --grep="^(?!claude:)" main..source-branch)
 **Technical insights**:
 - **Permission Configuration Required for MCP Tool Testing**: Testing MCP tools with separate Claude processes requires explicit permission configuration using either `--allowedTools` flags or settings.json configuration. The tools list must include full MCP tool names like `mcp__obsidian-ts-0_5-alpha__obsidian_patch_content_v2`. Without proper permissions, Claude processes will ask for permission but cannot execute, making testing ineffective.
 
+### Tool Consolidation and Ergonomics Testing (2025-07-10)
+
+**Methodological insights**:
+- **Real User Testing Reveals Different Patterns Than Theoretical Analysis**: Actual user testing revealed completely different tool preferences than theoretical ergonomic analysis would suggest. Users consistently abandoned complex tools (even "ergonomically improved" ones) after first failure and fell back to simple tools with 100% success rates. The UnifiedEditTool succeeded in testing where others failed, but only through actual execution, not theoretical evaluation.
+- **Scope Discipline Prevents Feature Creep in Analysis**: Initially misunderstood study scope and removed 30+ useful tools (file operations, tags, search) when analysis was only about complex editing tools. This highlighted how critical scope discipline is - without clear boundaries, improvement efforts can accidentally destroy working functionality outside their intended domain.
+
+**Technical insights**:
+- **Progressive Tool Architecture Matches LLM Mental Models**: The UnifiedEditTool's progressive complexity design (Stage 1: 100% simple operations → Stage 2: 90% structure-aware → Stage 3: 80% complex) successfully matched how LLMs approach document editing. Users naturally started with simple operations and escalated complexity only when needed, rather than being forced to understand complex schemas upfront.
+
 ## Insights and Memories
 
 - **Obsidian MCP is only for obsidian notes, not filesystem access**

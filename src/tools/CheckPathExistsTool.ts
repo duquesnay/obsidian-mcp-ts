@@ -16,7 +16,7 @@ export class CheckPathExistsTool extends BaseTool {
     required: ['path']
   };
 
-  async execute(args: { path: string }): Promise<any> {
+  async executeTyped(args: { path: string }): Promise<any> {
     try {
       if (!args.path) {
         throw new Error('path argument missing in arguments');

@@ -16,7 +16,7 @@ export class GetPeriodicNoteTool extends BaseTool {
     required: ['period']
   };
 
-  async execute(args: { period: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly' }): Promise<any> {
+  async executeTyped(args: { period: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly' }): Promise<any> {
     try {
       if (!args.period) {
         throw new Error('period argument missing in arguments');

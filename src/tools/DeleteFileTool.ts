@@ -16,7 +16,7 @@ export class DeleteFileTool extends BaseTool {
     required: ['filepath']
   };
 
-  async execute(args: { filepath: string }): Promise<any> {
+  async executeTyped(args: { filepath: string }): Promise<any> {
     try {
       // Enhanced input validation with recovery
       if (!args.filepath) {

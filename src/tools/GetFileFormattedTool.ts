@@ -21,7 +21,7 @@ export class GetFileFormattedTool extends BaseTool {
     required: ['filepath', 'format']
   };
 
-  async execute(args: { filepath: string; format: 'plain' | 'html' | 'content' }): Promise<any> {
+  async executeTyped(args: { filepath: string; format: 'plain' | 'html' | 'content' }): Promise<any> {
     try {
       validatePath(args.filepath, 'filepath');
       

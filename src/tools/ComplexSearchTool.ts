@@ -15,7 +15,7 @@ export class ComplexSearchTool extends BaseTool {
     required: ['query']
   };
 
-  async execute(args: { query: any }): Promise<any> {
+  async executeTyped(args: { query: any }): Promise<any> {
     try {
       if (!args.query) {
         throw new Error('query argument missing in arguments');

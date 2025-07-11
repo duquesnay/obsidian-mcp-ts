@@ -30,7 +30,7 @@ export class GetRecentChangesTool extends BaseTool {
     required: []
   };
 
-  async execute(args: {
+  async executeTyped(args: {
     directory?: string;
     limit?: number;
     offset?: number;

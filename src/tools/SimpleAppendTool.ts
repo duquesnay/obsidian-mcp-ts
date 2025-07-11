@@ -1,4 +1,4 @@
-import { BaseTool } from './base.js';
+import { BaseTool, ToolResponse } from './base.js';
 
 interface SimpleAppendArgs {
   filepath: string;
@@ -6,7 +6,7 @@ interface SimpleAppendArgs {
   create_file_if_missing?: boolean;
 }
 
-export class SimpleAppendTool extends BaseTool {
+export class SimpleAppendTool extends BaseTool<SimpleAppendArgs> {
   name = 'obsidian_simple_append';
   description = 'Append text to the end of a file. Use this for simple text additions.';
 
@@ -30,7 +30,7 @@ export class SimpleAppendTool extends BaseTool {
     required: ['filepath', 'content']
   };
 
-  async execute(args: SimpleAppendArgs): Promise<any> {
+  async executeTyped(args: SimpleAppendArgs): Promise<ToolResponse> {
     const { filepath, content, create_file_if_missing = false } = args;
 
     // Input validation

@@ -33,7 +33,7 @@ export class SimpleSearchTool extends BaseTool {
     required: ['query']
   };
 
-  async execute(args: { query: string; contextLength?: number; limit?: number; offset?: number }): Promise<any> {
+  async executeTyped(args: { query: string; contextLength?: number; limit?: number; offset?: number }): Promise<any> {
     try {
       // Enhanced input validation with recovery
       if (!args.query) {

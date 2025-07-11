@@ -16,7 +16,7 @@ export class GetFileMetadataTool extends BaseTool {
     required: ['filepath']
   };
 
-  async execute(args: { filepath: string }): Promise<any> {
+  async executeTyped(args: { filepath: string }): Promise<any> {
     try {
       validatePath(args.filepath, 'filepath');
       

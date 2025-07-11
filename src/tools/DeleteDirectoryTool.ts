@@ -26,7 +26,7 @@ export class DeleteDirectoryTool extends BaseTool {
     required: ['directoryPath']
   };
 
-  async execute(args: { directoryPath: string; recursive?: boolean; permanent?: boolean }): Promise<any> {
+  async executeTyped(args: { directoryPath: string; recursive?: boolean; permanent?: boolean }): Promise<any> {
     try {
       if (!args.directoryPath) {
         throw new Error('directoryPath argument missing in arguments');

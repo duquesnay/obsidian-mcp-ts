@@ -20,7 +20,7 @@ export class FindEmptyDirectoriesTool extends BaseTool {
     required: []
   };
 
-  async execute(args: { searchPath?: string; includeHiddenFiles?: boolean }): Promise<any> {
+  async executeTyped(args: { searchPath?: string; includeHiddenFiles?: boolean }): Promise<any> {
     try {
       const client = this.getClient();
       const searchPath = args.searchPath || '';
