@@ -2,7 +2,6 @@ import axios, { AxiosInstance, AxiosError } from 'axios';
 import https from 'https';
 import { ObsidianError } from '../types/errors.js';
 import { validatePath, validatePaths } from '../utils/pathValidator.js';
-import { withRetry, createRetryConfig, RetryConfig } from '../utils/retryLogic.js';
 
 export interface ObsidianClientConfig {
   apiKey: string;
@@ -47,26 +46,58 @@ export class ObsidianClient {
     return `${this.protocol}://${this.host}:${this.port}`;
   }
 
-  private async safeCall<T>(fn: () => Promise<T>, operationType: 'read' | 'write' | 'heavy' | 'search' = 'read'): Promise<T> {
-    const retryConfig = createRetryConfig(operationType);
-    
-    return withRetry(async () => {
-      try {
-        return await fn();
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          const axiosError = error as AxiosError<{ errorCode?: number; message?: string }>;
-          if (axiosError.response?.data) {
-            const errorData = axiosError.response.data;
-            const code = errorData.errorCode || -1;
-            const message = errorData.message || '<unknown>';
-            throw new ObsidianError(`Error ${code}: ${message}`, code);
-          }
-          throw new ObsidianError(`Request failed: ${error.message}`);
+  private async safeCall<T>(fn: () => Promise<T>): Promise<T> {
+    try {
+      return await fn();
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError<{ errorCode?: number; message?: string }>;
+        
+        // Preserve detailed error information for better debugging
+        if (axiosError.response?.data) {
+          const errorData = axiosError.response.data;
+          const code = errorData.errorCode || axiosError.response.status || -1;
+          const message = errorData.message || axiosError.message || '<unknown>';
+          const contextInfo = this.getErrorContext(axiosError);
+          throw new ObsidianError(`${contextInfo}Error ${code}: ${message}`, code);
         }
-        throw error;
+        
+        // Network-level errors (no response received)
+        if (axiosError.code) {
+          const contextInfo = this.getErrorContext(axiosError);
+          throw new ObsidianError(`${contextInfo}Network error (${axiosError.code}): ${axiosError.message}`);
+        }
+        
+        // Generic axios error
+        const contextInfo = this.getErrorContext(axiosError);
+        throw new ObsidianError(`${contextInfo}Request failed: ${axiosError.message}`);
       }
-    }, retryConfig);
+      throw error;
+    }
+  }
+
+  private getErrorContext(axiosError: AxiosError): string {
+    const method = axiosError.config?.method?.toUpperCase() || 'REQUEST';
+    const url = axiosError.config?.url || 'unknown endpoint';
+    const status = axiosError.response?.status;
+    
+    let context = `${method} ${url} - `;
+    
+    if (status) {
+      if (status === 401) {
+        context += 'Authentication failed (check API key) - ';
+      } else if (status === 403) {
+        context += 'Access forbidden (check permissions) - ';
+      } else if (status === 404) {
+        context += 'Resource not found - ';
+      } else if (status >= 500) {
+        context += 'Server error (Obsidian plugin may be unavailable) - ';
+      } else if (status >= 400) {
+        context += 'Client error - ';
+      }
+    }
+    
+    return context;
   }
 
   async listFilesInVault(): Promise<string[]> {
@@ -146,14 +177,14 @@ export class ObsidianClient {
         offset: startIndex,
         limit: limit || totalResults
       };
-    }, 'search');
+    });
   }
 
   async complexSearch(query: any): Promise<any> {
     return this.safeCall(async () => {
       const response = await this.axiosInstance.post('/search/', query);
       return response.data;
-    }, 'search');
+    });
   }
 
   async patchContent(
@@ -215,7 +246,7 @@ export class ObsidianClient {
         { headers }
       );
       return response.data;
-    }, 'write');
+    });
   }
 
   async appendContent(filepath: string, content: string, createIfNotExists: boolean = true): Promise<void> {
@@ -237,7 +268,7 @@ export class ObsidianClient {
           headers: { 'Content-Type': 'text/markdown' }
         });
       }
-    }, 'write');
+    });
   }
 
   async createFile(filepath: string, content: string): Promise<void> {
@@ -248,7 +279,7 @@ export class ObsidianClient {
       await this.axiosInstance.put(`/vault/${encodedPath}`, content, {
         headers: { 'Content-Type': 'text/markdown' }
       });
-    }, 'write');
+    });
   }
 
   async updateFile(filepath: string, content: string): Promise<void> {
@@ -261,7 +292,7 @@ export class ObsidianClient {
     
     return this.safeCall(async () => {
       await this.axiosInstance.delete(`/vault/${encodedPath}`);
-    }, 'write');
+    });
   }
 
   async renameFile(oldPath: string, newPath: string): Promise<void> {
@@ -294,7 +325,7 @@ export class ObsidianClient {
           throw error;
         }
       }
-    }, 'write');
+    });
   }
 
   async moveFile(sourcePath: string, destinationPath: string): Promise<void> {
@@ -324,7 +355,7 @@ export class ObsidianClient {
           throw error;
         }
       }
-    }, 'write');
+    });
   }
 
   async getPeriodicNote(period: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'): Promise<any> {
@@ -413,7 +444,7 @@ export class ObsidianClient {
           throw error;
         }
       }
-    }, 'heavy');
+    });
 
   }
 
@@ -448,7 +479,7 @@ export class ObsidianClient {
       
       // Create the new file at destination
       await this.createFile(destinationPath, content);
-    }, 'write');
+    });
   }
 
   async checkPathExists(path: string): Promise<{ exists: boolean; type: 'file' | 'directory' | null }> {
@@ -514,7 +545,7 @@ export class ObsidianClient {
           throw error;
         }
       }
-    }, 'write');
+    });
   }
 
   async deleteDirectory(directoryPath: string, recursive: boolean = false, permanent: boolean = false): Promise<{ 
@@ -567,7 +598,7 @@ export class ObsidianClient {
           throw error;
         }
       }
-    }, 'heavy');
+    });
   }
 
   async copyDirectory(sourcePath: string, destinationPath: string, overwrite: boolean = false): Promise<{ 
@@ -619,7 +650,7 @@ export class ObsidianClient {
           throw error;
         }
       }
-    }, 'heavy');
+    });
   }
 
   // Tag Management Methods
@@ -659,7 +690,7 @@ export class ObsidianClient {
         filesUpdated: result.filesUpdated || 0,
         message: result.message
       };
-    }, 'write');
+    });
   }
 
   async manageFileTags(
@@ -689,7 +720,7 @@ export class ObsidianClient {
         tagsModified: result.tagsModified || tags.length,
         message: result.message
       };
-    }, 'write');
+    });
   }
 
   async advancedSearch(
@@ -733,6 +764,6 @@ export class ObsidianClient {
         results: result.results || [],
         hasMore: result.hasMore || false
       };
-    }, 'search');
+    });
   }
 }
