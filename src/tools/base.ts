@@ -100,7 +100,10 @@ export abstract class BaseTool<TArgs = Record<string, unknown>> implements ToolI
   }
 
   protected handleError(error: unknown, alternatives?: AlternativeAction[]): ToolResponse {
-    console.error(`Error in ${this.name}:`, error);
+    // Only log errors in non-test environments to avoid confusing test output
+    if (process.env.NODE_ENV !== 'test' && process.env.VITEST !== 'true') {
+      console.error(`Error in ${this.name}:`, error);
+    }
     
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorResponse: ErrorResponse = {
@@ -117,7 +120,10 @@ export abstract class BaseTool<TArgs = Record<string, unknown>> implements ToolI
   }
 
   protected handleErrorWithRecovery(error: unknown, recovery: RecoveryOptions): ToolResponse {
-    console.error(`Error in ${this.name}:`, error);
+    // Only log errors in non-test environments to avoid confusing test output
+    if (process.env.NODE_ENV !== 'test' && process.env.VITEST !== 'true') {
+      console.error(`Error in ${this.name}:`, error);
+    }
     
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorResponse: ErrorResponse = {
