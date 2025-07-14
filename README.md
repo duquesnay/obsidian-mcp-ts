@@ -17,9 +17,10 @@ The server implements multiple tools to interact with Obsidian:
 - batch_get_file_contents: Return the contents of multiple files in your vault, concatenated with headers
 - simple_search: Simple search for documents matching a specified text query across all files in the vault
 - complex_search: Complex search for documents using a JsonLogic query
-- patch_content: [DEPRECATED - Use patch_content_v2 instead] Insert or replace content in a note - supports find/replace operations, inserting at headings/blocks, and frontmatter updates
+- obsidian_edit: Edit Obsidian vault notes with smart operations - progressive complexity from simple appends to structured edits
+- simple_append: Simple text appending to files - reliable for basic additions
+- simple_replace: Simple find and replace operations - straightforward text replacement
 - query_structure: Query document structure to get headings, blocks, and sections - useful for LLMs to build unambiguous references before modifying content
-- patch_content_v2: LLM-ergonomic content modification with explicit operations and deterministic targeting - use query_structure first for unambiguous references
 - append_content: Append content to a new or existing file in the vault
 - delete_file: Delete a file or directory from your vault
 - rename_file: Rename a file within the same directory while preserving history and updating links (requires updated REST API plugin)
@@ -77,52 +78,52 @@ The use prompts like this:
 - Search for empty directories within the 'archive' folder only
 - List files in 'projects/drafts/' - will return empty array if the directory is empty
 
-## Important: Deprecation Notice
+## Editing Tools Overview
 
-### `patch_content` is DEPRECATED
+The MCP server provides tools with progressive complexity for editing Obsidian notes:
 
-The `obsidian_patch_content` tool is deprecated as of v0.5.0 and will be removed in v1.0.0.
+### Simple Operations
+- **`obsidian_simple_append`** - Append text to files with automatic newline handling
+- **`obsidian_simple_replace`** - Find and replace text in files
 
-**Why deprecated:**
-- Ambiguous parameters (`target` vs `heading` vs `targetType`)
-- Cannot handle duplicate headings reliably
-- Confusing for LLM consumers
+### Smart Editing
+- **`obsidian_edit`** - Unified editing tool with progressive complexity:
+  - Stage 1: Simple append operations (100% reliability)
+  - Stage 2: Structure-aware edits (insert after/before headings)
+  - Stage 3: Complex operations (batch edits, new sections)
 
-**Use instead:**
-1. `obsidian_query_structure` - Query document structure first
-2. `obsidian_patch_content_v2` - Make modifications with deterministic targeting
+### Structure Query
+- **`obsidian_query_structure`** - Query document structure to find headings and blocks before editing
 
-**Migration example:**
+**Usage examples:**
 ```typescript
-// OLD (deprecated)
-await patch_content({
+// Simple append
+await obsidian_simple_append({
   filepath: "note.md",
-  targetType: "heading",
-  target: "Overview",
-  content: "New text"
+  content: "New paragraph"
 });
 
-// NEW (recommended)
-// Step 1: Query structure
-const structure = await query_structure({
-  filepath: "note.md",
-  query: { type: "headings" }
+// Smart editing - insert after heading
+await obsidian_edit({
+  file: "note.md",
+  after: "Overview",
+  add: "New content after the Overview heading"
 });
 
-// Step 2: Use v2 with explicit path
-await patch_content_v2({
+// Find and replace
+await obsidian_simple_replace({
   filepath: "note.md",
-  operation: {
-    type: "insert",
-    insert: {
-      content: "New text",
-      location: {
-        type: "heading",
-        heading: { path: ["Section", "Overview"] },
-        position: "after"
-      }
-    }
-  }
+  find: "old text",
+  replace: "new text"
+});
+
+// Complex batch operations
+await obsidian_edit({
+  file: "note.md",
+  batch: [
+    { after: "Introduction", add: "New intro content" },
+    { find: "TODO", replace: "DONE" }
+  ]
 });
 ```
 

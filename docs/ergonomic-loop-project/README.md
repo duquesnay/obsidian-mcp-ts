@@ -19,48 +19,58 @@ The key innovation is using AI agents themselves to evaluate what makes tools er
 
 ```
 ergonomic-loop-project/
-├── README.md                    # This file
-├── prompts/                     # Step-by-step prompts for the loop
-│   ├── step1-prompt.txt        # Analysis prompt
-│   ├── step2-prompt.txt        # Design prompt
-│   ├── step3-prompt.txt        # Implementation prompt
-│   ├── step4-prompt.txt        # Testing prompt
-│   └── step5-prompt.txt        # Synthesis prompt
-├── scripts/                     # Execution scripts
-│   ├── ergonomics-loop.sh      # Main orchestration script
-│   ├── claude-wrapper.sh       # Claude execution wrapper
-│   └── resume-wrapper.sh       # Resume from specific step
-├── logs/                        # Execution logs from all runs
-│   ├── ergonomics-cycle.log    # Main cycle log
-│   └── step*-debug-*.jsonl     # Individual step debug logs
-├── results/                     # Analysis results and findings
-│   ├── llm-ergonomics-analysis.md      # Final analysis
+├── README.md                           # This file
+├── MIGRATION_SUMMARY.md                # Migration history (2025-01-14)
+├── ergonomics-cycle-prompt.md          # Original cycle prompt
+├── retrospective-analysis.md           # Learnings from the process
+├── prompts/                            # Step-by-step prompts for the loop
+│   ├── step1-prompt.txt               # Analysis prompt
+│   ├── step2-prompt.txt               # Design prompt
+│   ├── step3-prompt.txt               # Implementation prompt
+│   ├── step4-prompt.txt               # Testing prompt
+│   └── step5-prompt.txt               # Synthesis prompt
+├── results/                            # Analysis results and findings
+│   ├── llm-ergonomics-analysis.md     # Final analysis
 │   └── llm-ergonomic-migration-guide.md # Migration guide
-└── docs/                        # Documentation
-    ├── ergonomics-cycle-prompt.md      # Original cycle prompt
-    └── retrospective-analysis.md       # Learnings from the process
+├── artifacts/                          # Implementation artifacts
+│   ├── PATCH_CONTENT_V3_IMPROVEMENTS.md
+│   ├── PATCH_V2_IMPROVEMENTS.md
+│   ├── implementation-log.md
+│   ├── unified-edit-test-prompt.txt
+│   ├── unified-edit-test-scenarios.md
+│   └── user-feedback.md
+└── logs/                               # Execution logs
+    ├── ergonomics-cycle.log           # Main cycle log
+    └── archive/
+        └── 2025-07-10-debug-logs.tar.gz # Archived debug logs
 ```
 
-## How to Use
+**Note**: The scripts directory referenced in MIGRATION_SUMMARY was not included in the final migration. The experiment was conducted in July 2025 and resulted in the UnifiedEditTool implementation.
 
-### Running the Full Cycle
+## How to Use This Project
 
-```bash
-cd docs/ergonomic-loop-project/scripts
-./ergonomics-loop.sh
-```
+### As a Template
 
-### Resuming from a Specific Step
+This project serves as a template for conducting ergonomic analyses of other tool ecosystems. The 5-step process can be adapted by:
 
-```bash
-./resume-wrapper.sh 3  # Resume from step 3
-```
+1. Copying the prompts directory
+2. Modifying step1-prompt.txt to analyze your target tools
+3. Running each step sequentially with Claude
+4. Collecting results in a similar structure
 
-### Prerequisites
+### Understanding the Process
+
+1. **Step 1**: Analyze existing tools and identify pain points
+2. **Step 2**: Design improved interfaces based on the analysis
+3. **Step 3**: Implement the new interfaces
+4. **Step 4**: Test the implementations
+5. **Step 5**: Synthesize learnings and recommendations
+
+### Prerequisites for Running Your Own Analysis
 
 - Claude CLI (`claude`) installed and configured
 - Appropriate permissions for the tools being analyzed
-- The target codebase available (e.g., obsidian-mcp-ts)
+- The target codebase available
 
 ## Key Findings
 
