@@ -78,7 +78,8 @@ export abstract class BaseTool<TArgs = Record<string, unknown>> implements ToolI
     if (!this.obsidianClient) {
       this.obsidianClient = new ObsidianClient({
         apiKey: this.getApiKey(),
-        host: this.getObsidianHost()
+        host: this.getObsidianHost(),
+        verifySsl: false  // Disable SSL verification for self-signed Obsidian certificates
       });
     }
     return this.obsidianClient;
