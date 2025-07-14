@@ -382,7 +382,7 @@ Nested content`;
   describe('tool metadata', () => {
     it('should have appropriate tool name and description', () => {
       expect(tool.name).toBe('obsidian_get_file_contents');
-      expect(tool.description).toContain('Return the content of a single file');
+      expect(tool.description).toContain('Read content from an Obsidian vault note');
       expect(tool.description).toContain('vault');
       expect(tool.description).toContain('formats');
     });

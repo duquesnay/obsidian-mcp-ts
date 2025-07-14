@@ -187,7 +187,7 @@ describe('ListFilesInVaultTool', () => {
   describe('tool metadata', () => {
     it('should have appropriate tool name and description', () => {
       expect(tool.name).toBe('obsidian_list_files_in_vault');
-      expect(tool.description).toContain('List all files');
+      expect(tool.description).toContain('List all notes and folders');
       expect(tool.description).toContain('vault');
     });
 

@@ -27,7 +27,13 @@
       "mcp__obsidian-ts-0_5-alpha__obsidian_append_content",
       "mcp__obsidian-ts-0_5-alpha__obsidian_simple_replace",
       "Bash(cp:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(diff:*)",
+      "Bash(tar:*)",
+      "Bash(./fix-remaining-tests.sh:*)",
+      "Bash(bash:*)",
+      "Bash(npx tsx:*)",
+      "Bash(npx @modelcontextprotocol/inspector:*)"
     ],
     "deny": []
   }

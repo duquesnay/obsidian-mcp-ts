@@ -12,6 +12,7 @@ const server = new Server(
   {
     name: 'obsidian-mcp',
     version: '0.3.0',
+    description: 'OBSIDIAN VAULT MCP - For Obsidian Notes Only. This server ONLY accesses notes within your Obsidian vault. For general filesystem access, use filesystem MCP servers.',
   },
   {
     capabilities: {
@@ -23,14 +24,10 @@ const server = new Server(
 // Start server
 async function main() {
   try {
-    // Display startup warning for MCP clients
-    console.info(`
-╔══════════════════════════════════════════════════════════════╗
-║  OBSIDIAN VAULT MCP - For Obsidian Notes Only               ║
-║  This server ONLY accesses notes within your Obsidian vault  ║
-║  For general filesystem access, use filesystem MCP servers   ║
-╚══════════════════════════════════════════════════════════════╝
-`);
+    // Display startup warning on stderr (not stdout) to avoid breaking JSON-RPC protocol
+    console.error('OBSIDIAN VAULT MCP - For Obsidian Notes Only');
+    console.error('This server ONLY accesses notes within your Obsidian vault');
+    console.error('For general filesystem access, use filesystem MCP servers');
     
     // Register all tools
     await registerTools(server);

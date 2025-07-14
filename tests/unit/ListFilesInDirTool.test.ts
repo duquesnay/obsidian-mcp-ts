@@ -34,7 +34,7 @@ describe('ListFilesInDirTool', () => {
 
   it('should have correct metadata', () => {
     expect(tool.name).toBe('obsidian_list_files_in_dir');
-    expect(tool.description).toContain('Lists all files and directories');
+    expect(tool.description).toContain('List notes and folders in a specific');
     expect(tool.inputSchema.properties.dirpath.description).toContain('empty directories will not be returned');
   });
 

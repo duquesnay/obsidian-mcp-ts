@@ -38,30 +38,7 @@ type UnifiedEditArgs = {
 
 export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
   name = 'obsidian_edit';
-  description = `Edit Obsidian vault notes with smart operations (vault-only - NOT filesystem files). Progressive complexity handling.
-
-🎯 IMMEDIATE SUCCESS - Use these patterns for first-attempt success:
-• Append text: { file: "notes.md", append: "text to add" }
-• Find & replace: { file: "notes.md", find: "old", replace: "new" }
-• Insert after heading: { file: "notes.md", after: "Title", add: "text" }
-• Insert before heading: { file: "notes.md", before: "Title", add: "text" }
-
-📝 WORKING EXAMPLES (copy-paste ready):
-1. Add daily task: { file: "daily/2025-01-09.md", append: "- Task completed" }
-2. Update status: { file: "project.md", find: "TODO", replace: "DONE" }
-3. Insert content: { file: "readme.md", after: "Installation", add: "New setup guide" }
-4. Add at start: { file: "notes.md", before: "*", add: "## Summary\\nOverview..." }
-5. New section: { file: "guide.md", new_section: "Troubleshooting", at: "end", content: "Common issues..." }
-
-✅ CONTENT HANDLING (100% reliability):
-• Use plain strings: "your text here" (recommended)
-• Auto-handles any format internally
-• No type specifications needed
-• Strings always work on first try
-
-🔧 ADVANCED: For complex multi-location edits, use batch: [{ after: "Title1", add: "text1" }, { find: "old", replace: "new" }]
-
-💡 TIP: For simple appending, this tool is optimized for reliability over obsidian_patch_content_v2!`;
+  description = 'Edit Obsidian vault notes with smart operations (vault-only - NOT filesystem files). Supports append, find/replace, and heading-based insertions.';
 
   inputSchema = {
     type: 'object' as const,

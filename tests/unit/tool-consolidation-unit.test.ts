@@ -45,7 +45,7 @@ In progress`;
     it('should handle Stage 1 operations (simple append) interface pattern', async () => {
       // Test interface without making actual calls
       expect(unifiedTool.name).toBe('obsidian_edit');
-      expect(unifiedTool.description).toContain('Progressive complexity handling');
+      expect(unifiedTool.description).toContain('smart operations');
       
       // Validate parameter schema supports simple append
       const schema = unifiedTool.inputSchema;
@@ -60,7 +60,7 @@ In progress`;
       expect(schema.properties).toHaveProperty('add');
       
       // Validate description mentions structure awareness
-      expect(unifiedTool.description).toContain('after');
+      expect(unifiedTool.description).toContain('heading-based insertions');
       expect(unifiedTool.description).toContain('heading');
     });
 
@@ -116,8 +116,8 @@ In progress`;
 
     it('should provide helpful alternatives in tool descriptions', async () => {
       // Test that descriptions provide guidance
-      expect(unifiedTool.description).toContain('simple');
-      expect(unifiedTool.description).toContain('Progressive');
+      expect(unifiedTool.description).toContain('smart');
+      expect(unifiedTool.description).toContain('smart');
       
       // Simple tools should reference their purpose
       expect(simpleAppendTool.description).toContain('Simple');
@@ -132,10 +132,10 @@ In progress`;
       // Should mention the key capabilities that replaced removed tools
       expect(unifiedDescription).toContain('append');
       expect(unifiedDescription).toContain('replace');
-      expect(unifiedDescription).toContain('after');
+      expect(unifiedDescription).toContain('heading-based');
       
       // Should emphasize ease of use and Progressive complexity handling
-      expect(unifiedDescription.toLowerCase()).toContain('simple');
+      expect(unifiedDescription.toLowerCase()).toContain('smart');
     });
 
     it('should validate tool interface consistency', () => {
@@ -172,7 +172,7 @@ In progress`;
       expect(currentEditingTools.length).toBeLessThanOrEqual(4);
       
       // Verify the primary tool can handle complex operations
-      expect(unifiedTool.description).toContain('Progressive complexity handling');
+      expect(unifiedTool.description).toContain('smart operations');
       
       // Verify simple tools are positioned as fallbacks
       expect(simpleAppendTool.description.toLowerCase()).toContain('simple');
@@ -187,8 +187,8 @@ In progress`;
       const schema = unifiedTool.inputSchema;
       const description = unifiedTool.description;
       
-      expect(description).toContain('after');  // Replaces targetType: 'heading', insertAfter: true
-      expect(description).toContain('add');    // Replaces content parameter
+      expect(description).toContain('heading-based');  // Replaces targetType: 'heading', insertAfter: true
+      expect(description).toContain('insertions');    // Replaces content parameter
     });
 
     it('should confirm InsertAfterHeadingTool functionality is covered', () => {
@@ -196,17 +196,17 @@ In progress`;
       // UnifiedEditTool covers this with: file, after, add
       const description = unifiedTool.description;
       
-      expect(description).toContain('after');
+      expect(description).toContain('heading-based');
       expect(description).toContain('heading');
-      expect(description).toContain('Insert after heading');
+      expect(description).toContain('heading-based insertions');
     });
 
     it('should confirm complex editing patterns are simplified', () => {
       const description = unifiedTool.description;
       
       // Should emphasize simplicity over the complex patterns that failed
-      expect(description).toContain('simple');
-      expect(description).toContain('Progressive');
+      expect(description).toContain('smart');
+      expect(description).toContain('operations');
       
       // Should not contain the problematic patterns from removed tools
       expect(description).not.toContain('targetType');
@@ -253,23 +253,22 @@ In progress`;
       expect(description).toContain('append');
       expect(description).toContain('find');
       expect(description).toContain('replace');
-      expect(description).toContain('after');
+      expect(description).toContain('heading-based');
       
-      // Should have examples that are easy to understand
-      expect(description).toContain('{');  // JSON examples
-      expect(description).toContain('file:');  // Parameter names
+      // Should be clear and professional
+      expect(description).not.toContain('\n');  // Single line
+      expect(description.length).toBeLessThan(200);  // Concise
     });
 
     it('should validate progressive disclosure in tool design', () => {
       const description = unifiedTool.description;
       
       // Should emphasize that simple operations come first
-      expect(description).toContain('IMMEDIATE SUCCESS');
-      expect(description).toContain('IMMEDIATE SUCCESS');
+      expect(description).toContain('smart operations');
       
-      // Should provide copy-paste ready examples
-      expect(description).toContain('copy-paste ready');
-      expect(description).toContain('WORKING EXAMPLES');
+      // Should mention key capabilities
+      expect(description).toContain('append');
+      expect(description).toContain('find/replace');
     });
   });
 });

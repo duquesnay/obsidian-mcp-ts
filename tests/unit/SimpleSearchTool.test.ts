@@ -646,10 +646,9 @@ describe('SimpleSearchTool', () => {
   describe('tool metadata', () => {
     it('should have appropriate tool name and description', () => {
       expect(tool.name).toBe('obsidian_simple_search');
-      expect(tool.description).toContain('Simple search for documents');
+      expect(tool.description).toContain('Search text in Obsidian vault notes');
       expect(tool.description).toContain('vault');
       expect(tool.description).toContain('paginated results');
-      expect(tool.description).toContain('offset');
     });
 
     it('should have proper input schema', () => {

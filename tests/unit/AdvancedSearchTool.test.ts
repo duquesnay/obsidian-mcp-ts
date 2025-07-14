@@ -19,7 +19,7 @@ describe('AdvancedSearchTool', () => {
   it('should have correct name and description', () => {
     expect(tool.name).toBe('obsidian_advanced_search');
     expect(tool.description).toContain('Advanced search');
-    expect(tool.description).toContain('comprehensive filtering');
+    expect(tool.description).toContain('Filter by content, metadata, tags');
   });
 
   it('should have comprehensive input schema', () => {

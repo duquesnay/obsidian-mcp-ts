@@ -34,7 +34,7 @@ describe('FindEmptyDirectoriesTool', () => {
 
   it('should have correct metadata', () => {
     expect(tool.name).toBe('obsidian_find_empty_directories');
-    expect(tool.description).toContain('Find all empty directories');
+    expect(tool.description).toContain('Find empty folders in Obsidian vault');
     expect(tool.inputSchema.properties).toHaveProperty('searchPath');
     expect(tool.inputSchema.properties).toHaveProperty('includeHiddenFiles');
   });

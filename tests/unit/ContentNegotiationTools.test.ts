@@ -32,7 +32,7 @@ describe('Content Negotiation Tools', () => {
     it('should have correct name and description', () => {
       expect(tool.name).toBe('obsidian_get_file_metadata');
       expect(tool.description).toContain('metadata');
-      expect(tool.description).toContain('efficient');
+      expect(tool.description).toContain('Efficient for large notes');
     });
 
     it('should call getFileContents with metadata format', async () => {
@@ -88,7 +88,7 @@ describe('Content Negotiation Tools', () => {
     it('should have correct name and description', () => {
       expect(tool.name).toBe('obsidian_get_file_frontmatter');
       expect(tool.description).toContain('frontmatter');
-      expect(tool.description).toContain('metadata analysis');
+      expect(tool.description).toContain('Returns YAML metadata only');
     });
 
     it('should call getFileContents with frontmatter format', async () => {
@@ -122,7 +122,7 @@ describe('Content Negotiation Tools', () => {
     it('should have correct name and description', () => {
       expect(tool.name).toBe('obsidian_get_file_formatted');
       expect(tool.description).toContain('different formats');
-      expect(tool.description).toContain('token optimization');
+      expect(tool.description).toContain('Plain text, HTML, or markdown');
     });
 
     it('should support all format options in schema', () => {
