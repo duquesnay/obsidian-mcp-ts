@@ -216,7 +216,7 @@ describe('SimpleSearchTool', () => {
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('query argument missing');
+      expect(response.error).toContain('Missing required parameters');
       expect(response.tool).toBe('obsidian_simple_search');
     });
 
@@ -229,7 +229,7 @@ describe('SimpleSearchTool', () => {
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('query argument missing');
+      expect(response.error).toContain('Missing required parameters');
     });
 
     it('should handle null query parameter', async () => {
@@ -241,7 +241,7 @@ describe('SimpleSearchTool', () => {
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('query argument missing');
+      expect(response.error).toContain('Missing required parameters');
     });
 
     it('should handle negative limit values (passes through as-is)', async () => {

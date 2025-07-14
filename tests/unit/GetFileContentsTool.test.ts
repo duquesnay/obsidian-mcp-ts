@@ -118,7 +118,7 @@ describe('GetFileContentsTool', () => {
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('filepath argument missing');
+      expect(response.error).toContain('Missing required parameters');
       expect(response.tool).toBe('obsidian_get_file_contents');
     });
 
@@ -131,7 +131,7 @@ describe('GetFileContentsTool', () => {
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('filepath argument missing');
+      expect(response.error).toContain('Missing required parameters');
     });
 
     it('should handle null filepath parameter', async () => {
@@ -143,7 +143,7 @@ describe('GetFileContentsTool', () => {
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('filepath argument missing');
+      expect(response.error).toContain('Missing required parameters');
     });
   });
 

@@ -115,7 +115,7 @@ describe('DeleteFileTool', () => {
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('filepath argument missing');
+      expect(response.error).toContain('Missing required parameters');
       expect(response.tool).toBe('obsidian_delete_file');
     });
 
@@ -128,7 +128,7 @@ describe('DeleteFileTool', () => {
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('filepath argument missing');
+      expect(response.error).toContain('Missing required parameters');
     });
 
     it('should handle null filepath parameter', async () => {
@@ -140,7 +140,7 @@ describe('DeleteFileTool', () => {
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('filepath argument missing');
+      expect(response.error).toContain('Missing required parameters');
     });
 
     it('should handle undefined filepath parameter', async () => {
@@ -152,7 +152,7 @@ describe('DeleteFileTool', () => {
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('filepath argument missing');
+      expect(response.error).toContain('Missing required parameters');
     });
   });
 

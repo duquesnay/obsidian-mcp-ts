@@ -121,7 +121,7 @@ describe('AppendContentTool', () => {
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('content argument missing');
+      expect(response.error).toContain('Missing required parameters');
     });
 
     it('should handle very long content', async () => {
@@ -179,7 +179,7 @@ console.log('Code block');
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('filepath argument missing');
+      expect(response.error).toContain('Missing required parameters');
       expect(response.tool).toBe('obsidian_append_content');
     });
 
@@ -193,7 +193,7 @@ console.log('Code block');
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('filepath argument missing');
+      expect(response.error).toContain('Missing required parameters');
     });
 
     it('should handle null filepath parameter', async () => {
@@ -206,7 +206,7 @@ console.log('Code block');
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('filepath argument missing');
+      expect(response.error).toContain('Missing required parameters');
     });
 
     it('should handle missing content parameter', async () => {
@@ -218,7 +218,7 @@ console.log('Code block');
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('content argument missing');
+      expect(response.error).toContain('Missing required parameters');
     });
 
     it('should handle null content parameter', async () => {
@@ -231,7 +231,7 @@ console.log('Code block');
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('content argument missing');
+      expect(response.error).toContain('Missing required parameters');
     });
 
     it('should handle undefined content parameter', async () => {
@@ -244,7 +244,7 @@ console.log('Code block');
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('content argument missing');
+      expect(response.error).toContain('Missing required parameters');
     });
   });
 

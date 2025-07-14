@@ -60,8 +60,9 @@ describe('Content Negotiation Tools', () => {
       const result = await tool.execute({ filepath: '../invalid/path.md' });
 
       expect(result.type).toBe('text');
-      expect(result.text).toContain('Error:');
-      expect(result.text).toContain('contains dangerous pattern');
+      const response = JSON.parse(result.text);
+      expect(response.success).toBe(false);
+      expect(response.error).toContain('contains dangerous pattern');
       expect(mockClient.getFileContents).not.toHaveBeenCalled();
     });
 
@@ -71,7 +72,9 @@ describe('Content Negotiation Tools', () => {
       const result = await tool.execute({ filepath: 'nonexistent.md' });
 
       expect(result.type).toBe('text');
-      expect(result.text).toContain('Error: File not found');
+      const response = JSON.parse(result.text);
+      expect(response.success).toBe(false);
+      expect(response.error).toContain('File not found');
     });
   });
 

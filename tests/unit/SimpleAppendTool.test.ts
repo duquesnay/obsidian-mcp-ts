@@ -150,7 +150,7 @@ describe('SimpleAppendTool', () => {
       expect(response.success).toBe(false);
       expect(response.suggestion).toContain('File does not exist');
       expect(response.suggestion).toContain('create_file_if_missing to true');
-      expect(response.workingAlternative).toContain('Enable file creation');
+      expect(response.working_alternative).toContain('Enable file creation');
       expect(response.example).toEqual({
         filepath: 'nonexistent.md',
         content: 'Content to append',
@@ -173,7 +173,7 @@ describe('SimpleAppendTool', () => {
 
       expect(response.success).toBe(false);
       expect(response.suggestion).toContain('Permission denied');
-      expect(response.workingAlternative).toContain('API key');
+      expect(response.working_alternative).toContain('API key');
     });
 
     it('should provide alternative tools for generic errors', async () => {
