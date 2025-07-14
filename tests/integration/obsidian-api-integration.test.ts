@@ -20,10 +20,13 @@ describe('Obsidian API Integration Tests', () => {
   const testContent = '# Integration Test\n\nThis file was created by integration tests.';
 
   beforeAll(async () => {
-    // Skip if no API key (CI environment or local dev without Obsidian)
+    // Fail if no API key - integration tests should be explicit
     if (!process.env.OBSIDIAN_API_KEY) {
-      // Silently skip - integration tests are optional
-      return;
+      throw new Error(
+        '❌ Integration tests require OBSIDIAN_API_KEY environment variable\n' +
+        '   Set it in .env file or skip integration tests with:\n' +
+        '   npm test -- --exclude="**/integration/**"'
+      );
     }
 
     client = new ObsidianClient({
@@ -48,7 +51,7 @@ describe('Obsidian API Integration Tests', () => {
   });
 
   afterAll(async () => {
-    if (!process.env.OBSIDIAN_API_KEY || !client) return;
+    if (!client) return;
 
     // Clean up test files
     try {
@@ -62,7 +65,6 @@ describe('Obsidian API Integration Tests', () => {
 
   describe('Real Network Operations', () => {
     it('should list files in vault', async () => {
-      if (!process.env.OBSIDIAN_API_KEY) return;
 
       const files = await client.listFilesInVault();
       
@@ -71,7 +73,6 @@ describe('Obsidian API Integration Tests', () => {
     });
 
     it('should create, read, update, and delete a file', async () => {
-      if (!process.env.OBSIDIAN_API_KEY) return;
 
       // Create
       await client.createFile(testFile, testContent);
@@ -96,7 +97,6 @@ describe('Obsidian API Integration Tests', () => {
     });
 
     it('should handle retry logic on real network conditions', async () => {
-      if (!process.env.OBSIDIAN_API_KEY) return;
 
       // Test with a file that doesn't exist - should get 404 without retries
       try {
@@ -112,7 +112,6 @@ describe('Obsidian API Integration Tests', () => {
     });
 
     it('should perform search operations', async () => {
-      if (!process.env.OBSIDIAN_API_KEY) return;
 
       // First create a file with searchable content
       const searchTestFile = `search-test-${Date.now()}.md`;
@@ -146,7 +145,6 @@ describe('Obsidian API Integration Tests', () => {
 
   describe('Real Error Scenarios', () => {
     it('should handle authentication errors', async () => {
-      if (!process.env.OBSIDIAN_API_KEY) return;
 
       // Create client with bad API key
       const badClient = new ObsidianClient({
@@ -166,7 +164,6 @@ describe('Obsidian API Integration Tests', () => {
     });
 
     it('should handle file not found errors', async () => {
-      if (!process.env.OBSIDIAN_API_KEY) return;
 
       try {
         await client.getFileContents('file-that-definitely-does-not-exist.md');
@@ -180,7 +177,6 @@ describe('Obsidian API Integration Tests', () => {
 
   describe('Performance and Reliability', () => {
     it('should handle multiple concurrent operations', async () => {
-      if (!process.env.OBSIDIAN_API_KEY) return;
 
       const operations = [
         client.listFilesInVault(),
@@ -199,7 +195,6 @@ describe('Obsidian API Integration Tests', () => {
     });
 
     it('should handle large file operations', async () => {
-      if (!process.env.OBSIDIAN_API_KEY) return;
 
       const largeContent = '# Large File Test\n\n' + 'x'.repeat(10000) + '\n\n## End';
       const largeTestFile = `large-test-${Date.now()}.md`;
