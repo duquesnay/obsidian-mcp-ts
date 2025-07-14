@@ -1,7 +1,56 @@
 import { ObsidianClient } from '../obsidian/ObsidianClient.js';
 import { ConfigLoader } from '../utils/configLoader.js';
 
-export abstract class BaseTool {
+export interface AlternativeAction {
+  description: string;
+  tool?: string;
+  example?: Record<string, unknown>;
+}
+
+export interface RecoveryOptions {
+  suggestion: string;
+  workingAlternative?: string;
+  example?: Record<string, unknown>;
+}
+
+// MCP tool response format
+export interface ToolResponse {
+  type: 'text';
+  text: string;
+}
+
+// Common error response structure
+export interface ErrorResponse {
+  success: false;
+  error: string;
+  tool: string;
+  alternatives?: AlternativeAction[];
+  suggestion?: string;
+  working_alternative?: string;
+  example?: Record<string, unknown>;
+}
+
+// Success response structure
+export interface SuccessResponse {
+  success: true;
+  [key: string]: unknown;
+}
+
+export type ToolResult = SuccessResponse | ErrorResponse | ToolResponse;
+
+// Base interface for tool registration
+export interface ToolInterface {
+  name: string;
+  description: string;
+  inputSchema: {
+    type: 'object';
+    properties: Record<string, unknown>;
+    required?: string[];
+  };
+  execute(args: Record<string, unknown>): Promise<ToolResponse>;
+}
+
+export abstract class BaseTool<TArgs = Record<string, unknown>> implements ToolInterface {
   protected obsidianClient: ObsidianClient | null = null;
   protected configLoader: ConfigLoader;
 
@@ -13,7 +62,7 @@ export abstract class BaseTool {
   abstract description: string;
   abstract inputSchema: {
     type: 'object';
-    properties: Record<string, any>;
+    properties: Record<string, unknown>;
     required?: string[];
   };
 
@@ -29,27 +78,64 @@ export abstract class BaseTool {
     if (!this.obsidianClient) {
       this.obsidianClient = new ObsidianClient({
         apiKey: this.getApiKey(),
-        host: this.getObsidianHost()
+        host: this.getObsidianHost(),
+        verifySsl: false  // Disable SSL verification for self-signed Obsidian certificates
       });
     }
     return this.obsidianClient;
   }
 
-  abstract execute(args: any): Promise<any>;
+  // Concrete execute method that subclasses implement
+  abstract executeTyped(args: TArgs): Promise<ToolResponse>;
+  
+  // Interface implementation with type casting
+  async execute(args: Record<string, unknown>): Promise<ToolResponse> {
+    return this.executeTyped(args as TArgs);
+  }
 
-  protected formatResponse(data: any): any {
+  protected formatResponse(data: unknown): ToolResponse {
     return {
       type: 'text',
       text: typeof data === 'string' ? data : JSON.stringify(data, null, 2)
     };
   }
 
-  protected handleError(error: any): any {
-    console.error(`Error in ${this.name}:`, error);
+  protected handleError(error: unknown, alternatives?: AlternativeAction[]): ToolResponse {
+    // Only log errors in non-test environments to avoid confusing test output
+    if (process.env.NODE_ENV !== 'test' && process.env.VITEST !== 'true') {
+      console.error(`Error in ${this.name}:`, error);
+    }
     
-    return {
-      type: 'text',
-      text: `Error: ${error.message || String(error)}`
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorResponse: ErrorResponse = {
+      success: false,
+      error: errorMessage,
+      tool: this.name
     };
+
+    if (alternatives && alternatives.length > 0) {
+      errorResponse.alternatives = alternatives;
+    }
+
+    return this.formatResponse(errorResponse);
+  }
+
+  protected handleErrorWithRecovery(error: unknown, recovery: RecoveryOptions): ToolResponse {
+    // Only log errors in non-test environments to avoid confusing test output
+    if (process.env.NODE_ENV !== 'test' && process.env.VITEST !== 'true') {
+      console.error(`Error in ${this.name}:`, error);
+    }
+    
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorResponse: ErrorResponse = {
+      success: false,
+      error: errorMessage,
+      tool: this.name,
+      suggestion: recovery.suggestion,
+      working_alternative: recovery.workingAlternative,
+      example: recovery.example
+    };
+
+    return this.formatResponse(errorResponse);
   }
 }

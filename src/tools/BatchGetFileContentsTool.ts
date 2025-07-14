@@ -3,7 +3,7 @@ import { validatePaths } from '../utils/pathValidator.js';
 
 export class BatchGetFileContentsTool extends BaseTool {
   name = 'obsidian_batch_get_file_contents';
-  description = 'Return the contents of multiple files in your vault, concatenated with headers.';
+  description = 'Read multiple Obsidian vault notes at once (vault-only - NOT filesystem access). Returns concatenated content.';
   
   inputSchema = {
     type: 'object' as const,
@@ -27,7 +27,7 @@ export class BatchGetFileContentsTool extends BaseTool {
     required: ['filepaths']
   };
 
-  async execute(args: { filepaths: string[]; page?: number; pageSize?: number }): Promise<any> {
+  async executeTyped(args: { filepaths: string[]; page?: number; pageSize?: number }): Promise<any> {
     try {
       if (!args.filepaths || !Array.isArray(args.filepaths)) {
         throw new Error('filepaths argument must be an array');

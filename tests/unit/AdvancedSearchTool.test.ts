@@ -215,8 +215,9 @@ describe('AdvancedSearchTool', () => {
     const result = await tool.execute({ filters: {} });
 
     expect(result.type).toBe('text');
-    expect(result.text).toContain('Error:');
-    expect(result.text).toContain('At least one filter must be specified');
+    const response = JSON.parse(result.text);
+    expect(response.success).toBe(false);
+    expect(response.error).toContain('At least one filter must be specified');
     expect(mockClient.advancedSearch).not.toHaveBeenCalled();
   });
 
@@ -230,7 +231,9 @@ describe('AdvancedSearchTool', () => {
     const result = await tool.execute({ filters });
 
     expect(result.type).toBe('text');
-    expect(result.text).toContain('Error: Search service unavailable');
+    const response = JSON.parse(result.text);
+    expect(response.success).toBe(false);
+    expect(response.error).toContain('Search service unavailable');
   });
 
   it('should support pagination and sorting options', async () => {

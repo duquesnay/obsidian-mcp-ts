@@ -1,12 +1,12 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+
 import { ListFilesInVaultTool } from './ListFilesInVaultTool.js';
 import { ListFilesInDirTool } from './ListFilesInDirTool.js';
 import { GetFileContentsTool } from './GetFileContentsTool.js';
 import { BatchGetFileContentsTool } from './BatchGetFileContentsTool.js';
 import { SimpleSearchTool } from './SimpleSearchTool.js';
 import { ComplexSearchTool } from './ComplexSearchTool.js';
-import { PatchContentTool } from './PatchContentTool.js';
 import { AppendContentTool } from './AppendContentTool.js';
 import { DeleteFileTool } from './DeleteFileTool.js';
 import { RenameFileTool } from './RenameFileTool.js';
@@ -30,18 +30,17 @@ import { GetFileFrontmatterTool } from './GetFileFrontmatterTool.js';
 import { GetFileFormattedTool } from './GetFileFormattedTool.js';
 import { FindEmptyDirectoriesTool } from './FindEmptyDirectoriesTool.js';
 import { QueryStructureTool } from './QueryStructureTool.js';
-import { PatchContentToolV2 } from './PatchContentToolV2.js';
-import { BaseTool } from './base.js';
+import { SimpleAppendTool } from './SimpleAppendTool.js';
+import { SimpleReplaceTool } from './SimpleReplaceTool.js';
+import { UnifiedEditTool } from './UnifiedEditTool.js';
+import { BaseTool, ToolInterface } from './base.js';
 
-const tools: BaseTool[] = [
+const tools: ToolInterface[] = [
+  // File operations
   new ListFilesInVaultTool(),
   new ListFilesInDirTool(),
   new GetFileContentsTool(),
   new BatchGetFileContentsTool(),
-  new SimpleSearchTool(),
-  new ComplexSearchTool(),
-  new PatchContentTool(),
-  new AppendContentTool(),
   new DeleteFileTool(),
   new RenameFileTool(),
   new MoveFileTool(),
@@ -51,20 +50,33 @@ const tools: BaseTool[] = [
   new CheckPathExistsTool(),
   new CreateDirectoryTool(),
   new DeleteDirectoryTool(),
-  new GetAllTagsTool(),
-  new GetFilesByTagTool(),
-  new RenameTagTool(),
-  new ManageFileTagsTool(),
-  new GetPeriodicNoteTool(),
-  new GetRecentPeriodicNotesTool(),
-  new GetRecentChangesTool(),
-  new AdvancedSearchTool(),
   new GetFileMetadataTool(),
   new GetFileFrontmatterTool(),
   new GetFileFormattedTool(),
   new FindEmptyDirectoriesTool(),
+  
+  // Search
+  new SimpleSearchTool(),
+  new ComplexSearchTool(),
+  new AdvancedSearchTool(),
   new QueryStructureTool(),
-  new PatchContentToolV2(),
+  
+  // Tag management
+  new GetAllTagsTool(),
+  new GetFilesByTagTool(),
+  new RenameTagTool(),
+  new ManageFileTagsTool(),
+  
+  // Periodic notes
+  new GetPeriodicNoteTool(),
+  new GetRecentPeriodicNotesTool(),
+  new GetRecentChangesTool(),
+  
+  // Editing - only UnifiedEditTool and simple reliable backups after user testing
+  new UnifiedEditTool(),       // Primary editing tool (tested successfully)
+  new SimpleAppendTool(),      // 100% success rate backup
+  new SimpleReplaceTool(),     // 100% success rate backup  
+  new AppendContentTool()      // Additional append backup
 ];
 
 export async function registerTools(server: Server): Promise<void> {

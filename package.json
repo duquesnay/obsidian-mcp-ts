@@ -1,7 +1,7 @@
 {
   "name": "obsidian-mcp-ts",
   "version": "0.4.1",
-  "description": "MCP server to work with Obsidian via the remote REST plugin",
+  "description": "MCP server for Obsidian vault notes ONLY - NOT for general filesystem access. Works exclusively with Obsidian vaults via Local REST API plugin",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
@@ -16,7 +16,8 @@
     "build": "tsc",
     "dev": "tsx watch src/index.ts",
     "start": "node ./dist/index.js",
-    "test": "vitest",
+    "test": "vitest --run",
+    "test:watch": "vitest",
     "test:integration": "tsx tests/integration/test-integration.ts",
     "test:e2e": "tsx tests/e2e/test-obsidian-api.ts",
     "typecheck": "tsc --noEmit",

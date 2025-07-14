@@ -3,7 +3,7 @@ import { validatePath } from '../utils/pathValidator.js';
 
 export class DeleteDirectoryTool extends BaseTool {
   name = 'obsidian_delete_directory';
-  description = 'Delete a directory from the vault. Can optionally delete non-empty directories recursively.';
+  description = 'Delete folders from Obsidian vault (vault-only - NOT filesystem deletion). Supports recursive deletion.';
   
   inputSchema = {
     type: 'object' as const,
@@ -26,7 +26,7 @@ export class DeleteDirectoryTool extends BaseTool {
     required: ['directoryPath']
   };
 
-  async execute(args: { directoryPath: string; recursive?: boolean; permanent?: boolean }): Promise<any> {
+  async executeTyped(args: { directoryPath: string; recursive?: boolean; permanent?: boolean }): Promise<any> {
     try {
       if (!args.directoryPath) {
         throw new Error('directoryPath argument missing in arguments');

@@ -24,7 +24,7 @@ export class ObsidianClient {
     this.protocol = config.protocol || 'https';
     this.host = config.host || '127.0.0.1';
     this.port = config.port || 27124;
-    this.verifySsl = config.verifySsl || false;
+    this.verifySsl = config.verifySsl ?? true;
 
     // Create axios instance with custom config
     this.axiosInstance = axios.create({
@@ -52,16 +52,52 @@ export class ObsidianClient {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError<{ errorCode?: number; message?: string }>;
+        
+        // Preserve detailed error information for better debugging
         if (axiosError.response?.data) {
           const errorData = axiosError.response.data;
-          const code = errorData.errorCode || -1;
-          const message = errorData.message || '<unknown>';
-          throw new ObsidianError(`Error ${code}: ${message}`, code);
+          const code = errorData.errorCode || axiosError.response.status || -1;
+          const message = errorData.message || axiosError.message || '<unknown>';
+          const contextInfo = this.getErrorContext(axiosError);
+          throw new ObsidianError(`${contextInfo}Error ${code}: ${message}`, code);
         }
-        throw new ObsidianError(`Request failed: ${error.message}`);
+        
+        // Network-level errors (no response received)
+        if (axiosError.code) {
+          const contextInfo = this.getErrorContext(axiosError);
+          throw new ObsidianError(`${contextInfo}Network error (${axiosError.code}): ${axiosError.message}`);
+        }
+        
+        // Generic axios error
+        const contextInfo = this.getErrorContext(axiosError);
+        throw new ObsidianError(`${contextInfo}Request failed: ${axiosError.message}`);
       }
       throw error;
     }
+  }
+
+  private getErrorContext(axiosError: AxiosError): string {
+    const method = axiosError.config?.method?.toUpperCase() || 'REQUEST';
+    const url = axiosError.config?.url || 'unknown endpoint';
+    const status = axiosError.response?.status;
+    
+    let context = `${method} ${url} - `;
+    
+    if (status) {
+      if (status === 401) {
+        context += 'Authentication failed (check API key) - ';
+      } else if (status === 403) {
+        context += 'Access forbidden (check permissions) - ';
+      } else if (status === 404) {
+        context += 'Resource not found - ';
+      } else if (status >= 500) {
+        context += 'Server error (Obsidian plugin may be unavailable) - ';
+      } else if (status >= 400) {
+        context += 'Client error - ';
+      }
+    }
+    
+    return context;
   }
 
   async listFilesInVault(): Promise<string[]> {
@@ -409,6 +445,7 @@ export class ObsidianClient {
         }
       }
     });
+
   }
 
   async copyFile(sourcePath: string, destinationPath: string, overwrite: boolean = false): Promise<void> {

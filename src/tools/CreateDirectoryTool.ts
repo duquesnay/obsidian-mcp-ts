@@ -3,7 +3,7 @@ import { validatePath } from '../utils/pathValidator.js';
 
 export class CreateDirectoryTool extends BaseTool {
   name = 'obsidian_create_directory';
-  description = 'Create a new directory in the vault. Can create nested directory structures in one operation.';
+  description = 'Create folders in Obsidian vault (vault-only - NOT filesystem directories). Supports nested creation.';
   
   inputSchema = {
     type: 'object' as const,
@@ -21,7 +21,7 @@ export class CreateDirectoryTool extends BaseTool {
     required: ['directoryPath']
   };
 
-  async execute(args: { directoryPath: string; createParents?: boolean }): Promise<any> {
+  async executeTyped(args: { directoryPath: string; createParents?: boolean }): Promise<any> {
     try {
       if (!args.directoryPath) {
         throw new Error('directoryPath argument missing in arguments');

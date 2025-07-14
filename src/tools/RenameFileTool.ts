@@ -3,7 +3,7 @@ import { validatePath } from '../utils/pathValidator.js';
 
 export class RenameFileTool extends BaseTool {
   name = 'obsidian_rename_file';
-  description = 'Rename a file within the same directory while preserving history and updating links (requires updated REST API plugin).';
+  description = 'Rename an Obsidian vault note within same directory (vault-only - NOT filesystem). Updates all links automatically.';
   
   inputSchema = {
     type: 'object' as const,
@@ -20,7 +20,7 @@ export class RenameFileTool extends BaseTool {
     required: ['oldPath', 'newPath']
   };
 
-  async execute(args: { oldPath: string; newPath: string }): Promise<any> {
+  async executeTyped(args: { oldPath: string; newPath: string }): Promise<any> {
     try {
       if (!args.oldPath) {
         throw new Error('oldPath argument missing in arguments');

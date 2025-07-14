@@ -2,7 +2,7 @@ import { BaseTool } from './base.js';
 
 export class FindEmptyDirectoriesTool extends BaseTool {
   name = 'obsidian_find_empty_directories';
-  description = 'Find all empty directories in your vault by scanning the directory structure and checking each directory for contents.';
+  description = 'Find empty folders in Obsidian vault (vault-only - NOT filesystem scanning). Lists folders without notes.';
   
   inputSchema = {
     type: 'object' as const,
@@ -20,7 +20,7 @@ export class FindEmptyDirectoriesTool extends BaseTool {
     required: []
   };
 
-  async execute(args: { searchPath?: string; includeHiddenFiles?: boolean }): Promise<any> {
+  async executeTyped(args: { searchPath?: string; includeHiddenFiles?: boolean }): Promise<any> {
     try {
       const client = this.getClient();
       const searchPath = args.searchPath || '';

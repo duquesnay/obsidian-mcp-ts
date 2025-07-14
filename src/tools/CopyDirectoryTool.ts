@@ -3,7 +3,7 @@ import { validatePath } from '../utils/pathValidator.js';
 
 export class CopyDirectoryTool extends BaseTool {
   name = 'obsidian_copy_directory';
-  description = 'Copy an entire directory and all its contents to a new location, preserving the internal structure.';
+  description = 'Copy folders within Obsidian vault (vault-only - NOT filesystem operations). Preserves folder structure.';
   
   inputSchema = {
     type: 'object' as const,
@@ -25,7 +25,7 @@ export class CopyDirectoryTool extends BaseTool {
     required: ['sourcePath', 'destinationPath']
   };
 
-  async execute(args: { sourcePath: string; destinationPath: string; overwrite?: boolean }): Promise<any> {
+  async executeTyped(args: { sourcePath: string; destinationPath: string; overwrite?: boolean }): Promise<any> {
     try {
       if (!args.sourcePath) {
         throw new Error('sourcePath argument missing in arguments');

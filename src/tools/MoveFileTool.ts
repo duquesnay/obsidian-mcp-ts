@@ -3,7 +3,7 @@ import { validatePath } from '../utils/pathValidator.js';
 
 export class MoveFileTool extends BaseTool {
   name = 'obsidian_move_file';
-  description = 'Move a file to a different location (can move between directories, rename in place, or both) while preserving history and updating links (requires updated REST API plugin).';
+  description = 'Move Obsidian vault notes between folders (vault-only - NOT filesystem moves). Updates all internal links.';
   
   inputSchema = {
     type: 'object' as const,
@@ -20,7 +20,7 @@ export class MoveFileTool extends BaseTool {
     required: ['sourcePath', 'destinationPath']
   };
 
-  async execute(args: { sourcePath: string; destinationPath: string }): Promise<any> {
+  async executeTyped(args: { sourcePath: string; destinationPath: string }): Promise<any> {
     try {
       if (!args.sourcePath) {
         throw new Error('sourcePath argument missing in arguments');

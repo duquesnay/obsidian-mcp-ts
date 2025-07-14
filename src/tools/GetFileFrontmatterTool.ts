@@ -3,7 +3,7 @@ import { validatePath } from '../utils/pathValidator.js';
 
 export class GetFileFrontmatterTool extends BaseTool {
   name = 'obsidian_get_file_frontmatter';
-  description = 'Get only the frontmatter of a file without content - efficient for metadata analysis.';
+  description = 'Get frontmatter from Obsidian notes (vault-only - NOT filesystem files). Returns YAML metadata only.';
   
   inputSchema = {
     type: 'object' as const,
@@ -16,7 +16,7 @@ export class GetFileFrontmatterTool extends BaseTool {
     required: ['filepath']
   };
 
-  async execute(args: { filepath: string }): Promise<any> {
+  async executeTyped(args: { filepath: string }): Promise<any> {
     try {
       validatePath(args.filepath, 'filepath');
       

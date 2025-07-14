@@ -15,7 +15,7 @@ export class GetFilesByTagTool extends BaseTool {
     required: ['tagName']
   };
 
-  async execute(args: { tagName: string }): Promise<any> {
+  async executeTyped(args: { tagName: string }): Promise<any> {
     try {
       if (!args.tagName) {
         throw new Error('tagName argument missing in arguments');

@@ -3,7 +3,7 @@ import { validatePath } from '../utils/pathValidator.js';
 
 export class ListFilesInDirTool extends BaseTool {
   name = 'obsidian_list_files_in_dir';
-  description = 'Lists all files and directories that exist in a specific Obsidian directory.';
+  description = 'List notes and folders in a specific Obsidian vault directory (vault-only - NOT general filesystem access).';
   
   inputSchema = {
     type: 'object' as const,
@@ -16,7 +16,7 @@ export class ListFilesInDirTool extends BaseTool {
     required: ['dirpath']
   };
 
-  async execute(args: { dirpath: string }): Promise<any> {
+  async executeTyped(args: { dirpath: string }): Promise<any> {
     try {
       if (!args.dirpath) {
         throw new Error('dirpath argument missing in arguments');

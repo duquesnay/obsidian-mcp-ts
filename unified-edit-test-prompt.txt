@@ -1,0 +1,36 @@
+CRITICAL MISSION: Test UnifiedEditTool (obsidian_edit) extensively to determine if we should recenter our tool architecture around it.
+
+The test files already exist in ~/ObsidianNotes/test-docs/
+
+Complete these tasks using ONLY the obsidian_edit tool (mcp__obsidian-ts-0_5-alpha__obsidian_edit):
+
+1. In test-docs/technical-spec.md:
+   - Keep the existing "TBD" text under Implementation
+   - Insert '### Database Layer\nUses PostgreSQL with connection pooling.\n\n### API Layer\nREST API with rate limiting.' after the TBD line
+   - Add '### Cache Layer\nRedis for session management' at the end of the document
+
+2. In test-docs/project-overview.md:
+   - Replace 'Feature 1' with 'Advanced Analytics' in the features list
+   - Add '- Real-time Dashboards' as a new item in the features list
+   - Insert '## Technical Stack\n\n- Frontend: React\n- Backend: Node.js\n- Database: PostgreSQL' between the Features and Status sections
+   - Add '## Conclusion\nProject shows promising results.' after the Status section
+
+PARAMETER FORMATS TO TEST:
+- Simple append: { file: "path", append: "content" }
+- Insert after heading: { file: "path", after: "Implementation", add: "content" }
+- Replace text: { file: "path", find: "Feature 1", replace: "Advanced Analytics" }
+- Insert before heading: { file: "path", before: "Status", add: "content" }
+
+CRITICAL RULES:
+1. Use ONLY obsidian_edit tool - DO NOT fall back to other tools
+2. Document exact parameter formats you use
+3. Report exact success/failure for each operation
+4. Note any error messages and whether they're helpful
+5. Compare ease of use to simple_replace/simple_append
+
+After completing, report your experience by appending to ./user-feedback.md with:
+## User Report [current timestamp]
+
+Use `date +"%Y-%m-%d %H:%M"` for timestamp.
+
+Your results will determine whether we center our architecture around this unified tool or keep the simple tools.

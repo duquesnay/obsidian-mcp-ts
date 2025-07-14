@@ -3,7 +3,7 @@ import { validatePath } from '../utils/pathValidator.js';
 
 export class GetFileFormattedTool extends BaseTool {
   name = 'obsidian_get_file_formatted';
-  description = 'Get file in different formats (plain text without markdown, HTML, or specific content types) for token optimization.';
+  description = 'Get Obsidian notes in different formats (vault-only - NOT filesystem files). Plain text, HTML, or markdown.';
   
   inputSchema = {
     type: 'object' as const,
@@ -21,7 +21,7 @@ export class GetFileFormattedTool extends BaseTool {
     required: ['filepath', 'format']
   };
 
-  async execute(args: { filepath: string; format: 'plain' | 'html' | 'content' }): Promise<any> {
+  async executeTyped(args: { filepath: string; format: 'plain' | 'html' | 'content' }): Promise<any> {
     try {
       validatePath(args.filepath, 'filepath');
       

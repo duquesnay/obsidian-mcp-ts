@@ -23,6 +23,15 @@ const server = new Server(
 // Start server
 async function main() {
   try {
+    // Display startup warning for MCP clients
+    console.info(`
+╔══════════════════════════════════════════════════════════════╗
+║  OBSIDIAN VAULT MCP - For Obsidian Notes Only               ║
+║  This server ONLY accesses notes within your Obsidian vault  ║
+║  For general filesystem access, use filesystem MCP servers   ║
+╚══════════════════════════════════════════════════════════════╝
+`);
+    
     // Register all tools
     await registerTools(server);
     

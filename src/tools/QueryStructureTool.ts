@@ -1,4 +1,4 @@
-import { BaseTool } from './base.js';
+import { BaseTool, ToolResponse } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
 
 interface HeadingInfo {
@@ -32,7 +32,7 @@ interface StructureQueryResult {
 
 export class QueryStructureTool extends BaseTool {
   name = 'obsidian_query_structure';
-  description = 'Query document structure to get headings, blocks, and sections. Useful for LLMs to build unambiguous references before modifying content.';
+  description = 'Query structure of Obsidian notes (vault-only - NOT filesystem files). Get headings and blocks for editing.';
   
   inputSchema = {
     type: 'object' as const,
@@ -87,7 +87,7 @@ export class QueryStructureTool extends BaseTool {
     required: ['filepath', 'query']
   };
 
-  async execute(args: {
+  async executeTyped(args: {
     filepath: string;
     query: {
       type: 'headings' | 'blocks' | 'all';
@@ -100,7 +100,7 @@ export class QueryStructureTool extends BaseTool {
       };
       include_content_preview?: boolean;
     };
-  }): Promise<StructureQueryResult> {
+  }): Promise<ToolResponse> {
     try {
       validatePath(args.filepath, 'filepath');
       
@@ -136,7 +136,7 @@ export class QueryStructureTool extends BaseTool {
         result.frontmatter_fields = this.parseFrontmatterFields(lines);
       }
       
-      return result;
+      return this.formatResponse(result);
     } catch (error) {
       return this.handleError(error);
     }

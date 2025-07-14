@@ -10,7 +10,7 @@ export class GetAllTagsTool extends BaseTool {
     required: []
   };
 
-  async execute(args: Record<string, never>): Promise<any> {
+  async executeTyped(args: Record<string, never>): Promise<any> {
     try {
       const client = this.getClient();
       const tags = await client.getAllTags();

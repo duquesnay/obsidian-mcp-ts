@@ -93,21 +93,24 @@ describe('ListFilesInDirTool', () => {
 
     const result = await tool.execute({ dirpath: 'test-dir/' });
     
-    expect(result.text).toContain('Error');
-    expect(result.text).toContain('Network error');
+    const response = JSON.parse(result.text);
+    expect(response.success).toBe(false);
+    expect(response.error).toContain('Network error');
   });
 
   it('should validate missing dirpath argument', async () => {
     const result = await tool.execute({} as any);
     
-    expect(result.text).toContain('Error');
-    expect(result.text).toContain('dirpath argument missing');
+    const response = JSON.parse(result.text);
+    expect(response.success).toBe(false);
+    expect(response.error).toContain('dirpath argument missing');
   });
 
   it('should validate path format', async () => {
     const result = await tool.execute({ dirpath: '../../../etc/passwd' });
     
-    expect(result.text).toContain('Error');
-    expect(result.text).toContain('Invalid');
+    const response = JSON.parse(result.text);
+    expect(response.success).toBe(false);
+    expect(response.error).toContain('Invalid');
   });
 });

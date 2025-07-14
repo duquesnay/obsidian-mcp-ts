@@ -19,7 +19,7 @@ export class RenameTagTool extends BaseTool {
     required: ['oldTagName', 'newTagName']
   };
 
-  async execute(args: { oldTagName: string; newTagName: string }): Promise<any> {
+  async executeTyped(args: { oldTagName: string; newTagName: string }): Promise<any> {
     try {
       if (!args.oldTagName) {
         throw new Error('oldTagName argument missing in arguments');

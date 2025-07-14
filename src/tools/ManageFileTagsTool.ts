@@ -32,7 +32,7 @@ export class ManageFileTagsTool extends BaseTool {
     required: ['filePath', 'operation', 'tags']
   };
 
-  async execute(args: { 
+  async executeTyped(args: { 
     filePath: string; 
     operation: 'add' | 'remove'; 
     tags: string[];

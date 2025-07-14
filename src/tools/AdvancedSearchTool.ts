@@ -52,7 +52,7 @@ interface SearchOptions {
 
 export class AdvancedSearchTool extends BaseTool {
   name = 'obsidian_advanced_search';
-  description = 'Advanced search with comprehensive filtering options including content, frontmatter, file metadata, and tags.';
+  description = 'Advanced search in Obsidian vault notes (vault-only - NOT filesystem). Filter by content, metadata, tags.';
   
   inputSchema = {
     type: 'object' as const,
@@ -237,7 +237,7 @@ export class AdvancedSearchTool extends BaseTool {
     required: ['filters']
   };
 
-  async execute(args: {
+  async executeTyped(args: {
     filters: SearchFilter;
     options?: SearchOptions;
   }): Promise<any> {

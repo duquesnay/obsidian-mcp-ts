@@ -165,7 +165,13 @@ describe('ObsidianClient', () => {
           contextLength: 200
         }
       });
-      expect(result).toEqual(mockResults);
+      expect(result).toEqual({
+        results: mockResults,
+        totalResults: 1,
+        hasMore: false,
+        offset: 0,
+        limit: 1
+      });
     });
   });
 
@@ -306,18 +312,22 @@ describe('ObsidianClient', () => {
       });
 
       await client.patchContent('test.md', 'New content', {
-        heading: '## Section',
+        targetType: 'heading',
+        target: '## Section',
         insertAfter: true
       });
 
       expect(mockAxiosInstance.patch).toHaveBeenCalledWith(
         '/vault/test.md',
+        'New content',
         {
-          content: 'New content',
-          heading: '## Section',
-          insertAfter: true
-        },
-        {}
+          headers: {
+            'Content-Type': 'text/markdown',
+            'Operation': 'append',
+            'Target': '## Section',
+            'Target-Type': 'heading'
+          }
+        }
       );
     });
 
@@ -327,20 +337,21 @@ describe('ObsidianClient', () => {
       });
 
       await client.patchContent('test.md', '', {
+        targetType: 'block',
+        target: 'target-block',
         oldText: 'old text',
         newText: 'new text'
       });
 
       expect(mockAxiosInstance.patch).toHaveBeenCalledWith(
         '/vault/test.md',
-        {
-          oldText: 'old text',
-          newText: 'new text'
-        },
+        '',
         {
           headers: {
-            'Target-Type': 'text',
-            'Operation': 'replace'
+            'Content-Type': 'text/markdown',
+            'Operation': 'replace',
+            'Target': 'target-block',
+            'Target-Type': 'block'
           }
         }
       );
@@ -352,20 +363,21 @@ describe('ObsidianClient', () => {
       });
 
       await client.patchContent('test.md', '', {
+        targetType: 'block',
+        target: 'content-block',
         oldText: '![[old.png]]',
         newText: '![[new.png]]'
       });
 
       expect(mockAxiosInstance.patch).toHaveBeenCalledWith(
         '/vault/test.md',
-        {
-          oldText: '![[old.png]]',
-          newText: '![[new.png]]'
-        },
+        '',
         {
           headers: {
-            'Target-Type': 'text',
-            'Operation': 'replace'
+            'Content-Type': 'text/markdown',
+            'Operation': 'replace',
+            'Target': 'content-block',
+            'Target-Type': 'block'
           }
         }
       );
@@ -377,16 +389,18 @@ describe('ObsidianClient', () => {
       });
 
       await client.patchContent('test.md', 'tags: [tag1, tag2]', {
-        targetType: 'frontmatter'
+        targetType: 'frontmatter',
+        target: 'tags'
       });
 
       expect(mockAxiosInstance.patch).toHaveBeenCalledWith(
         '/vault/test.md',
-        {
-          content: 'tags: [tag1, tag2]'
-        },
+        '"tags: [tag1, tag2]"',
         {
           headers: {
+            'Content-Type': 'application/json',
+            'Operation': 'append',
+            'Target': 'tags',
             'Target-Type': 'frontmatter'
           }
         }

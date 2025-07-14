@@ -3,7 +3,7 @@ import { validatePath } from '../utils/pathValidator.js';
 
 export class GetFileMetadataTool extends BaseTool {
   name = 'obsidian_get_file_metadata';
-  description = 'Get file metadata (size, dates, permissions) without retrieving content - efficient for large files.';
+  description = 'Get Obsidian note metadata without content (vault-only - NOT filesystem metadata). Efficient for large notes.';
   
   inputSchema = {
     type: 'object' as const,
@@ -16,7 +16,7 @@ export class GetFileMetadataTool extends BaseTool {
     required: ['filepath']
   };
 
-  async execute(args: { filepath: string }): Promise<any> {
+  async executeTyped(args: { filepath: string }): Promise<any> {
     try {
       validatePath(args.filepath, 'filepath');
       

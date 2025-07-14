@@ -3,7 +3,7 @@ import { validatePath } from '../utils/pathValidator.js';
 
 export class CheckPathExistsTool extends BaseTool {
   name = 'obsidian_check_path_exists';
-  description = 'Check if a file or directory exists in the vault and determine its type.';
+  description = 'Check if note or folder exists in Obsidian vault (vault-only - NOT filesystem paths). Returns type info.';
   
   inputSchema = {
     type: 'object' as const,
@@ -16,7 +16,7 @@ export class CheckPathExistsTool extends BaseTool {
     required: ['path']
   };
 
-  async execute(args: { path: string }): Promise<any> {
+  async executeTyped(args: { path: string }): Promise<any> {
     try {
       if (!args.path) {
         throw new Error('path argument missing in arguments');
