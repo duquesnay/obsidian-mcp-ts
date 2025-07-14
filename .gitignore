@@ -40,3 +40,9 @@ uv.lock
 # CRITICAL: Local Obsidian REST API development folder - DO NOT DELETE!
 # This contains the local development version of the REST API plugin
 obsidian-local-rest-api/
+
+# Ergonomic loop experiments
+docs/ergonomic-loop-project/logs/
+docs/ergonomic-loop-project/results/*.md
+!docs/ergonomic-loop-project/results/.gitkeep
+worktrees/

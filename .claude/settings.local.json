@@ -21,7 +21,13 @@
       "Bash(node:*)",
       "Bash(curl:*)",
       "WebFetch(domain:docs.anthropic.com)",
-      "Bash(claude:*)"
+      "Bash(claude:*)",
+      "Bash(claude config list:*)",
+      "Bash(../../docs/ergonomics-loop.sh:*)",
+      "mcp__obsidian-ts-0_5-alpha__obsidian_append_content",
+      "mcp__obsidian-ts-0_5-alpha__obsidian_simple_replace",
+      "Bash(cp:*)",
+      "Bash(tree:*)"
     ],
     "deny": []
   }
