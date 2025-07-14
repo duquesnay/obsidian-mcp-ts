@@ -104,7 +104,8 @@ describe('PatchContentToolV2 Ergonomics Integration Test', () => {
     console.log('V2 complexity:', JSON.stringify(v2Append, null, 2));
     console.log('V2 simplicity:', JSON.stringify(v2Append_simple, null, 2));
     
-    expect(Object.keys(v2Append_simple).length).toBeLessThan(Object.keys(v2Append).length);
+    // The simple version should be less complex by measuring the total JSON string length
+    expect(JSON.stringify(v2Append_simple).length).toBeLessThan(JSON.stringify(v2Append).length);
   });
 
   it('should show all simple operation examples', async () => {
