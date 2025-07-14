@@ -497,7 +497,7 @@ describe('DeleteFileTool', () => {
   describe('tool metadata', () => {
     it('should have appropriate tool name and description', () => {
       expect(tool.name).toBe('obsidian_delete_file');
-      expect(tool.description).toContain('Delete a file or directory');
+      expect(tool.description).toContain('Delete a note or folder');
       expect(tool.description).toContain('vault');
     });
 
@@ -520,7 +520,7 @@ describe('DeleteFileTool', () => {
     });
 
     it('should support both files and directories', () => {
-      expect(tool.description).toContain('file or directory');
+      expect(tool.description).toContain('note or folder');
       expect(tool.inputSchema.properties.filepath.description).toContain('file or directory');
     });
   });

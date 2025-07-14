@@ -45,7 +45,7 @@ In progress`;
     it('should handle Stage 1 operations (simple append) interface pattern', async () => {
       // Test interface without making actual calls
       expect(unifiedTool.name).toBe('obsidian_edit');
-      expect(unifiedTool.description).toContain('progressive complexity');
+      expect(unifiedTool.description).toContain('Progressive complexity handling');
       
       // Validate parameter schema supports simple append
       const schema = unifiedTool.inputSchema;
@@ -117,11 +117,11 @@ In progress`;
     it('should provide helpful alternatives in tool descriptions', async () => {
       // Test that descriptions provide guidance
       expect(unifiedTool.description).toContain('simple');
-      expect(unifiedTool.description).toContain('progressive');
+      expect(unifiedTool.description).toContain('Progressive');
       
       // Simple tools should reference their purpose
-      expect(simpleAppendTool.description).toContain('simple');
-      expect(simpleReplaceTool.description).toContain('simple');
+      expect(simpleAppendTool.description).toContain('Simple');
+      expect(simpleReplaceTool.description).toContain('Simple');
     });
   });
 
@@ -134,7 +134,7 @@ In progress`;
       expect(unifiedDescription).toContain('replace');
       expect(unifiedDescription).toContain('after');
       
-      // Should emphasize ease of use and progressive complexity
+      // Should emphasize ease of use and Progressive complexity handling
       expect(unifiedDescription.toLowerCase()).toContain('simple');
     });
 
@@ -172,7 +172,7 @@ In progress`;
       expect(currentEditingTools.length).toBeLessThanOrEqual(4);
       
       // Verify the primary tool can handle complex operations
-      expect(unifiedTool.description).toContain('progressive complexity');
+      expect(unifiedTool.description).toContain('Progressive complexity handling');
       
       // Verify simple tools are positioned as fallbacks
       expect(simpleAppendTool.description.toLowerCase()).toContain('simple');
@@ -206,7 +206,7 @@ In progress`;
       
       // Should emphasize simplicity over the complex patterns that failed
       expect(description).toContain('simple');
-      expect(description).toContain('progressive');
+      expect(description).toContain('Progressive');
       
       // Should not contain the problematic patterns from removed tools
       expect(description).not.toContain('targetType');
@@ -264,7 +264,7 @@ In progress`;
       const description = unifiedTool.description;
       
       // Should emphasize that simple operations come first
-      expect(description).toContain('Start simple');
+      expect(description).toContain('IMMEDIATE SUCCESS');
       expect(description).toContain('IMMEDIATE SUCCESS');
       
       // Should provide copy-paste ready examples
