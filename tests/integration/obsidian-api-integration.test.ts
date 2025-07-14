@@ -22,11 +22,7 @@ describe('Obsidian API Integration Tests', () => {
   beforeAll(async () => {
     // Skip if no API key (CI environment or local dev without Obsidian)
     if (!process.env.OBSIDIAN_API_KEY) {
-      console.log('⏭️  Skipping integration tests - no OBSIDIAN_API_KEY set');
-      console.log('💡 To run integration tests:');
-      console.log('   1. Start Obsidian with Local REST API plugin');
-      console.log('   2. Set OBSIDIAN_API_KEY=your_api_key');
-      console.log('   3. Run: npm test -- tests/integration/obsidian-api-integration.test.ts');
+      // Silently skip - integration tests are optional
       return;
     }
 

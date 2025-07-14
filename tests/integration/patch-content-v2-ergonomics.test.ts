@@ -64,7 +64,7 @@ describe('PatchContentToolV2 Ergonomics Integration Test', () => {
   it('should demonstrate simple append operation', async () => {
     // Skip if no Obsidian connection
     if (!process.env.OBSIDIAN_API_KEY) {
-      console.log('Skipping integration test - no OBSIDIAN_API_KEY set');
+      // Silently skip - integration tests are optional
       return;
     }
 
@@ -74,7 +74,6 @@ describe('PatchContentToolV2 Ergonomics Integration Test', () => {
       append: 'This is so much easier than the complex nested structure!'
     };
 
-    console.log('Simple append:', simpleAppend);
     // Would call: await callTool('obsidian_patch_content_v2', simpleAppend);
   });
 
@@ -101,8 +100,7 @@ describe('PatchContentToolV2 Ergonomics Integration Test', () => {
       append: 'Hello world'
     };
 
-    console.log('V2 complexity:', JSON.stringify(v2Append, null, 2));
-    console.log('V2 simplicity:', JSON.stringify(v2Append_simple, null, 2));
+    // Compare complexity: v2Append vs v2Append_simple
     
     // The simple version should be less complex by measuring the total JSON string length
     expect(JSON.stringify(v2Append_simple).length).toBeLessThan(JSON.stringify(v2Append).length);
@@ -137,8 +135,10 @@ describe('PatchContentToolV2 Ergonomics Integration Test', () => {
       }
     ];
 
+    // Verify all examples are valid
     examples.forEach(example => {
-      console.log(`\n${example.name}:`, JSON.stringify(example.args, null, 2));
+      expect(example.args).toBeDefined();
+      expect(example.args.filepath).toBeDefined();
     });
   });
 
@@ -179,9 +179,9 @@ describe('PatchContentToolV2 Ergonomics Integration Test', () => {
       }
     };
 
-    console.log('Level 1 - Simple:', level1);
-    console.log('Level 2 - Targeted:', level2);
-    console.log('Level 3 - Advanced:', level3);
+    // Progressive complexity verification
+    expect(JSON.stringify(level1).length).toBeLessThan(JSON.stringify(level2).length);
+    expect(JSON.stringify(level2).length).toBeLessThan(JSON.stringify(level3).length);
   });
 
   it('should show helpful error messages', async () => {
@@ -211,7 +211,7 @@ describe('PatchContentToolV2 Ergonomics Integration Test', () => {
       }
     };
 
-    console.log('No operation error provides helpful guidance:', 
-      JSON.stringify(expectedError, null, 2));
+    // Verify error provides helpful guidance
+    expect(expectedError.error.hint).toContain('operation');
   });
 });
