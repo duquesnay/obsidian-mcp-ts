@@ -216,6 +216,8 @@ export class ObsidianClient {
       headers['Operation'] = 'replace';
     } else if (options.insertBefore) {
       headers['Operation'] = 'prepend';
+    } else if (options.insertAfter || (!options.insertBefore && !options.oldText)) {
+      headers['Operation'] = 'append';
     } else {
       headers['Operation'] = 'append';
     }
