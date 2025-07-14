@@ -372,6 +372,8 @@ export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
           result = await this.handleHeadingInsert(filepath, { before: op.before, add: op.add });
         } else if (op.find && op.replace) {
           result = await this.handleReplace(filepath, op.find, op.replace);
+        } else if (op.append) {
+          result = await this.handleAppend(filepath, op.append);
         } else if (op.at === 'end' && op.add) {
           result = await this.handleAppend(filepath, op.add);
         } else {
