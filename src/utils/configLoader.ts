@@ -73,7 +73,10 @@ export class ConfigLoader {
       
       // Validate config structure
       if (typeof config !== 'object') {
-        console.warn(`Invalid config file at ${path}: not an object`);
+        // Only log config errors in non-test environments to avoid confusing test output
+        if (process.env.NODE_ENV !== 'test' && process.env.VITEST !== 'true') {
+          console.warn(`Invalid config file at ${path}: not an object`);
+        }
         return null;
       }
       
@@ -90,7 +93,10 @@ export class ConfigLoader {
       
       return result;
     } catch (error) {
-      console.warn(`Failed to read config file at ${path}:`, error);
+      // Only log config errors in non-test environments to avoid confusing test output
+      if (process.env.NODE_ENV !== 'test' && process.env.VITEST !== 'true') {
+        console.warn(`Failed to read config file at ${path}:`, error);
+      }
       return null;
     }
   }
