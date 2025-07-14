@@ -55,11 +55,11 @@ export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
       // Structure operations
       after: {
         type: 'string' as const,
-        description: 'Heading text to insert after (without #)'
+        description: 'Heading text to insert after (without heading marks like ##)'
       },
       before: {
         type: 'string' as const,
-        description: 'Heading text to insert before (without #)'
+        description: 'Heading text to insert before (without heading marks like ##)'
       },
       add: {
         type: 'string' as const,
