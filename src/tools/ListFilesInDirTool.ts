@@ -1,5 +1,6 @@
 import { BaseTool } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
+import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
 
 export class ListFilesInDirTool extends BaseTool {
   name = 'obsidian_list_files_in_dir';
@@ -32,7 +33,7 @@ export class ListFilesInDirTool extends BaseTool {
         return this.formatResponse(files);
       } catch (error: any) {
         // If we get a 404 error, check if it's an empty directory
-        if (error.message?.includes('404') || error.message?.includes('Not Found')) {
+        if (error.response?.status === 404 || error.message?.includes('404') || error.message?.includes('Not Found')) {
           // Check if the path exists and is a directory
           const pathInfo = await client.checkPathExists(args.dirpath);
           
@@ -45,7 +46,12 @@ export class ListFilesInDirTool extends BaseTool {
         // Re-throw the error if it's not an empty directory case
         throw error;
       }
-    } catch (error) {
+    } catch (error: any) {
+      // Use common error handler for HTTP errors
+      if (error.response?.status) {
+        return ObsidianErrorHandler.handleHttpError(error, this.name);
+      }
+      
       return this.handleError(error);
     }
   }
