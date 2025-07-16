@@ -1,4 +1,5 @@
 import { BaseTool } from './base.js';
+import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
 
 export class ListFilesInVaultTool extends BaseTool {
   name = 'obsidian_list_files_in_vault';
@@ -23,16 +24,9 @@ export class ListFilesInVaultTool extends BaseTool {
       
       return this.formatResponse(response);
     } catch (error: any) {
-      // Enhanced error handling with HTTP status codes
-      if (error.response?.status === 403) {
-        return this.handleErrorWithRecovery(
-          error,
-          {
-            suggestion: 'Permission denied. Check your API key and ensure the Obsidian Local REST API plugin is running',
-            workingAlternative: 'Verify your OBSIDIAN_API_KEY environment variable and plugin status',
-            example: {}
-          }
-        );
+      // Use common error handler for HTTP errors
+      if (error.response?.status) {
+        return ObsidianErrorHandler.handleHttpError(error, this.name);
       }
       
       if (error.message?.includes('vault') || error.message?.includes('connection')) {
