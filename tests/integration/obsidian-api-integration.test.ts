@@ -158,7 +158,7 @@ describe('Obsidian API Integration Tests', () => {
         await badClient.listFilesInVault();
         expect.fail('Should have thrown an error');
       } catch (error: any) {
-        expect(error.message).toContain('Request failed');
+        expect(error.message).toContain('Authentication failed');
         console.log(`🔒 Authentication error handled: ${error.message}`);
       }
     });
