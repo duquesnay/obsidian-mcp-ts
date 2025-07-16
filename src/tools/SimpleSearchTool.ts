@@ -1,5 +1,6 @@
 import { BaseTool } from './base.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
+import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
 
 export class SimpleSearchTool extends BaseTool {
   name = 'obsidian_simple_search';
@@ -59,20 +60,12 @@ export class SimpleSearchTool extends BaseTool {
       const results = await client.search(args.query, args.contextLength || OBSIDIAN_DEFAULTS.CONTEXT_LENGTH, limit, offset);
       return this.formatResponse(results);
     } catch (error: any) {
-      // Enhanced error handling with HTTP status codes
-      if (error.response?.status === 403) {
-        return this.handleErrorWithRecovery(
-          error,
-          {
-            suggestion: 'Permission denied. Check your API key and ensure the Obsidian Local REST API plugin is running',
-            workingAlternative: 'Verify your OBSIDIAN_API_KEY environment variable and plugin status',
-            example: {
-              query: args.query
-            }
-          }
-        );
+      // Use centralized error handler for common HTTP errors
+      if (error.response?.status) {
+        return ObsidianErrorHandler.handleHttpError(error, this.name);
       }
       
+      // Handle search-specific errors
       if (error.message?.includes('index') || error.message?.includes('search')) {
         return this.handleErrorWithRecovery(
           error,

@@ -6,23 +6,23 @@ This backlog decomposes quality improvement recommendations into fine-grained, i
 ## Task Categories
 
 ### 1. Constants and Magic Numbers (DRY)
-- [ ] T1.1: Create constants file for Obsidian defaults
-- [ ] T1.2: Replace hardcoded port 27124 with constant
-- [ ] T1.3: Replace timeout 6000 with constant
-- [ ] T1.4: Replace batch size 5 with constant
-- [ ] T1.5: Replace context length 100 with constant
+- [x] T1.1: Create constants file for Obsidian defaults
+- [x] T1.2: Replace hardcoded port 27124 with constant
+- [x] T1.3: Replace timeout 6000 with constant
+- [x] T1.4: Replace batch size 5 with constant
+- [x] T1.5: Replace context length 100 with constant
 - [ ] T1.6: Update all tools to use constants
 
 ### 2. Error Handling Consolidation (DRY)
-- [ ] T2.1: Create ObsidianErrorHandler utility class
-- [ ] T2.2: Extract 404 error handling to shared method
-- [ ] T2.3: Extract 403 error handling to shared method
-- [ ] T2.4: Extract 401 error handling to shared method
-- [ ] T2.5: Extract 500 error handling to shared method
-- [ ] T2.6: Create generic HTTP error handler
-- [ ] T2.7: Update GetFileContentsTool to use error handler
-- [ ] T2.8: Update AppendContentTool to use error handler
-- [ ] T2.9: Update DeleteFileTool to use error handler
+- [x] T2.1: Create ObsidianErrorHandler utility class
+- [x] T2.2: Extract 404 error handling to shared method
+- [x] T2.3: Extract 403 error handling to shared method
+- [x] T2.4: Extract 401 error handling to shared method
+- [x] T2.5: Extract 500 error handling to shared method
+- [x] T2.6: Create generic HTTP error handler
+- [x] T2.7: Update GetFileContentsTool to use error handler
+- [x] T2.8: Update AppendContentTool to use error handler
+- [x] T2.9: Update DeleteFileTool to use error handler
 - [ ] T2.10: Update SimpleSearchTool to use error handler
 - [ ] T2.11: Update SimpleReplaceTool to use error handler
 - [ ] T2.12: Update SimpleAppendTool to use error handler

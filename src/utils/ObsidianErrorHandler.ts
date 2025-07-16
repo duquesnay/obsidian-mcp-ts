@@ -55,7 +55,7 @@ export class ObsidianErrorHandler {
   private static handle401(error: any, toolName: string): ToolResponse {
     return this.formatResponse({
       success: false,
-      error: 'Authentication failed',
+      error: error.message || 'Authentication failed',
       tool: toolName,
       suggestion: 'Check your OBSIDIAN_API_KEY environment variable',
       working_alternative: 'Ensure the Obsidian Local REST API plugin is running and you have the correct API key',
@@ -68,7 +68,7 @@ export class ObsidianErrorHandler {
   private static handle403(error: any, toolName: string): ToolResponse {
     return this.formatResponse({
       success: false,
-      error: 'Permission denied',
+      error: error.message || 'Permission denied',
       tool: toolName,
       suggestion: 'Verify your OBSIDIAN_API_KEY is correct and has the necessary permissions',
       working_alternative: 'Check the Local REST API plugin settings in Obsidian',
