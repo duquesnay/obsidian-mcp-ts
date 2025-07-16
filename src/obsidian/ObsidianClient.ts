@@ -410,7 +410,8 @@ export class ObsidianClient {
   }> {
     validatePath(sourcePath, 'sourcePath');
     validatePath(destinationPath, 'destinationPath');
-    const encodedPath = encodeURIComponent(sourcePath);
+    // Encode each path segment separately to preserve directory structure
+    const encodedPath = sourcePath.split('/').map(segment => encodeURIComponent(segment)).join('/');
     
     return this.safeCall(async () => {
       try {
@@ -437,9 +438,19 @@ export class ObsidianClient {
           filesMovedCount: result.filesMovedCount || 0
         };
       } catch (error) {
-        if (axios.isAxiosError(error) && error.response?.status === 400) {
+        if (axios.isAxiosError(error) && error.response?.status === 404) {
           throw new ObsidianError(
-            'Directory move operation requires an updated Obsidian REST API plugin that supports directory operations.',
+            `Directory not found: ${sourcePath}`,
+            404
+          );
+        } else if (axios.isAxiosError(error) && error.response?.status === 409) {
+          throw new ObsidianError(
+            `Directory already exists: ${destinationPath}`,
+            409
+          );
+        } else if (axios.isAxiosError(error) && error.response?.status === 400) {
+          throw new ObsidianError(
+            'Invalid directory move operation. Check that both paths are valid.',
             400
           );
         } else {
