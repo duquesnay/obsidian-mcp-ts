@@ -1,5 +1,6 @@
 import { BaseTool } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
+import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
 
 export class DeleteFileTool extends BaseTool {
   name = 'obsidian_delete_file';
@@ -40,33 +41,12 @@ export class DeleteFileTool extends BaseTool {
       
       return this.formatResponse({ success: true, message: 'File deleted successfully' });
     } catch (error: any) {
-      // Enhanced error handling with HTTP status codes
-      if (error.response?.status === 404) {
-        return this.handleErrorWithRecovery(
-          error,
-          {
-            suggestion: 'File or directory does not exist. Check the filepath or use obsidian_list_files_in_vault to browse available files',
-            workingAlternative: 'Use obsidian_list_files_in_vault to find the correct file path',
-            example: {
-              filepath: 'corrected/file/path.md'
-            }
-          }
-        );
+      // Use centralized error handler for common HTTP errors
+      if (error.response?.status) {
+        return ObsidianErrorHandler.handleHttpError(error, this.name);
       }
       
-      if (error.response?.status === 403) {
-        return this.handleErrorWithRecovery(
-          error,
-          {
-            suggestion: 'Permission denied. Check your API key and ensure the Obsidian Local REST API plugin is running, or the file may be read-only',
-            workingAlternative: 'Verify your OBSIDIAN_API_KEY environment variable and plugin status',
-            example: {
-              filepath: args.filepath
-            }
-          }
-        );
-      }
-      
+      // Handle file lock errors
       if (error.message?.includes('in use') || error.message?.includes('locked')) {
         return this.handleErrorWithRecovery(
           error,

@@ -1,5 +1,6 @@
 import { BaseTool } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
+import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
 
 export class AppendContentTool extends BaseTool {
   name = 'obsidian_append_content';
@@ -59,7 +60,7 @@ export class AppendContentTool extends BaseTool {
       
       return this.formatResponse({ success: true, message: 'Content appended successfully' });
     } catch (error: any) {
-      // Enhanced error handling with HTTP status codes
+      // Special case: 404 with createIfNotExists false
       if (error.response?.status === 404 && args.createIfNotExists === false) {
         return this.handleErrorWithRecovery(
           error,
@@ -75,20 +76,12 @@ export class AppendContentTool extends BaseTool {
         );
       }
       
-      if (error.response?.status === 403) {
-        return this.handleErrorWithRecovery(
-          error,
-          {
-            suggestion: 'Permission denied. Check your API key and ensure the Obsidian Local REST API plugin is running, or the file may be read-only',
-            workingAlternative: 'Verify your OBSIDIAN_API_KEY environment variable and plugin status',
-            example: {
-              filepath: args.filepath,
-              content: args.content
-            }
-          }
-        );
+      // Use centralized error handler for common HTTP errors
+      if (error.response?.status) {
+        return ObsidianErrorHandler.handleHttpError(error, this.name);
       }
       
+      // Handle disk space errors
       if (error.message?.includes('disk space') || error.message?.includes('space')) {
         return this.handleErrorWithRecovery(
           error,
