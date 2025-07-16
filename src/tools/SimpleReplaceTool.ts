@@ -1,4 +1,5 @@
 import { BaseTool, ToolResponse } from './base.js';
+import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
 
 interface SimpleReplaceArgs {
   filepath: string;
@@ -76,20 +77,9 @@ export class SimpleReplaceTool extends BaseTool<SimpleReplaceArgs> {
         replace
       });
     } catch (error: any) {
-      // Handle common error scenarios with specific recovery guidance
-      if (error.message?.includes('File not found') || error.response?.status === 404) {
-        return this.handleErrorWithRecovery(error, {
-          suggestion: 'File does not exist. Check the filepath.',
-          workingAlternative: 'Use obsidian_list_files_in_vault to see available files',
-          example: { }
-        });
-      }
-
-      if (error.message?.includes('Permission denied') || error.response?.status === 403) {
-        return this.handleErrorWithRecovery(error, {
-          suggestion: 'Permission denied. Check API key and file permissions.',
-          workingAlternative: 'Verify Obsidian REST API plugin is running and API key is correct'
-        });
+      // Use common error handler for HTTP errors
+      if (error.response?.status) {
+        return ObsidianErrorHandler.handleHttpError(error, this.name);
       }
 
       return this.handleError(error, [

@@ -203,8 +203,9 @@ describe('SimpleReplaceTool', () => {
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.suggestion).toContain('Permission denied');
-      expect(response.working_alternative).toContain('API key');
+      expect(response.error).toContain('Permission denied');
+      expect(response.suggestion).toContain('OBSIDIAN_API_KEY');
+      expect(response.working_alternative).toContain('Local REST API plugin');
     });
 
     it('should provide alternative tools for generic errors', async () => {
