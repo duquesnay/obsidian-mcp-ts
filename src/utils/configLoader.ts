@@ -1,6 +1,7 @@
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
+import { isTestEnvironment } from './environment.js';
 
 interface ObsidianConfig {
   apiKey?: string;
@@ -74,7 +75,7 @@ export class ConfigLoader {
       // Validate config structure
       if (typeof config !== 'object') {
         // Only log config errors in non-test environments to avoid confusing test output
-        if (process.env.NODE_ENV !== 'test' && process.env.VITEST !== 'true') {
+        if (!isTestEnvironment()) {
           console.warn(`Invalid config file at ${path}: not an object`);
         }
         return null;
@@ -94,7 +95,7 @@ export class ConfigLoader {
       return result;
     } catch (error) {
       // Only log config errors in non-test environments to avoid confusing test output
-      if (process.env.NODE_ENV !== 'test' && process.env.VITEST !== 'true') {
+      if (!isTestEnvironment()) {
         console.warn(`Failed to read config file at ${path}:`, error);
       }
       return null;

@@ -4,14 +4,14 @@ import 'dotenv/config';
 
 /**
  * TRUE Integration tests for Obsidian REST API
- * 
+ *
  * These tests require:
  * 1. Obsidian running with Local REST API plugin
  * 2. OBSIDIAN_API_KEY environment variable set
  * 3. Plugin accessible at http://127.0.0.1:27124
- * 
+ *
  * Run with: npm test -- tests/integration/obsidian-api-integration.test.ts
- * 
+ *
  * IMPORTANT: These tests make real API calls and create/modify actual files.
  * Only run against a test vault, never production data.
  */
@@ -68,7 +68,7 @@ describe('Obsidian API Integration Tests', () => {
     it('should list files in vault', async () => {
 
       const files = await client.listFilesInVault();
-      
+
       expect(Array.isArray(files)).toBe(true);
       console.log(`Found ${files.length} files in vault`);
     });
@@ -117,19 +117,19 @@ describe('Obsidian API Integration Tests', () => {
       // First create a file with searchable content
       const searchTestFile = `search-test-${Date.now()}.md`;
       const searchContent = '# Search Test\n\nThis file contains the phrase INTEGRATION_TEST_MARKER for searching.';
-      
+
       try {
         await client.createFile(searchTestFile, searchContent);
-        
+
         // Wait a moment for indexing (some search systems need time)
         await new Promise(resolve => setTimeout(resolve, 1000));
-        
+
         // Search for our marker
         const searchResults = await client.search('INTEGRATION_TEST_MARKER');
-        
+
         expect(searchResults).toBeDefined();
         console.log(`Search found: ${JSON.stringify(searchResults, null, 2)}`);
-        
+
         // Clean up
         await client.deleteFile(searchTestFile);
       } catch (error) {
@@ -179,33 +179,33 @@ describe('Obsidian API Integration Tests', () => {
   describe('Directory Operations', () => {
     it('should move directories with spaces in names', async () => {
       const timestamp = Date.now();
-      const testDirWithSpaces = `test-dir ${timestamp}/Book Yourself Solid Implementation`;
-      const testDirRenamed = `test-dir ${timestamp}/Book Yourself Solid - Renamed`;
+      const testDirWithSpaces = `test-dir ${timestamp}/Some Folder Implementation`;
+      const testDirRenamed = `test-dir ${timestamp}/Some Folder - Renamed`;
       const testFile = `${testDirWithSpaces}/test-file.md`;
-      
+
       try {
         // Create directory structure with spaces
         await client.createDirectory(testDirWithSpaces, true);
         console.log(`Created directory with spaces: ${testDirWithSpaces}`);
-        
+
         // Create a file in the directory
         await client.createFile(testFile, '# Test File\n\nThis tests directory operations with spaces.');
         console.log(`Created file in directory: ${testFile}`);
-        
+
         // Verify the file exists
         const content = await client.getFileContents(testFile);
         expect(content).toContain('Test File');
-        
+
         // Move the directory (this should fail with current bug)
         const result = await client.moveDirectory(testDirWithSpaces, testDirRenamed);
         console.log(`Moved directory: ${testDirWithSpaces} -> ${testDirRenamed}`);
         expect(result.success).toBe(true);
-        
+
         // Verify the file exists at new location
         const newFilePath = `${testDirRenamed}/test-file.md`;
         const movedContent = await client.getFileContents(newFilePath);
         expect(movedContent).toContain('Test File');
-        
+
         // Clean up
         await client.deleteDirectory(testDirRenamed, true);
         console.log(`Cleaned up test directory: ${testDirRenamed}`);
@@ -230,17 +230,17 @@ describe('Obsidian API Integration Tests', () => {
       const timestamp = Date.now();
       const testDir = `test-special ${timestamp}/Project (2024) - Version 1.0`;
       const renamedDir = `test-special ${timestamp}/Project 2024 v1.0`;
-      
+
       try {
         // Create directory with special characters
         await client.createDirectory(testDir, true);
         console.log(`Created directory with special chars: ${testDir}`);
-        
+
         // Move the directory
         const result = await client.moveDirectory(testDir, renamedDir);
         expect(result.success).toBe(true);
         console.log(`Successfully moved directory with special characters`);
-        
+
         // Clean up
         await client.deleteDirectory(renamedDir, true);
       } catch (error) {
@@ -267,12 +267,12 @@ describe('Obsidian API Integration Tests', () => {
       ];
 
       const results = await Promise.all(operations);
-      
+
       expect(results).toHaveLength(3);
       results.forEach(files => {
         expect(Array.isArray(files)).toBe(true);
       });
-      
+
       console.log(`Completed ${operations.length} concurrent operations`);
     });
 
@@ -283,13 +283,13 @@ describe('Obsidian API Integration Tests', () => {
 
       try {
         await client.createFile(largeTestFile, largeContent);
-        
+
         const retrievedContent = await client.getFileContents(largeTestFile);
         expect(retrievedContent).toBe(largeContent);
         expect(retrievedContent.length).toBe(largeContent.length);
-        
+
         console.log(`Large file test: ${largeContent.length} characters`);
-        
+
         // Clean up
         await client.deleteFile(largeTestFile);
       } catch (error) {

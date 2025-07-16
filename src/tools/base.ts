@@ -1,5 +1,6 @@
 import { ObsidianClient } from '../obsidian/ObsidianClient.js';
 import { ConfigLoader } from '../utils/configLoader.js';
+import { isTestEnvironment } from '../utils/environment.js';
 
 export interface AlternativeAction {
   description: string;
@@ -102,7 +103,7 @@ export abstract class BaseTool<TArgs = Record<string, unknown>> implements ToolI
 
   protected handleError(error: unknown, alternatives?: AlternativeAction[]): ToolResponse {
     // Only log errors in non-test environments to avoid confusing test output
-    if (process.env.NODE_ENV !== 'test' && process.env.VITEST !== 'true') {
+    if (!isTestEnvironment()) {
       console.error(`Error in ${this.name}:`, error);
     }
     
@@ -122,7 +123,7 @@ export abstract class BaseTool<TArgs = Record<string, unknown>> implements ToolI
 
   protected handleErrorWithRecovery(error: unknown, recovery: RecoveryOptions): ToolResponse {
     // Only log errors in non-test environments to avoid confusing test output
-    if (process.env.NODE_ENV !== 'test' && process.env.VITEST !== 'true') {
+    if (!isTestEnvironment()) {
       console.error(`Error in ${this.name}:`, error);
     }
     
