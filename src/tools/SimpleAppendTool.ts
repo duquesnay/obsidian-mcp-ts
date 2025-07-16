@@ -1,4 +1,5 @@
 import { BaseTool, ToolResponse } from './base.js';
+import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
 
 interface SimpleAppendArgs {
   filepath: string;
@@ -57,20 +58,17 @@ export class SimpleAppendTool extends BaseTool<SimpleAppendArgs> {
         filepath
       });
     } catch (error: any) {
-      // Handle common error scenarios with specific recovery guidance
-      if (error.message?.includes('File not found') || error.response?.status === 404) {
-        return this.handleErrorWithRecovery(error, {
-          suggestion: 'File does not exist. Try setting create_file_if_missing to true.',
-          workingAlternative: 'Enable file creation',
-          example: { filepath, content, create_file_if_missing: true }
-        });
-      }
-
-      if (error.message?.includes('Permission denied') || error.response?.status === 403) {
-        return this.handleErrorWithRecovery(error, {
-          suggestion: 'Permission denied. Check API key and file permissions.',
-          workingAlternative: 'Verify Obsidian REST API plugin is running and API key is correct'
-        });
+      // Use common error handler for HTTP errors
+      if (error.response?.status) {
+        // Special handling for 404 - suggest creating the file
+        if (error.response.status === 404 && !create_file_if_missing) {
+          return this.handleErrorWithRecovery(error, {
+            suggestion: 'File does not exist. Try setting create_file_if_missing to true.',
+            workingAlternative: 'Enable file creation',
+            example: { filepath, content, create_file_if_missing: true }
+          });
+        }
+        return ObsidianErrorHandler.handleHttpError(error, this.name);
       }
 
       return this.handleError(error, [
