@@ -23,16 +23,16 @@ This backlog decomposes quality improvement recommendations into fine-grained, i
 - [x] T2.7: Update GetFileContentsTool to use error handler
 - [x] T2.8: Update AppendContentTool to use error handler
 - [x] T2.9: Update DeleteFileTool to use error handler
-- [ ] T2.10: Update SimpleSearchTool to use error handler
-- [ ] T2.11: Update SimpleReplaceTool to use error handler
-- [ ] T2.12: Update SimpleAppendTool to use error handler
-- [ ] T2.13: Update ListFilesInVaultTool to use error handler
-- [ ] T2.14: Update remaining tools to use error handler
+- [x] T2.10: Update SimpleSearchTool to use error handler
+- [x] T2.11: Update SimpleReplaceTool to use error handler
+- [x] T2.12: Update SimpleAppendTool to use error handler
+- [x] T2.13: Update ListFilesInVaultTool to use error handler
+- [x] T2.14: Update ListFilesInDirTool to use error handler
 
 ### 3. Type Safety Improvements
-- [ ] T3.1: Create proper types for tool arguments
-- [ ] T3.2: Replace BaseTool any types with generics
-- [ ] T3.3: Update executeTyped method signatures
+- [x] T3.1: Create proper types for tool arguments
+- [x] T3.2: Replace BaseTool any types with generics
+- [x] T3.3: Update ToolInterface to use generics
 - [ ] T3.4: Type all tool argument interfaces
 - [ ] T3.5: Update all tools to use typed arguments
 - [ ] T3.6: Remove any types from ObsidianClient
@@ -57,10 +57,10 @@ This backlog decomposes quality improvement recommendations into fine-grained, i
 - [ ] T5.8: Update tests for new structure
 
 ### 6. Environment and Test Utilities (DRY)
-- [ ] T6.1: Create isTestEnvironment utility
-- [ ] T6.2: Remove duplicate NODE_ENV checks
-- [ ] T6.3: Remove duplicate VITEST checks
-- [ ] T6.4: Update all environment checks to use utility
+- [x] T6.1: Create isTestEnvironment utility
+- [x] T6.2: Remove duplicate NODE_ENV checks
+- [x] T6.3: Remove duplicate VITEST checks
+- [x] T6.4: Update all environment checks to use utility
 
 ### 7. Tool Registration Improvements (SOLID)
 - [ ] T7.1: Create tool discovery mechanism
