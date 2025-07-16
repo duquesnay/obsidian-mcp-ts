@@ -33,9 +33,10 @@ import { QueryStructureTool } from './QueryStructureTool.js';
 import { SimpleAppendTool } from './SimpleAppendTool.js';
 import { SimpleReplaceTool } from './SimpleReplaceTool.js';
 import { UnifiedEditTool } from './UnifiedEditTool.js';
-import { BaseTool, ToolInterface } from './base.js';
+import { BaseTool, ToolInterface, AnyTool } from './base.js';
 
-const tools: ToolInterface[] = [
+// Array of tools with different argument types
+const tools: AnyTool[] = [
   // File operations
   new ListFilesInVaultTool(),
   new ListFilesInDirTool(),

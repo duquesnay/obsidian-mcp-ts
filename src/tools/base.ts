@@ -2,6 +2,12 @@ import { ObsidianClient } from '../obsidian/ObsidianClient.js';
 import { ConfigLoader } from '../utils/configLoader.js';
 import { isTestEnvironment } from '../utils/environment.js';
 
+// Type helper for defining tool argument types
+export type ToolArgs = Record<string, unknown>;
+
+// Type for a collection of tools with unknown argument types
+export type AnyTool = ToolInterface<any>;
+
 export interface AlternativeAction {
   description: string;
   tool?: string;
@@ -39,19 +45,36 @@ export interface SuccessResponse {
 
 export type ToolResult = SuccessResponse | ErrorResponse | ToolResponse;
 
-// Base interface for tool registration
-export interface ToolInterface {
+// Type for tool argument schemas
+export type ToolSchema<T> = {
+  type: 'object';
+  properties: Record<string, unknown>; // Keep flexible for now
+  required?: string[]; // Keep as string[] for backward compatibility
+};
+
+// Future type-safe version when we update all tools:
+// export type StrictToolSchema<T> = {
+//   type: 'object';
+//   properties: {
+//     [K in keyof T]: {
+//       type: string;
+//       description: string;
+//       default?: T[K];
+//       enum?: readonly T[K][];
+//     }
+//   };
+//   required?: ReadonlyArray<keyof T>;
+// };
+
+// Base interface for tool registration with generics
+export interface ToolInterface<TArgs = Record<string, unknown>> {
   name: string;
   description: string;
-  inputSchema: {
-    type: 'object';
-    properties: Record<string, unknown>;
-    required?: string[];
-  };
-  execute(args: Record<string, unknown>): Promise<ToolResponse>;
+  inputSchema: ToolSchema<TArgs>;
+  execute(args: TArgs): Promise<ToolResponse>;
 }
 
-export abstract class BaseTool<TArgs = Record<string, unknown>> implements ToolInterface {
+export abstract class BaseTool<TArgs = Record<string, unknown>> implements ToolInterface<TArgs> {
   protected obsidianClient: ObsidianClient | null = null;
   protected configLoader: ConfigLoader;
 
@@ -61,11 +84,7 @@ export abstract class BaseTool<TArgs = Record<string, unknown>> implements ToolI
 
   abstract name: string;
   abstract description: string;
-  abstract inputSchema: {
-    type: 'object';
-    properties: Record<string, unknown>;
-    required?: string[];
-  };
+  abstract inputSchema: ToolSchema<TArgs>;
 
   protected getApiKey(): string {
     return this.configLoader.getApiKey();
@@ -89,9 +108,9 @@ export abstract class BaseTool<TArgs = Record<string, unknown>> implements ToolI
   // Concrete execute method that subclasses implement
   abstract executeTyped(args: TArgs): Promise<ToolResponse>;
   
-  // Interface implementation with type casting
-  async execute(args: Record<string, unknown>): Promise<ToolResponse> {
-    return this.executeTyped(args as TArgs);
+  // Interface implementation - no more casting needed
+  async execute(args: TArgs): Promise<ToolResponse> {
+    return this.executeTyped(args);
   }
 
   protected formatResponse(data: unknown): ToolResponse {
