@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { ObsidianClient } from '../../src/obsidian/ObsidianClient.js';
+import 'dotenv/config';
 
 /**
  * TRUE Integration tests for Obsidian REST API
@@ -39,10 +40,10 @@ describe('Obsidian API Integration Tests', () => {
     // Verify connection
     try {
       await client.listFilesInVault();
-      console.log('✅ Connected to Obsidian REST API');
+      console.log('Connected to Obsidian REST API');
     } catch (error) {
-      console.error('❌ Failed to connect to Obsidian REST API:', error);
-      console.log('💡 Make sure:');
+      console.error('Failed to connect to Obsidian REST API:', error);
+      console.log('Make sure:');
       console.log('   - Obsidian is running');
       console.log('   - Local REST API plugin is enabled');
       console.log('   - API key is correct');
@@ -56,10 +57,10 @@ describe('Obsidian API Integration Tests', () => {
     // Clean up test files
     try {
       await client.deleteFile(testFile);
-      console.log(`🧹 Cleaned up test file: ${testFile}`);
+      console.log(`Cleaned up test file: ${testFile}`);
     } catch (error) {
       // File might not exist, that's okay
-      console.log(`ℹ️  Test file cleanup: ${error}`);
+      console.log(`Test file cleanup: ${error}`);
     }
   });
 
@@ -69,24 +70,24 @@ describe('Obsidian API Integration Tests', () => {
       const files = await client.listFilesInVault();
       
       expect(Array.isArray(files)).toBe(true);
-      console.log(`📁 Found ${files.length} files in vault`);
+      console.log(`Found ${files.length} files in vault`);
     });
 
     it('should create, read, update, and delete a file', async () => {
 
       // Create
       await client.createFile(testFile, testContent);
-      console.log(`✨ Created file: ${testFile}`);
+      console.log(`Created file: ${testFile}`);
 
       // Read
       const content = await client.getFileContents(testFile);
       expect(content).toBe(testContent);
-      console.log(`📖 Read file content: ${content.length} characters`);
+      console.log(`Read file content: ${content.length} characters`);
 
       // Update
       const updatedContent = testContent + '\n\n## Updated\n\nThis content was updated.';
       await client.updateFile(testFile, updatedContent);
-      console.log(`📝 Updated file: ${testFile}`);
+      console.log(`Updated file: ${testFile}`);
 
       // Verify update
       const newContent = await client.getFileContents(testFile);
@@ -127,12 +128,12 @@ describe('Obsidian API Integration Tests', () => {
         const searchResults = await client.search('INTEGRATION_TEST_MARKER');
         
         expect(searchResults).toBeDefined();
-        console.log(`🔍 Search found: ${JSON.stringify(searchResults, null, 2)}`);
+        console.log(`Search found: ${JSON.stringify(searchResults, null, 2)}`);
         
         // Clean up
         await client.deleteFile(searchTestFile);
       } catch (error) {
-        console.log('ℹ️  Search test may not work with all Obsidian configurations:', error);
+        console.log('Search test may not work with all Obsidian configurations:', error);
         // Clean up even if test fails
         try {
           await client.deleteFile(searchTestFile);
@@ -159,7 +160,7 @@ describe('Obsidian API Integration Tests', () => {
         expect.fail('Should have thrown an error');
       } catch (error: any) {
         expect(error.message).toContain('Authentication failed');
-        console.log(`🔒 Authentication error handled: ${error.message}`);
+        console.log(`Authentication error handled: ${error.message}`);
       }
     });
 
@@ -170,7 +171,88 @@ describe('Obsidian API Integration Tests', () => {
         expect.fail('Should have thrown an error');
       } catch (error: any) {
         expect(error.message).toContain('404');
-        console.log(`📄 File not found error handled: ${error.message}`);
+        console.log(`File not found error handled: ${error.message}`);
+      }
+    });
+  });
+
+  describe('Directory Operations', () => {
+    it('should move directories with spaces in names', async () => {
+      const timestamp = Date.now();
+      const testDirWithSpaces = `test-dir ${timestamp}/Book Yourself Solid Implementation`;
+      const testDirRenamed = `test-dir ${timestamp}/Book Yourself Solid - Renamed`;
+      const testFile = `${testDirWithSpaces}/test-file.md`;
+      
+      try {
+        // Create directory structure with spaces
+        await client.createDirectory(testDirWithSpaces, true);
+        console.log(`Created directory with spaces: ${testDirWithSpaces}`);
+        
+        // Create a file in the directory
+        await client.createFile(testFile, '# Test File\n\nThis tests directory operations with spaces.');
+        console.log(`Created file in directory: ${testFile}`);
+        
+        // Verify the file exists
+        const content = await client.getFileContents(testFile);
+        expect(content).toContain('Test File');
+        
+        // Move the directory (this should fail with current bug)
+        const result = await client.moveDirectory(testDirWithSpaces, testDirRenamed);
+        console.log(`Moved directory: ${testDirWithSpaces} -> ${testDirRenamed}`);
+        expect(result.success).toBe(true);
+        
+        // Verify the file exists at new location
+        const newFilePath = `${testDirRenamed}/test-file.md`;
+        const movedContent = await client.getFileContents(newFilePath);
+        expect(movedContent).toContain('Test File');
+        
+        // Clean up
+        await client.deleteDirectory(testDirRenamed, true);
+        console.log(`Cleaned up test directory: ${testDirRenamed}`);
+      } catch (error) {
+        console.error('Directory move test failed:', error);
+        // Try to clean up both possible locations
+        try {
+          await client.deleteDirectory(testDirWithSpaces, true);
+        } catch {
+          // Ignore cleanup errors
+        }
+        try {
+          await client.deleteDirectory(testDirRenamed, true);
+        } catch {
+          // Ignore cleanup errors
+        }
+        throw error;
+      }
+    });
+
+    it('should handle complex directory paths with special characters', async () => {
+      const timestamp = Date.now();
+      const testDir = `test-special ${timestamp}/Project (2024) - Version 1.0`;
+      const renamedDir = `test-special ${timestamp}/Project 2024 v1.0`;
+      
+      try {
+        // Create directory with special characters
+        await client.createDirectory(testDir, true);
+        console.log(`Created directory with special chars: ${testDir}`);
+        
+        // Move the directory
+        const result = await client.moveDirectory(testDir, renamedDir);
+        expect(result.success).toBe(true);
+        console.log(`Successfully moved directory with special characters`);
+        
+        // Clean up
+        await client.deleteDirectory(renamedDir, true);
+      } catch (error) {
+        console.error('Special characters test failed:', error);
+        // Clean up
+        try {
+          await client.deleteDirectory(testDir, true);
+        } catch {}
+        try {
+          await client.deleteDirectory(renamedDir, true);
+        } catch {}
+        throw error;
       }
     });
   });
@@ -191,7 +273,7 @@ describe('Obsidian API Integration Tests', () => {
         expect(Array.isArray(files)).toBe(true);
       });
       
-      console.log(`⚡ Completed ${operations.length} concurrent operations`);
+      console.log(`Completed ${operations.length} concurrent operations`);
     });
 
     it('should handle large file operations', async () => {
@@ -206,12 +288,12 @@ describe('Obsidian API Integration Tests', () => {
         expect(retrievedContent).toBe(largeContent);
         expect(retrievedContent.length).toBe(largeContent.length);
         
-        console.log(`📊 Large file test: ${largeContent.length} characters`);
+        console.log(`Large file test: ${largeContent.length} characters`);
         
         // Clean up
         await client.deleteFile(largeTestFile);
       } catch (error) {
-        console.error('❌ Large file test failed:', error);
+        console.error('Large file test failed:', error);
         // Clean up even if test fails
         try {
           await client.deleteFile(largeTestFile);
