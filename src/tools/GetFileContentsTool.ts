@@ -1,5 +1,6 @@
 import { BaseTool } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
+import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
 
 export class GetFileContentsTool extends BaseTool {
   name = 'obsidian_get_file_contents';
@@ -45,31 +46,9 @@ export class GetFileContentsTool extends BaseTool {
       const result = await client.getFileContents(args.filepath, args.format);
       return this.formatResponse(result);
     } catch (error: any) {
-      // Enhanced error handling with HTTP status codes
-      if (error.response?.status === 404) {
-        return this.handleErrorWithRecovery(
-          error,
-          {
-            suggestion: 'File does not exist. Check the filepath or use obsidian_list_files_in_vault to browse available files',
-            workingAlternative: 'Use obsidian_list_files_in_vault to find the correct file path',
-            example: {
-              filepath: 'corrected/file/path.md'
-            }
-          }
-        );
-      }
-      
-      if (error.response?.status === 403) {
-        return this.handleErrorWithRecovery(
-          error,
-          {
-            suggestion: 'Permission denied. Check your API key and ensure the Obsidian Local REST API plugin is running',
-            workingAlternative: 'Verify your OBSIDIAN_API_KEY environment variable and plugin status',
-            example: {
-              filepath: args.filepath
-            }
-          }
-        );
+      // Use centralized error handler for common HTTP errors
+      if (error.response?.status) {
+        return ObsidianErrorHandler.handleHttpError(error, this.name);
       }
       
       // Fallback to basic error handling with alternatives
