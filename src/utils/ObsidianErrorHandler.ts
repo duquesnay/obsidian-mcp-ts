@@ -1,4 +1,9 @@
-import { RecoveryOptions } from '../types/errors.js';
+// RecoveryOptions is defined in base.ts but we'll define it locally to avoid circular dependencies
+interface RecoveryOptions {
+  suggestion: string;
+  workingAlternative?: string;
+  example?: Record<string, unknown>;
+}
 
 // MCP tool response format
 interface ToolResponse {
