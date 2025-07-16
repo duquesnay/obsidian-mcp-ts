@@ -33,7 +33,10 @@
       "Bash(./fix-remaining-tests.sh:*)",
       "Bash(bash:*)",
       "Bash(npx tsx:*)",
-      "Bash(npx @modelcontextprotocol/inspector:*)"
+      "Bash(npx @modelcontextprotocol/inspector:*)",
+      "Bash(./test-simple-move.sh:*)",
+      "Bash(./tests/test-api-directly.sh:*)",
+      "Bash(cat:*)"
     ],
     "deny": []
   }

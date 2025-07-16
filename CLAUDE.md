@@ -101,6 +101,9 @@ async def tool_name(arguments: dict[str, Any]) -> Any:
 - Include proper auth headers with bearer token
 - Implement retries for transient failures
 
+### SSL Verification Note
+The Obsidian Local REST API plugin uses a self-signed SSL certificate on port 27124. This is expected behavior, and SSL verification must be disabled (`verifySsl: false`) to connect to the local Obsidian instance. This is not a security vulnerability but a requirement for local development with self-signed certificates.
+
 ## Common Development Tasks
 
 ### Adding a New Tool
