@@ -2,6 +2,7 @@ import axios, { AxiosInstance, AxiosError } from 'axios';
 import https from 'https';
 import { ObsidianError } from '../types/errors.js';
 import { validatePath, validatePaths } from '../utils/pathValidator.js';
+import { OBSIDIAN_DEFAULTS } from '../constants.js';
 
 export interface ObsidianClientConfig {
   apiKey: string;
@@ -22,14 +23,14 @@ export class ObsidianClient {
   constructor(config: ObsidianClientConfig) {
     this.apiKey = config.apiKey;
     this.protocol = config.protocol || 'https';
-    this.host = config.host || '127.0.0.1';
-    this.port = config.port || 27124;
+    this.host = config.host || OBSIDIAN_DEFAULTS.HOST;
+    this.port = config.port || OBSIDIAN_DEFAULTS.PORT;
     this.verifySsl = config.verifySsl ?? true;
 
     // Create axios instance with custom config
     this.axiosInstance = axios.create({
       baseURL: this.getBaseUrl(),
-      timeout: 6000, // 6 second read timeout
+      timeout: OBSIDIAN_DEFAULTS.TIMEOUT_MS,
       headers: {
         'Authorization': `Bearer ${this.apiKey}`
       },
@@ -39,7 +40,7 @@ export class ObsidianClient {
     });
 
     // Set connect timeout
-    this.axiosInstance.defaults.timeout = 6000;
+    this.axiosInstance.defaults.timeout = OBSIDIAN_DEFAULTS.TIMEOUT_MS;
   }
 
   private getBaseUrl(): string {
