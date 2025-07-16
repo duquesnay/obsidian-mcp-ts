@@ -128,7 +128,7 @@ export class ObsidianClient {
   async getBatchFileContents(filepaths: string[]): Promise<string> {
     validatePaths(filepaths, 'filepaths');
     // Process files in smaller batches to avoid token limits
-    const BATCH_SIZE = 5; // Conservative batch size to stay under token limits
+    const BATCH_SIZE = OBSIDIAN_DEFAULTS.BATCH_SIZE;
     const results: string[] = [];
     
     for (let i = 0; i < filepaths.length; i += BATCH_SIZE) {
@@ -151,7 +151,7 @@ export class ObsidianClient {
     return results.join('');
   }
 
-  async search(query: string, contextLength: number = 100, limit?: number, offset?: number): Promise<any> {
+  async search(query: string, contextLength: number = OBSIDIAN_DEFAULTS.CONTEXT_LENGTH, limit?: number, offset?: number): Promise<any> {
     return this.safeCall(async () => {
       const response = await this.axiosInstance.post('/search/simple/', null, {
         params: {

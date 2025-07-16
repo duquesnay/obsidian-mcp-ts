@@ -1,4 +1,5 @@
 import { BaseTool } from './base.js';
+import { OBSIDIAN_DEFAULTS } from '../constants.js';
 
 export class SimpleSearchTool extends BaseTool {
   name = 'obsidian_simple_search';
@@ -45,7 +46,7 @@ export class SimpleSearchTool extends BaseTool {
             example: {
               query: 'search text',
               limit: 50,
-              contextLength: 100
+              contextLength: OBSIDIAN_DEFAULTS.CONTEXT_LENGTH
             }
           }
         );
@@ -55,7 +56,7 @@ export class SimpleSearchTool extends BaseTool {
       const offset = args.offset || 0;
       
       const client = this.getClient();
-      const results = await client.search(args.query, args.contextLength || 100, limit, offset);
+      const results = await client.search(args.query, args.contextLength || OBSIDIAN_DEFAULTS.CONTEXT_LENGTH, limit, offset);
       return this.formatResponse(results);
     } catch (error: any) {
       // Enhanced error handling with HTTP status codes
