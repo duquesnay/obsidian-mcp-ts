@@ -3,6 +3,7 @@ import https from 'https';
 import { ObsidianError } from '../types/errors.js';
 import { validatePath, validatePaths } from '../utils/pathValidator.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
+import { BatchProcessor } from '../utils/BatchProcessor.js';
 
 export interface ObsidianClientConfig {
   apiKey: string;
@@ -127,28 +128,18 @@ export class ObsidianClient {
 
   async getBatchFileContents(filepaths: string[]): Promise<string> {
     validatePaths(filepaths, 'filepaths');
-    // Process files in smaller batches to avoid token limits
-    const BATCH_SIZE = OBSIDIAN_DEFAULTS.BATCH_SIZE;
-    const results: string[] = [];
     
-    for (let i = 0; i < filepaths.length; i += BATCH_SIZE) {
-      const batch = filepaths.slice(i, i + BATCH_SIZE);
-      
-      // Process batch concurrently for better performance
-      const batchPromises = batch.map(async (filepath) => {
-        try {
-          const content = await this.getFileContents(filepath);
-          return `# ${filepath}\n\n${content}\n\n---\n\n`;
-        } catch (error) {
-          return `# ${filepath}\n\nError reading file: ${error instanceof Error ? error.message : String(error)}\n\n---\n\n`;
+    // Use BatchProcessor to handle concurrent file reading
+    return BatchProcessor.processBatchWithFormat(
+      filepaths,
+      async (filepath) => await this.getFileContents(filepath),
+      (filepath, content) => {
+        if (content instanceof Error) {
+          return `# ${filepath}\n\nError reading file: ${content.message}\n\n---\n\n`;
         }
-      });
-      
-      const batchResults = await Promise.all(batchPromises);
-      results.push(...batchResults);
-    }
-    
-    return results.join('');
+        return `# ${filepath}\n\n${content}\n\n---\n\n`;
+      }
+    );
   }
 
   async search(query: string, contextLength: number = OBSIDIAN_DEFAULTS.CONTEXT_LENGTH, limit?: number, offset?: number): Promise<any> {
