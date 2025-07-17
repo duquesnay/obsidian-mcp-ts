@@ -21,14 +21,11 @@ export class DeleteFileTool extends BaseTool {
     try {
       // Enhanced input validation with recovery
       if (!args.filepath) {
-        return this.handleErrorWithRecovery(
+        return this.handleSimplifiedError(
           new Error('Missing required parameters'),
+          'Provide filepath parameter to specify which file or directory to delete. Use obsidian_list_files_in_vault to browse available files first',
           {
-            suggestion: 'Provide filepath parameter to specify which file or directory to delete',
-            workingAlternative: 'Use obsidian_list_files_in_vault to browse available files first',
-            example: {
-              filepath: 'notes/file-to-delete.md'
-            }
+            filepath: 'notes/file-to-delete.md'
           }
         );
       }
@@ -48,30 +45,21 @@ export class DeleteFileTool extends BaseTool {
       
       // Handle file lock errors
       if (error.message?.includes('in use') || error.message?.includes('locked')) {
-        return this.handleErrorWithRecovery(
+        return this.handleSimplifiedError(
           error,
+          'File is currently in use or locked. Close the file in Obsidian and try again. Wait for the file to be released and retry the operation',
           {
-            suggestion: 'File is currently in use or locked. Close the file in Obsidian and try again',
-            workingAlternative: 'Wait for the file to be released and retry the operation',
-            example: {
-              filepath: args.filepath
-            }
+            filepath: args.filepath
           }
         );
       }
       
-      // Fallback to basic error handling with alternatives
-      return this.handleError(error, [
-        {
-          description: 'Browse files in your vault',
-          tool: 'obsidian_list_files_in_vault'
-        },
-        {
-          description: 'Get file content before deletion',
-          tool: 'obsidian_get_file_contents',
-          example: { filepath: args.filepath }
-        }
-      ]);
+      // Fallback to basic error handling
+      return this.handleSimplifiedError(
+        error,
+        'Alternative options: Browse files in your vault (tool: obsidian_list_files_in_vault), Get file content before deletion (tool: obsidian_get_file_contents)',
+        { filepath: args.filepath }
+      );
     }
   }
 }
