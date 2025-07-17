@@ -30,29 +30,14 @@ export class ListFilesInVaultTool extends BaseTool {
       }
       
       if (error.message?.includes('vault') || error.message?.includes('connection')) {
-        return this.handleErrorWithRecovery(
+        return this.handleSimplifiedError(
           error,
-          {
-            suggestion: 'Cannot connect to Obsidian vault. Ensure Obsidian is running and the Local REST API plugin is active',
-            workingAlternative: 'Check that Obsidian is open and the plugin is enabled in settings',
-            example: {}
-          }
+          'Cannot connect to Obsidian vault. Ensure Obsidian is running and the Local REST API plugin is active'
         );
       }
       
-      // Fallback to basic error handling with alternatives
-      return this.handleError(error, [
-        {
-          description: 'Search for specific files',
-          tool: 'obsidian_simple_search',
-          example: { query: 'filename' }
-        },
-        {
-          description: 'Get specific file content',
-          tool: 'obsidian_get_file_contents',
-          example: { filepath: 'notes/example.md' }
-        }
-      ]);
+      // Fallback to basic error handling
+      return this.handleSimplifiedError(error);
     }
   }
 }

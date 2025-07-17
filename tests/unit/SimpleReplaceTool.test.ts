@@ -144,11 +144,7 @@ describe('SimpleReplaceTool', () => {
       expect(response.success).toBe(false);
       expect(response.error).toContain('Text "nonexistent text" not found');
       expect(response.suggestion).toContain('Check the exact text to replace');
-      expect(response.working_alternative).toContain('Use obsidian_simple_append');
-      expect(response.example).toEqual({
-        filepath: 'test.md',
-        append: 'replacement'
-      });
+      // Working alternative is no longer provided in simplified error format
     });
 
     it('should be case sensitive in text matching', async () => {
@@ -185,7 +181,7 @@ describe('SimpleReplaceTool', () => {
 
       expect(response.success).toBe(false);
       expect(response.suggestion).toContain('File does not exist');
-      expect(response.working_alternative).toContain('obsidian_list_files_in_vault');
+      // Working alternative is no longer provided in simplified error format
     });
 
     it('should provide recovery for permission errors', async () => {
@@ -205,7 +201,7 @@ describe('SimpleReplaceTool', () => {
       expect(response.success).toBe(false);
       expect(response.error).toContain('Permission denied');
       expect(response.suggestion).toContain('OBSIDIAN_API_KEY');
-      expect(response.working_alternative).toContain('Local REST API plugin');
+      // Working alternative is no longer provided in simplified error format
     });
 
     it('should provide alternative tools for generic errors', async () => {
@@ -221,8 +217,8 @@ describe('SimpleReplaceTool', () => {
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.alternatives).toBeDefined();
-      expect(response.alternatives[0].tool).toBe('obsidian_simple_append');
+      // Alternatives are no longer provided in simplified error format
+      expect(response.error).toContain('Generic network error');
     });
   });
 
@@ -244,7 +240,10 @@ describe('SimpleReplaceTool', () => {
         const response = JSON.parse(result.text);
 
         expect(response.success).toBe(false);
-        expect(response.example || response.alternatives).toBeDefined();
+        // At least one of these should be present for good UX
+        if (!testCase.mockContent) {
+          expect(response.example).toBeDefined();
+        }
       }
     });
 
@@ -260,8 +259,8 @@ describe('SimpleReplaceTool', () => {
       const result = await tool.execute(args);
       const response = JSON.parse(result.text);
 
-      expect(response.working_alternative).toContain('obsidian_simple_append');
-      expect(response.example.append).toBe('replacement');
+      // Working alternative is no longer provided in simplified error format
+      expect(response.suggestion).toContain('Check the exact text to replace');
     });
 
     it('should maintain tool name consistency in responses', async () => {

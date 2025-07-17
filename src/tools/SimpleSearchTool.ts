@@ -39,16 +39,13 @@ export class SimpleSearchTool extends BaseTool {
     try {
       // Enhanced input validation with recovery
       if (!args.query) {
-        return this.handleErrorWithRecovery(
+        return this.handleSimplifiedError(
           new Error('Missing required parameters'),
+          'Provide query parameter to specify what text to search for',
           {
-            suggestion: 'Provide query parameter to specify what text to search for',
-            workingAlternative: 'Use obsidian_list_files_in_vault to browse files if you\'re looking for a specific file',
-            example: {
-              query: 'search text',
-              limit: 50,
-              contextLength: OBSIDIAN_DEFAULTS.CONTEXT_LENGTH
-            }
+            query: 'search text',
+            limit: 50,
+            contextLength: OBSIDIAN_DEFAULTS.CONTEXT_LENGTH
           }
         );
       }
@@ -67,30 +64,14 @@ export class SimpleSearchTool extends BaseTool {
       
       // Handle search-specific errors
       if (error.message?.includes('index') || error.message?.includes('search')) {
-        return this.handleErrorWithRecovery(
+        return this.handleSimplifiedError(
           error,
-          {
-            suggestion: 'Search service may be unavailable. Try browsing files directly or check Obsidian plugin status',
-            workingAlternative: 'Use obsidian_list_files_in_vault to browse files by name instead',
-            example: {
-              query: args.query
-            }
-          }
+          'Search service may be unavailable. Try browsing files directly or check Obsidian plugin status'
         );
       }
       
-      // Fallback to basic error handling with alternatives
-      return this.handleError(error, [
-        {
-          description: 'Browse files in your vault',
-          tool: 'obsidian_list_files_in_vault'
-        },
-        {
-          description: 'Get specific file content',
-          tool: 'obsidian_get_file_contents',
-          example: { filepath: 'filename.md' }
-        }
-      ]);
+      // Fallback to basic error handling
+      return this.handleSimplifiedError(error);
     }
   }
 }

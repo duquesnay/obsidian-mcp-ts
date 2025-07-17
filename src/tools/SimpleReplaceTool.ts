@@ -35,12 +35,10 @@ export class SimpleReplaceTool extends BaseTool<SimpleReplaceArgs> {
 
     // Input validation
     if (!filepath || !find || replace === undefined) {
-      return this.handleErrorWithRecovery(
+      return this.handleSimplifiedError(
         new Error('Missing required parameters'), 
-        {
-          suggestion: 'Provide filepath, find, and replace parameters',
-          example: { filepath: 'notes.md', find: 'old text', replace: 'new text' }
-        }
+        'Provide filepath, find, and replace parameters',
+        { filepath: 'notes.md', find: 'old text', replace: 'new text' }
       );
     }
 
@@ -52,13 +50,9 @@ export class SimpleReplaceTool extends BaseTool<SimpleReplaceArgs> {
       
       // Check if text to find exists
       if (!currentContent.includes(find)) {
-        return this.handleErrorWithRecovery(
+        return this.handleSimplifiedError(
           new Error(`Text "${find}" not found in ${filepath}`),
-          {
-            suggestion: 'Check the exact text to replace. Text search is case-sensitive.',
-            workingAlternative: 'Use obsidian_simple_append to add content instead',
-            example: { filepath, append: replace }
-          }
+          'Check the exact text to replace. Text search is case-sensitive.'
         );
       }
       
@@ -82,13 +76,7 @@ export class SimpleReplaceTool extends BaseTool<SimpleReplaceArgs> {
         return ObsidianErrorHandler.handleHttpError(error, this.name);
       }
 
-      return this.handleError(error, [
-        {
-          description: 'Use simple append instead',
-          tool: 'obsidian_simple_append',
-          example: { filepath, content: replace }
-        }
-      ]);
+      return this.handleSimplifiedError(error);
     }
   }
 }

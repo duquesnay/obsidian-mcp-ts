@@ -36,12 +36,10 @@ export class SimpleAppendTool extends BaseTool<SimpleAppendArgs> {
 
     // Input validation
     if (!filepath || content === undefined) {
-      return this.handleErrorWithRecovery(
+      return this.handleSimplifiedError(
         new Error('Missing required parameters'),
-        {
-          suggestion: 'Provide filepath and content parameters',
-          example: { filepath: 'notes.md', content: 'Text to append' }
-        }
+        'Provide filepath and content parameters',
+        { filepath: 'notes.md', content: 'Text to append' }
       );
     }
 
@@ -62,22 +60,16 @@ export class SimpleAppendTool extends BaseTool<SimpleAppendArgs> {
       if (error.response?.status) {
         // Special handling for 404 - suggest creating the file
         if (error.response.status === 404 && !create_file_if_missing) {
-          return this.handleErrorWithRecovery(error, {
-            suggestion: 'File does not exist. Try setting create_file_if_missing to true.',
-            workingAlternative: 'Enable file creation',
-            example: { filepath, content, create_file_if_missing: true }
-          });
+          return this.handleSimplifiedError(
+            error,
+            'File does not exist. Try setting create_file_if_missing to true.',
+            { filepath, content, create_file_if_missing: true }
+          );
         }
         return ObsidianErrorHandler.handleHttpError(error, this.name);
       }
 
-      return this.handleError(error, [
-        {
-          description: 'Use obsidian_simple_replace to replace specific text',
-          tool: 'obsidian_simple_replace',
-          example: { filepath, find: 'old text', replace: 'new text' }
-        }
-      ]);
+      return this.handleSimplifiedError(error);
     }
   }
 }

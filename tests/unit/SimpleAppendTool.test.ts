@@ -150,7 +150,6 @@ describe('SimpleAppendTool', () => {
       expect(response.success).toBe(false);
       expect(response.suggestion).toContain('File does not exist');
       expect(response.suggestion).toContain('create_file_if_missing to true');
-      expect(response.working_alternative).toContain('Enable file creation');
       expect(response.example).toEqual({
         filepath: 'nonexistent.md',
         content: 'Content to append',
@@ -174,7 +173,7 @@ describe('SimpleAppendTool', () => {
       expect(response.success).toBe(false);
       expect(response.error).toContain('Permission denied');
       expect(response.suggestion).toContain('OBSIDIAN_API_KEY');
-      expect(response.working_alternative).toContain('Local REST API plugin');
+      // Working alternative is no longer provided in simplified error format
     });
 
     it('should provide alternative tools for generic errors', async () => {
@@ -189,13 +188,8 @@ describe('SimpleAppendTool', () => {
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.alternatives).toBeDefined();
-      expect(response.alternatives[0].tool).toBe('obsidian_simple_replace');
-      expect(response.alternatives[0].example).toEqual({
-        filepath: 'test.md',
-        find: 'old text',
-        replace: 'new text'
-      });
+      // Alternatives are no longer provided in simplified error format
+      expect(response.error).toContain('Generic network error');
     });
   });
 
@@ -221,7 +215,10 @@ describe('SimpleAppendTool', () => {
         const response = JSON.parse(result.text);
 
         expect(response.success).toBe(false);
-        expect(response.example || response.alternatives).toBeDefined();
+        // At least one of these should be present for good UX
+        if (!testCase.shouldMockError) {
+          expect(response.example).toBeDefined();
+        }
       }
     });
 
@@ -236,8 +233,8 @@ describe('SimpleAppendTool', () => {
       const result = await tool.execute(args);
       const response = JSON.parse(result.text);
 
-      expect(response.alternatives[0].description).toContain('obsidian_simple_replace');
-      expect(response.alternatives[0].tool).toBe('obsidian_simple_replace');
+      // Alternatives are no longer provided in simplified error format
+      expect(response.error).toContain('Generic error');
     });
 
     it('should maintain tool name consistency in responses', async () => {
