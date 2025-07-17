@@ -273,6 +273,67 @@ The server will automatically load the API key from the config file. You can als
 ```
 </details>
 
+## Error Handling
+
+The MCP server uses a simplified error format for clear and consistent error reporting:
+
+### Error Response Structure
+
+All errors follow this structure:
+```typescript
+{
+  success: false,
+  error: string,        // Error message
+  tool: string,         // Tool name that generated the error
+  suggestion?: string,  // Optional actionable suggestion
+  example?: object      // Optional example of correct usage
+}
+```
+
+### Common Error Types
+
+1. **File Not Found (404)**
+   ```json
+   {
+     "success": false,
+     "error": "File not found: notes/missing.md",
+     "tool": "obsidian_get_file_contents",
+     "suggestion": "Use obsidian_list_files_in_vault to browse available files first"
+   }
+   ```
+
+2. **Authentication Failed (401)**
+   ```json
+   {
+     "success": false,
+     "error": "Authentication failed - check API key",
+     "tool": "obsidian_list_files_in_vault",
+     "suggestion": "Verify your OBSIDIAN_API_KEY is correct in Claude Desktop settings"
+   }
+   ```
+
+3. **Invalid Parameters**
+   ```json
+   {
+     "success": false,
+     "error": "Missing required parameters",
+     "tool": "obsidian_append_content",
+     "suggestion": "Provide both filepath and content parameters",
+     "example": {
+       "filepath": "notes/example.md",
+       "content": "New content to append"
+     }
+   }
+   ```
+
+### Error Recovery
+
+When you encounter an error:
+1. Check the `suggestion` field for immediate fixes
+2. Use the `example` field to understand correct parameter format
+3. For file operations, verify the file exists with `obsidian_list_files_in_vault`
+4. For authentication errors, check your API key configuration
+
 ## Development
 
 ### Building
