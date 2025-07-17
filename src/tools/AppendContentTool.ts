@@ -34,16 +34,13 @@ export class AppendContentTool extends BaseTool {
     try {
       // Enhanced input validation with recovery
       if (!args.filepath || !args.content) {
-        return this.handleErrorWithRecovery(
+        return this.handleSimplifiedError(
           new Error('Missing required parameters'),
+          'Provide both filepath and content parameters. Use obsidian_list_files_in_vault to browse available files if you need to find the target file',
           {
-            suggestion: 'Provide both filepath and content parameters',
-            workingAlternative: 'Use obsidian_list_files_in_vault to browse available files if you need to find the target file',
-            example: {
-              filepath: 'notes/journal.md',
-              content: 'New content to append',
-              createIfNotExists: true
-            }
+            filepath: 'notes/journal.md',
+            content: 'New content to append',
+            createIfNotExists: true
           }
         );
       }
@@ -62,16 +59,13 @@ export class AppendContentTool extends BaseTool {
     } catch (error: any) {
       // Special case: 404 with createIfNotExists false
       if (error.response?.status === 404 && args.createIfNotExists === false) {
-        return this.handleErrorWithRecovery(
+        return this.handleSimplifiedError(
           error,
+          'File does not exist and createIfNotExists is set to false. Either set createIfNotExists to true or use an existing file. Use obsidian_list_files_in_vault to find existing files',
           {
-            suggestion: 'File does not exist and createIfNotExists is set to false. Either set createIfNotExists to true or use an existing file',
-            workingAlternative: 'Use obsidian_list_files_in_vault to find existing files or set createIfNotExists to true',
-            example: {
-              filepath: args.filepath,
-              content: args.content,
-              createIfNotExists: true
-            }
+            filepath: args.filepath,
+            content: args.content,
+            createIfNotExists: true
           }
         );
       }
@@ -83,36 +77,22 @@ export class AppendContentTool extends BaseTool {
       
       // Handle disk space errors
       if (error.message?.includes('disk space') || error.message?.includes('space')) {
-        return this.handleErrorWithRecovery(
+        return this.handleSimplifiedError(
           error,
+          'Insufficient disk space. Free up space on your system and try again. Try appending smaller content or delete unused files first',
           {
-            suggestion: 'Insufficient disk space. Free up space on your system and try again',
-            workingAlternative: 'Try appending smaller content or delete unused files first',
-            example: {
-              filepath: args.filepath,
-              content: 'Shorter content'
-            }
+            filepath: args.filepath,
+            content: 'Shorter content'
           }
         );
       }
       
-      // Fallback to basic error handling with alternatives
-      return this.handleError(error, [
-        {
-          description: 'Browse files in your vault',
-          tool: 'obsidian_list_files_in_vault'
-        },
-        {
-          description: 'Get existing file content first',
-          tool: 'obsidian_get_file_contents',
-          example: { filepath: args.filepath }
-        },
-        {
-          description: 'Replace content instead of appending',
-          tool: 'obsidian_simple_replace',
-          example: { filepath: args.filepath, find: 'old text', replace: 'new text' }
-        }
-      ]);
+      // Fallback to basic error handling
+      return this.handleSimplifiedError(
+        error,
+        'Alternative options: Browse files in your vault (tool: obsidian_list_files_in_vault), Get existing file content first (tool: obsidian_get_file_contents), Replace content instead of appending (tool: obsidian_simple_replace)',
+        { filepath: args.filepath }
+      );
     }
   }
 }
