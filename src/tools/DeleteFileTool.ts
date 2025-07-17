@@ -1,8 +1,9 @@
 import { BaseTool } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
 import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
+import { DeleteFileArgs } from './types/DeleteFileArgs.js';
 
-export class DeleteFileTool extends BaseTool {
+export class DeleteFileTool extends BaseTool<DeleteFileArgs> {
   name = 'obsidian_delete_file';
   description = 'Delete a note or folder from your Obsidian vault (vault-only operation - NOT filesystem deletion).';
   
@@ -17,7 +18,7 @@ export class DeleteFileTool extends BaseTool {
     required: ['filepath']
   };
 
-  async executeTyped(args: { filepath: string }): Promise<any> {
+  async executeTyped(args: DeleteFileArgs): Promise<any> {
     try {
       // Enhanced input validation with recovery
       if (!args.filepath) {

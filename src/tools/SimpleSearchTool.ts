@@ -1,8 +1,9 @@
 import { BaseTool } from './base.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
 import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
+import { SimpleSearchArgs } from './types/SimpleSearchArgs.js';
 
-export class SimpleSearchTool extends BaseTool {
+export class SimpleSearchTool extends BaseTool<SimpleSearchArgs> {
   name = 'obsidian_simple_search';
   description = 'Search text in Obsidian vault notes (vault-only - NOT filesystem search). Returns paginated results.';
   
@@ -35,7 +36,7 @@ export class SimpleSearchTool extends BaseTool {
     required: ['query']
   };
 
-  async executeTyped(args: { query: string; contextLength?: number; limit?: number; offset?: number }): Promise<any> {
+  async executeTyped(args: SimpleSearchArgs): Promise<any> {
     try {
       // Enhanced input validation with recovery
       if (!args.query) {

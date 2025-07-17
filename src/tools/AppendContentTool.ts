@@ -1,8 +1,9 @@
 import { BaseTool } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
 import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
+import { AppendContentArgs } from './types/AppendContentArgs.js';
 
-export class AppendContentTool extends BaseTool {
+export class AppendContentTool extends BaseTool<AppendContentArgs> {
   name = 'obsidian_append_content';
   description = 'Append content to Obsidian vault notes (NOT filesystem files - vault notes only). Auto-adds newline between content.';
   
@@ -26,11 +27,7 @@ export class AppendContentTool extends BaseTool {
     required: ['filepath', 'content']
   };
 
-  async executeTyped(args: {
-    filepath: string;
-    content: string;
-    createIfNotExists?: boolean;
-  }): Promise<any> {
+  async executeTyped(args: AppendContentArgs): Promise<any> {
     try {
       // Enhanced input validation with recovery
       if (!args.filepath || !args.content) {
