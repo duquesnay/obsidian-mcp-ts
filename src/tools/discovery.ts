@@ -18,9 +18,11 @@ export async function discoverTools(): Promise<AnyTool[]> {
     const files = await readdir(__dirname);
     
     // Filter for Tool files (excluding base, index, types, and discovery)
+    // In development, we have .ts files; in production, we have .js files
     const toolFiles = files.filter(file => 
-      file.endsWith('Tool.ts') && 
+      (file.endsWith('Tool.ts') || file.endsWith('Tool.js')) && 
       file !== 'BaseTool.ts' &&
+      file !== 'BaseTool.js' &&
       !file.startsWith('base') &&
       !file.includes('.test.')
     );
@@ -28,11 +30,11 @@ export async function discoverTools(): Promise<AnyTool[]> {
     // Dynamically import and instantiate each tool
     for (const file of toolFiles) {
       try {
-        const modulePath = `./${file.replace('.ts', '.js')}`;
+        const modulePath = `./${file.replace('.ts', '.js').replace('.js.js', '.js')}`;
         const module = await import(modulePath);
         
         // Find the exported tool class (should match filename)
-        const className = file.replace('.ts', '');
+        const className = file.replace('.ts', '').replace('.js', '');
         const ToolClass = module[className];
         
         if (ToolClass && typeof ToolClass === 'function') {
