@@ -7,3 +7,12 @@ export class ObsidianError extends Error {
     this.code = code;
   }
 }
+
+// Simplified error response structure
+export interface SimplifiedError {
+  success: false;
+  error: string;
+  tool: string;
+  suggestion?: string;
+  example?: Record<string, unknown>;
+}

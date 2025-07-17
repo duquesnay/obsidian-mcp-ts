@@ -36,7 +36,8 @@
       "Bash(npx @modelcontextprotocol/inspector:*)",
       "Bash(./test-simple-move.sh:*)",
       "Bash(./tests/test-api-directly.sh:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": []
   }
