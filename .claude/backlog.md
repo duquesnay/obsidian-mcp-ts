@@ -47,14 +47,14 @@ This backlog decomposes quality improvement recommendations into fine-grained, i
 - [ ] T4.6: Update documentation for new error format
 
 ### 5. Split ObsidianClient Responsibilities (SOLID)
-- [ ] T5.1: Create BatchProcessor utility class
-- [ ] T5.2: Move batch processing logic from ObsidianClient
-- [ ] T5.3: Create HttpClient base class
-- [ ] T5.4: Extract HTTP-specific methods
-- [ ] T5.5: Create PathValidator utility
-- [ ] T5.6: Extract path validation logic
-- [ ] T5.7: Update ObsidianClient to use new utilities
-- [ ] T5.8: Update tests for new structure
+- [x] T5.1: Create BatchProcessor utility class
+- [x] T5.2: Move batch processing logic from ObsidianClient
+- [x] T5.3: Create HttpClient base class
+- [x] T5.4: Extract HTTP-specific methods
+- [x] T5.5: Create PathValidator utility (already existed)
+- [x] T5.6: Extract path validation logic (already done)
+- [x] T5.7: Update ObsidianClient to use new utilities
+- [x] T5.8: Update tests for new structure
 
 ### 6. Environment and Test Utilities (DRY)
 - [x] T6.1: Create isTestEnvironment utility
