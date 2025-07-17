@@ -8,11 +8,6 @@ export type ToolArgs = Record<string, unknown>;
 // Type for a collection of tools with unknown argument types
 export type AnyTool = ToolInterface<any>;
 
-export interface AlternativeAction {
-  description: string;
-  tool?: string;
-  example?: Record<string, unknown>;
-}
 
 // MCP tool response format
 export interface ToolResponse {
@@ -25,7 +20,6 @@ export interface ErrorResponse {
   success: false;
   error: string;
   tool: string;
-  alternatives?: AlternativeAction[];
   suggestion?: string;
   working_alternative?: string;
   example?: Record<string, unknown>;
@@ -114,7 +108,7 @@ export abstract class BaseTool<TArgs = Record<string, unknown>> implements ToolI
     };
   }
 
-  protected handleError(error: unknown, alternatives?: AlternativeAction[]): ToolResponse {
+  protected handleError(error: unknown): ToolResponse {
     // Only log errors in non-test environments to avoid confusing test output
     if (!isTestEnvironment()) {
       console.error(`Error in ${this.name}:`, error);
@@ -126,10 +120,6 @@ export abstract class BaseTool<TArgs = Record<string, unknown>> implements ToolI
       error: errorMessage,
       tool: this.name
     };
-
-    if (alternatives && alternatives.length > 0) {
-      errorResponse.alternatives = alternatives;
-    }
 
     return this.formatResponse(errorResponse);
   }
