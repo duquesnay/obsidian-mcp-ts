@@ -16,14 +16,14 @@ export class SimpleSearchTool extends BaseTool {
       contextLength: {
         type: 'integer',
         description: 'Number of characters to include around each match.',
-        default: 100
+        default: OBSIDIAN_DEFAULTS.CONTEXT_LENGTH
       },
       limit: {
         type: 'integer',
         description: 'Maximum number of results to return (default: 50, max: 200)',
-        default: 50,
+        default: OBSIDIAN_DEFAULTS.DEFAULT_SEARCH_LIMIT,
         minimum: 1,
-        maximum: 200
+        maximum: OBSIDIAN_DEFAULTS.MAX_SEARCH_RESULTS
       },
       offset: {
         type: 'integer',
@@ -53,7 +53,7 @@ export class SimpleSearchTool extends BaseTool {
         );
       }
       
-      const limit = Math.min(args.limit || 50, 200);
+      const limit = Math.min(args.limit || OBSIDIAN_DEFAULTS.DEFAULT_SEARCH_LIMIT, OBSIDIAN_DEFAULTS.MAX_SEARCH_RESULTS);
       const offset = args.offset || 0;
       
       const client = this.getClient();

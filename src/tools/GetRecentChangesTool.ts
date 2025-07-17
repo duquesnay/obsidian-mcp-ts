@@ -1,4 +1,5 @@
 import { BaseTool } from './base.js';
+import { OBSIDIAN_DEFAULTS } from '../constants.js';
 
 export class GetRecentChangesTool extends BaseTool {
   name = 'obsidian_get_recent_changes';
@@ -14,7 +15,7 @@ export class GetRecentChangesTool extends BaseTool {
       limit: {
         type: 'integer',
         description: 'Maximum number of files to return.',
-        default: 10
+        default: OBSIDIAN_DEFAULTS.PAGE_SIZE
       },
       offset: {
         type: 'integer',
@@ -24,7 +25,7 @@ export class GetRecentChangesTool extends BaseTool {
       contentLength: {
         type: 'integer',
         description: 'Number of characters of content to include for each file.',
-        default: 100
+        default: OBSIDIAN_DEFAULTS.CONTEXT_LENGTH
       }
     },
     required: []

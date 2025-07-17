@@ -1,5 +1,6 @@
 import { BaseTool, ToolResponse } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
+import { OBSIDIAN_DEFAULTS } from '../constants.js';
 
 interface HeadingInfo {
   text: string;
@@ -243,7 +244,7 @@ export class QueryStructureTool extends BaseTool {
         blocks.push({
           id,
           line: index + 1,
-          preview: preview.substring(0, 100) + (preview.length > 100 ? '...' : ''),
+          preview: preview.substring(0, OBSIDIAN_DEFAULTS.CONTEXT_LENGTH) + (preview.length > OBSIDIAN_DEFAULTS.CONTEXT_LENGTH ? '...' : ''),
           context_heading: [...currentHeadingPath]
         });
       }

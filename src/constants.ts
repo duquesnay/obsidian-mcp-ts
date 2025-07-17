@@ -20,6 +20,21 @@ export const OBSIDIAN_DEFAULTS = {
   
   /** Default page size for paginated results */
   PAGE_SIZE: 10,
+  
+  /** Default search limit for simple search */
+  DEFAULT_SEARCH_LIMIT: 50,
+  
+  /** Maximum search results for simple search */
+  MAX_SEARCH_RESULTS: 200,
+  
+  /** Default search limit for advanced search */
+  DEFAULT_ADVANCED_SEARCH_LIMIT: 100,
+  
+  /** Maximum search results for advanced search */
+  MAX_ADVANCED_SEARCH_RESULTS: 1000,
+  
+  /** Maximum context length for search results */
+  MAX_CONTEXT_LENGTH: 500,
 } as const;
 
 export const API_ENDPOINTS = {

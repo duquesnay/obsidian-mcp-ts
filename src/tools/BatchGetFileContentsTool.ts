@@ -1,5 +1,6 @@
 import { BaseTool } from './base.js';
 import { validatePaths } from '../utils/pathValidator.js';
+import { OBSIDIAN_DEFAULTS } from '../constants.js';
 
 export class BatchGetFileContentsTool extends BaseTool {
   name = 'obsidian_batch_get_file_contents';
@@ -21,7 +22,7 @@ export class BatchGetFileContentsTool extends BaseTool {
       },
       pageSize: {
         type: 'number',
-        description: 'Number of files per page. Defaults to 10. Optional.'
+        description: `Number of files per page. Defaults to ${OBSIDIAN_DEFAULTS.PAGE_SIZE}. Optional.`
       }
     },
     required: ['filepaths']
@@ -39,7 +40,7 @@ export class BatchGetFileContentsTool extends BaseTool {
       // Apply pagination if specified
       let filesToProcess = args.filepaths;
       if (args.page !== undefined || args.pageSize !== undefined) {
-        const pageSize = args.pageSize || 10;
+        const pageSize = args.pageSize || OBSIDIAN_DEFAULTS.PAGE_SIZE;
         const page = args.page || 0;
         const startIdx = page * pageSize;
         const endIdx = startIdx + pageSize;

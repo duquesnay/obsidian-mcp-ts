@@ -1,5 +1,6 @@
 import { BaseTool } from './base.js';
 import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
+import { OBSIDIAN_DEFAULTS } from '../constants.js';
 
 interface SearchFilter {
   content?: {
@@ -192,9 +193,9 @@ export class AdvancedSearchTool extends BaseTool {
           limit: {
             type: 'number',
             description: 'Maximum number of results to return',
-            default: 100,
+            default: OBSIDIAN_DEFAULTS.DEFAULT_ADVANCED_SEARCH_LIMIT,
             minimum: 1,
-            maximum: 1000
+            maximum: OBSIDIAN_DEFAULTS.MAX_ADVANCED_SEARCH_RESULTS
           },
           offset: {
             type: 'number',
@@ -227,9 +228,9 @@ export class AdvancedSearchTool extends BaseTool {
           contextLength: {
             type: 'number',
             description: 'Number of characters to include around matches',
-            default: 100,
+            default: OBSIDIAN_DEFAULTS.CONTEXT_LENGTH,
             minimum: 0,
-            maximum: 500
+            maximum: OBSIDIAN_DEFAULTS.MAX_CONTEXT_LENGTH
           }
         }
       }
