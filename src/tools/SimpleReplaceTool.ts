@@ -48,8 +48,11 @@ export class SimpleReplaceTool extends BaseTool<SimpleReplaceArgs> {
       // Get the current content
       const currentContent = await client.getFileContents(filepath);
       
+      // Type assertion is safe here because we're not passing a format parameter
+      const contentString = currentContent as string;
+      
       // Check if text to find exists
-      if (!currentContent.includes(find)) {
+      if (!contentString.includes(find)) {
         return this.handleSimplifiedError(
           new Error(`Text "${find}" not found in ${filepath}`),
           'Check the exact text to replace. Text search is case-sensitive.'
@@ -57,7 +60,7 @@ export class SimpleReplaceTool extends BaseTool<SimpleReplaceArgs> {
       }
       
       // Perform the replacement
-      const newContent = currentContent.replace(find, replace);
+      const newContent = contentString.replace(find, replace);
       
       // Update the file
       await client.updateFile(filepath, newContent);

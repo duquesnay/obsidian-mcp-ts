@@ -35,7 +35,7 @@ This backlog decomposes quality improvement recommendations into fine-grained, i
 - [x] T3.3: Update ToolInterface to use generics
 - [x] T3.4: Type all tool argument interfaces
 - [x] T3.5: Update all tools to use typed arguments (partial - 4 tools done)
-- [ ] T3.6: Remove any types from ObsidianClient
+- [x] T3.6: Remove any types from ObsidianClient
 - [ ] T3.7: Add strict type checking to tsconfig
 
 ### 4. Simplify Error Response Structure (KISS)

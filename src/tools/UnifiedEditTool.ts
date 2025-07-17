@@ -246,11 +246,14 @@ export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
       // Get current content
       const currentContent = await client.getFileContents(filepath);
       
+      // Type assertion is safe here because we're not passing a format parameter
+      const contentString = currentContent as string;
+      
       // Perform replacement
-      const newContent = currentContent.replace(find, replace);
+      const newContent = contentString.replace(find, replace);
       
       // Check if replacement actually happened
-      if (currentContent === newContent) {
+      if (contentString === newContent) {
         return this.formatResponse({
           warning: `Text "${find}" not found in ${filepath}`,
           suggestion: "Check the exact text to replace. Text search is case-sensitive.",

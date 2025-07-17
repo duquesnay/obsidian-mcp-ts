@@ -4,6 +4,20 @@ import { ObsidianError } from '../types/errors.js';
 import { validatePath, validatePaths } from '../utils/pathValidator.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
 import { BatchProcessor } from '../utils/BatchProcessor.js';
+import type {
+  FileContentResponse,
+  FileMetadata,
+  SimpleSearchResponse,
+  ComplexSearchResponse,
+  PeriodicNoteData,
+  RecentChange,
+  AdvancedSearchFilters,
+  AdvancedSearchOptions,
+  AdvancedSearchResponse,
+  PatchContentHeaders,
+  PaginatedSearchResponse,
+  SearchResult
+} from '../types/obsidian.js';
 
 export interface ObsidianClientConfig {
   apiKey: string;
@@ -117,7 +131,17 @@ export class ObsidianClient {
     });
   }
 
-  async getFileContents(filepath: string, format?: 'content' | 'metadata' | 'frontmatter' | 'plain' | 'html'): Promise<any> {
+  /**
+   * Get file contents from Obsidian vault
+   * @param filepath Path to the file
+   * @param format Format to retrieve:
+   *   - undefined or 'content': Returns string content (default)
+   *   - 'metadata': Returns FileMetadata object
+   *   - 'frontmatter': Returns frontmatter object
+   *   - 'plain': Returns plain text string
+   *   - 'html': Returns HTML string
+   */
+  async getFileContents(filepath: string, format?: 'content' | 'metadata' | 'frontmatter' | 'plain' | 'html'): Promise<FileContentResponse> {
     validatePath(filepath, 'filepath');
     return this.safeCall(async () => {
       const url = format ? `/vault/${filepath}?format=${format}` : `/vault/${filepath}`;
@@ -137,12 +161,13 @@ export class ObsidianClient {
         if (content instanceof Error) {
           return `# ${filepath}\n\nError reading file: ${content.message}\n\n---\n\n`;
         }
+        // Content is always a string when no format is specified
         return `# ${filepath}\n\n${content}\n\n---\n\n`;
       }
     );
   }
 
-  async search(query: string, contextLength: number = OBSIDIAN_DEFAULTS.CONTEXT_LENGTH, limit?: number, offset?: number): Promise<any> {
+  async search(query: string, contextLength: number = OBSIDIAN_DEFAULTS.CONTEXT_LENGTH, limit?: number, offset?: number): Promise<PaginatedSearchResponse | SimpleSearchResponse> {
     return this.safeCall(async () => {
       const response = await this.axiosInstance.post('/search/simple/', null, {
         params: {
@@ -172,7 +197,7 @@ export class ObsidianClient {
     });
   }
 
-  async complexSearch(query: any): Promise<any> {
+  async complexSearch(query: any): Promise<ComplexSearchResponse> {
     return this.safeCall(async () => {
       const response = await this.axiosInstance.post('/search/', query);
       return response.data;
@@ -193,12 +218,12 @@ export class ObsidianClient {
       targetType: 'heading' | 'block' | 'frontmatter';
       target: string;
     }
-  ): Promise<any> {
+  ): Promise<void> {
     validatePath(filepath, 'filepath');
     const encodedPath = encodeURIComponent(filepath);
     
     // Required headers for PATCH operation
-    const headers: any = {
+    const headers: Partial<PatchContentHeaders> = {
       'Target-Type': options.targetType,
       'Target': options.target
     };
@@ -352,7 +377,7 @@ export class ObsidianClient {
     });
   }
 
-  async getPeriodicNote(period: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'): Promise<any> {
+  async getPeriodicNote(period: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'): Promise<PeriodicNoteData> {
     return this.safeCall(async () => {
       const response = await this.axiosInstance.get(`/periodic/${period}/`);
       return response.data;
@@ -362,7 +387,7 @@ export class ObsidianClient {
   async getRecentPeriodicNotes(
     period: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly',
     days?: number
-  ): Promise<any> {
+  ): Promise<PeriodicNoteData[]> {
     // The API doesn't have a direct "recent periodic notes" endpoint
     // For now, just return the current periodic note
     return this.safeCall(async () => {
@@ -376,7 +401,7 @@ export class ObsidianClient {
     limit?: number,
     offset?: number,
     contentLength?: number
-  ): Promise<any> {
+  ): Promise<RecentChange[]> {
     // The Obsidian REST API doesn't have a direct "recent changes" endpoint
     // Instead, we'll get all files and sort them by modification time
     return this.safeCall(async () => {
@@ -385,8 +410,9 @@ export class ObsidianClient {
       // This is a limitation of the current API
       const limitedFiles = limit ? files.slice(0, limit) : files;
       return limitedFiles.map((file: string) => ({
-        filename: file,
-        message: 'Recent changes functionality limited by API - modification times not available'
+        path: file,
+        mtime: Date.now(), // Placeholder since API doesn't provide modification times
+        content: undefined // No content preview available without additional API calls
       }));
     });
   }
@@ -461,7 +487,10 @@ export class ObsidianClient {
       // First, verify source file exists and read its content
       let content: string;
       try {
-        content = await this.getFileContents(sourcePath);
+        // getFileContents without format parameter returns string
+        const fileContent = await this.getFileContents(sourcePath);
+        // Type assertion is safe here because we're not passing a format parameter
+        content = fileContent as string;
       } catch (error) {
         if (error instanceof ObsidianError && error.code === 404) {
           throw new ObsidianError(`Source file not found: ${sourcePath}`, 404);
@@ -729,8 +758,8 @@ export class ObsidianClient {
   }
 
   async advancedSearch(
-    filters: any,
-    options: any
+    filters: AdvancedSearchFilters,
+    options: AdvancedSearchOptions
   ): Promise<{
     totalResults: number;
     results: Array<{

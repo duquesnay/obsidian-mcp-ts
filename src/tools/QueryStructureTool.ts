@@ -110,8 +110,11 @@ export class QueryStructureTool extends BaseTool {
       
       const result: StructureQueryResult = {};
       
+      // Type assertion is safe here because we're not passing a format parameter
+      const contentString = content as string;
+      
       // Parse document structure
-      const lines = content.split('\n');
+      const lines = contentString.split('\n');
       
       if (args.query.type === 'headings' || args.query.type === 'all') {
         result.headings = this.parseHeadings(lines, args.query.filter);
