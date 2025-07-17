@@ -1,4 +1,4 @@
-import { BaseTool } from './base.js';
+import { BaseTool, ToolMetadata } from './base.js';
 import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
 
@@ -54,6 +54,12 @@ interface SearchOptions {
 export class AdvancedSearchTool extends BaseTool {
   name = 'obsidian_advanced_search';
   description = 'Advanced search in Obsidian vault notes (vault-only - NOT filesystem). Filter by content, metadata, tags.';
+  
+  metadata: ToolMetadata = {
+    category: 'search',
+    keywords: ['search', 'advanced', 'filter', 'query', 'find', 'metadata', 'tags'],
+    version: '1.0.0'
+  };
   
   inputSchema = {
     type: 'object' as const,

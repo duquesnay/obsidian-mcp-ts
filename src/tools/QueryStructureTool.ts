@@ -1,4 +1,4 @@
-import { BaseTool, ToolResponse } from './base.js';
+import { BaseTool, ToolResponse, ToolMetadata } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
 
@@ -34,6 +34,12 @@ interface StructureQueryResult {
 export class QueryStructureTool extends BaseTool {
   name = 'obsidian_query_structure';
   description = 'Query structure of Obsidian notes (vault-only - NOT filesystem files). Get headings and blocks for editing.';
+  
+  metadata: ToolMetadata = {
+    category: 'editing',
+    keywords: ['query', 'structure', 'headings', 'blocks', 'outline', 'navigation'],
+    version: '1.0.0'
+  };
   
   inputSchema = {
     type: 'object' as const,

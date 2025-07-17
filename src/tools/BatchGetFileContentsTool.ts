@@ -1,10 +1,16 @@
-import { BaseTool } from './base.js';
+import { BaseTool, ToolMetadata } from './base.js';
 import { validatePaths } from '../utils/pathValidator.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
 
 export class BatchGetFileContentsTool extends BaseTool {
   name = 'obsidian_batch_get_file_contents';
   description = 'Read multiple Obsidian vault notes at once (vault-only - NOT filesystem access). Returns concatenated content.';
+  
+  metadata: ToolMetadata = {
+    category: 'file-operations',
+    keywords: ['batch', 'read', 'multiple', 'files', 'content', 'bulk'],
+    version: '1.0.0'
+  };
   
   inputSchema = {
     type: 'object' as const,

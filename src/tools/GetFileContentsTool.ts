@@ -1,4 +1,4 @@
-import { BaseTool } from './base.js';
+import { BaseTool, ToolMetadata } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
 import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
 import { GetFileContentsArgs } from './types/GetFileContentsArgs.js';
@@ -6,6 +6,12 @@ import { GetFileContentsArgs } from './types/GetFileContentsArgs.js';
 export class GetFileContentsTool extends BaseTool<GetFileContentsArgs> {
   name = 'obsidian_get_file_contents';
   description = 'Read content from an Obsidian vault note (NOT filesystem files - vault notes only). Supports different formats.';
+  
+  metadata: ToolMetadata = {
+    category: 'file-operations',
+    keywords: ['read', 'get', 'content', 'file', 'note'],
+    version: '1.0.0'
+  };
   
   inputSchema = {
     type: 'object' as const,
