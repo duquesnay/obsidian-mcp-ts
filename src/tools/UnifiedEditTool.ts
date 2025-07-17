@@ -1,4 +1,4 @@
-import { BaseTool, ToolResponse } from './base.js';
+import { BaseTool, ToolResponse, ToolMetadata } from './base.js';
 
 interface SimpleEdit {
   append?: string;
@@ -39,6 +39,12 @@ type UnifiedEditArgs = {
 export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
   name = 'obsidian_edit';
   description = 'Edit Obsidian vault notes with smart operations (vault-only - NOT filesystem files). Supports append, find/replace, and heading-based insertions.';
+
+  metadata: ToolMetadata = {
+    category: 'editing',
+    keywords: ['edit', 'modify', 'update', 'append', 'replace', 'insert'],
+    version: '2.0.0'
+  };
 
   inputSchema = {
     type: 'object' as const,

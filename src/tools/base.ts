@@ -55,12 +55,30 @@ export type ToolSchema<T> = {
 //   required?: ReadonlyArray<keyof T>;
 // };
 
+// Tool categories for organization
+export type ToolCategory = 
+  | 'file-operations'
+  | 'search'
+  | 'editing'
+  | 'tags'
+  | 'periodic-notes'
+  | 'directory-operations';
+
+// Tool metadata for enhanced discovery and documentation
+export interface ToolMetadata {
+  category: ToolCategory;
+  keywords?: string[];
+  version?: string;
+  deprecated?: boolean;
+}
+
 // Base interface for tool registration with generics
 export interface ToolInterface<TArgs = Record<string, unknown>> {
   name: string;
   description: string;
   inputSchema: ToolSchema<TArgs>;
   execute(args: TArgs): Promise<ToolResponse>;
+  metadata?: ToolMetadata;
 }
 
 export abstract class BaseTool<TArgs = Record<string, unknown>> implements ToolInterface<TArgs> {
@@ -74,6 +92,7 @@ export abstract class BaseTool<TArgs = Record<string, unknown>> implements ToolI
   abstract name: string;
   abstract description: string;
   abstract inputSchema: ToolSchema<TArgs>;
+  metadata?: ToolMetadata;
 
   protected getApiKey(): string {
     return this.configLoader.getApiKey();

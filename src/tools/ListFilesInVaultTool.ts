@@ -1,9 +1,15 @@
-import { BaseTool } from './base.js';
+import { BaseTool, ToolMetadata } from './base.js';
 import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
 
 export class ListFilesInVaultTool extends BaseTool {
   name = 'obsidian_list_files_in_vault';
   description = 'List all notes and folders in your Obsidian vault root (NOT filesystem access - Obsidian vault files only).';
+  
+  metadata: ToolMetadata = {
+    category: 'file-operations',
+    keywords: ['list', 'files', 'vault', 'browse', 'directory'],
+    version: '1.0.0'
+  };
   
   inputSchema = {
     type: 'object' as const,

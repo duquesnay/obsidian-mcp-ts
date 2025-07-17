@@ -1,4 +1,4 @@
-import { BaseTool } from './base.js';
+import { BaseTool, ToolMetadata } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
 import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
 import { AppendContentArgs } from './types/AppendContentArgs.js';
@@ -6,6 +6,12 @@ import { AppendContentArgs } from './types/AppendContentArgs.js';
 export class AppendContentTool extends BaseTool<AppendContentArgs> {
   name = 'obsidian_append_content';
   description = 'Append content to Obsidian vault notes (NOT filesystem files - vault notes only). Auto-adds newline between content.';
+  
+  metadata: ToolMetadata = {
+    category: 'editing',
+    keywords: ['append', 'add', 'write', 'content', 'note'],
+    version: '1.0.0'
+  };
   
   inputSchema = {
     type: 'object' as const,

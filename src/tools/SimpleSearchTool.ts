@@ -1,4 +1,4 @@
-import { BaseTool } from './base.js';
+import { BaseTool, ToolMetadata } from './base.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
 import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
 import { SimpleSearchArgs } from './types/SimpleSearchArgs.js';
@@ -6,6 +6,12 @@ import { SimpleSearchArgs } from './types/SimpleSearchArgs.js';
 export class SimpleSearchTool extends BaseTool<SimpleSearchArgs> {
   name = 'obsidian_simple_search';
   description = 'Search text in Obsidian vault notes (vault-only - NOT filesystem search). Returns paginated results.';
+  
+  metadata: ToolMetadata = {
+    category: 'search',
+    keywords: ['search', 'find', 'query', 'text', 'content'],
+    version: '1.0.0'
+  };
   
   inputSchema = {
     type: 'object' as const,
