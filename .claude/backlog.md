@@ -39,11 +39,11 @@ This backlog decomposes quality improvement recommendations into fine-grained, i
 - [ ] T3.7: Add strict type checking to tsconfig
 
 ### 4. Simplify Error Response Structure (KISS)
-- [ ] T4.1: Design simplified error response interface
-- [ ] T4.2: Remove RecoveryOptions type
-- [ ] T4.3: Remove AlternativeAction type
-- [ ] T4.4: Create migration function for error responses
-- [ ] T4.5: Update all tools to use simplified errors
+- [x] T4.1: Design simplified error response interface
+- [x] T4.2: Remove RecoveryOptions type
+- [x] T4.3: Remove AlternativeAction type
+- [x] T4.4: Create migration function for error responses
+- [x] T4.5: Update all tools to use simplified errors
 - [ ] T4.6: Update documentation for new error format
 
 ### 5. Split ObsidianClient Responsibilities (SOLID)
