@@ -1,8 +1,9 @@
 import { BaseTool } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
 import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
+import { GetFileContentsArgs } from './types/GetFileContentsArgs.js';
 
-export class GetFileContentsTool extends BaseTool {
+export class GetFileContentsTool extends BaseTool<GetFileContentsArgs> {
   name = 'obsidian_get_file_contents';
   description = 'Read content from an Obsidian vault note (NOT filesystem files - vault notes only). Supports different formats.';
   
@@ -22,7 +23,7 @@ export class GetFileContentsTool extends BaseTool {
     required: ['filepath']
   };
 
-  async executeTyped(args: { filepath: string; format?: 'content' | 'metadata' | 'frontmatter' | 'plain' | 'html' }): Promise<any> {
+  async executeTyped(args: GetFileContentsArgs): Promise<any> {
     try {
       // Enhanced input validation with recovery
       if (!args.filepath) {
