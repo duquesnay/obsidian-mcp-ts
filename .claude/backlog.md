@@ -11,7 +11,7 @@ This backlog decomposes quality improvement recommendations into fine-grained, i
 - [x] T1.3: Replace timeout 6000 with constant
 - [x] T1.4: Replace batch size 5 with constant
 - [x] T1.5: Replace context length 100 with constant
-- [ ] T1.6: Update all tools to use constants
+- [x] T1.6: Update all tools to use constants
 
 ### 2. Error Handling Consolidation (DRY)
 - [x] T2.1: Create ObsidianErrorHandler utility class
@@ -36,7 +36,7 @@ This backlog decomposes quality improvement recommendations into fine-grained, i
 - [x] T3.4: Type all tool argument interfaces
 - [x] T3.5: Update all tools to use typed arguments (partial - 4 tools done)
 - [x] T3.6: Remove any types from ObsidianClient
-- [ ] T3.7: Add strict type checking to tsconfig
+- [x] T3.7: Add strict type checking to tsconfig
 
 ### 4. Simplify Error Response Structure (KISS)
 - [x] T4.1: Design simplified error response interface
@@ -44,7 +44,7 @@ This backlog decomposes quality improvement recommendations into fine-grained, i
 - [x] T4.3: Remove AlternativeAction type
 - [x] T4.4: Create migration function for error responses
 - [x] T4.5: Update all tools to use simplified errors
-- [ ] T4.6: Update documentation for new error format
+- [x] T4.6: Update documentation for new error format
 
 ### 5. Split ObsidianClient Responsibilities (SOLID)
 - [x] T5.1: Create BatchProcessor utility class
