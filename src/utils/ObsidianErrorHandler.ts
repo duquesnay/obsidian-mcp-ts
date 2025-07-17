@@ -1,9 +1,3 @@
-// RecoveryOptions is defined in base.ts but we'll define it locally to avoid circular dependencies
-interface RecoveryOptions {
-  suggestion: string;
-  workingAlternative?: string;
-  example?: Record<string, unknown>;
-}
 
 // MCP tool response format
 interface ToolResponse {
@@ -123,17 +117,4 @@ export class ObsidianErrorHandler {
     };
   }
 
-  /**
-   * Format error with recovery options for consistent error responses
-   */
-  static formatErrorWithRecovery(error: Error, recovery: RecoveryOptions): ToolResponse {
-    return this.formatResponse({
-      success: false,
-      error: error.message,
-      tool: '',  // Tool name should be provided by caller
-      suggestion: recovery.suggestion,
-      working_alternative: recovery.workingAlternative,
-      example: recovery.example
-    });
-  }
 }

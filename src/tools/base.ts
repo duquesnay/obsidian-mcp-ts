@@ -14,12 +14,6 @@ export interface AlternativeAction {
   example?: Record<string, unknown>;
 }
 
-export interface RecoveryOptions {
-  suggestion: string;
-  workingAlternative?: string;
-  example?: Record<string, unknown>;
-}
-
 // MCP tool response format
 export interface ToolResponse {
   type: 'text';
@@ -140,22 +134,4 @@ export abstract class BaseTool<TArgs = Record<string, unknown>> implements ToolI
     return this.formatResponse(errorResponse);
   }
 
-  protected handleErrorWithRecovery(error: unknown, recovery: RecoveryOptions): ToolResponse {
-    // Only log errors in non-test environments to avoid confusing test output
-    if (!isTestEnvironment()) {
-      console.error(`Error in ${this.name}:`, error);
-    }
-    
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    const errorResponse: ErrorResponse = {
-      success: false,
-      error: errorMessage,
-      tool: this.name,
-      suggestion: recovery.suggestion,
-      working_alternative: recovery.workingAlternative,
-      example: recovery.example
-    };
-
-    return this.formatResponse(errorResponse);
-  }
 }
