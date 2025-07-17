@@ -26,15 +26,12 @@ export class GetFileContentsTool extends BaseTool {
     try {
       // Enhanced input validation with recovery
       if (!args.filepath) {
-        return this.handleErrorWithRecovery(
+        return this.handleSimplifiedError(
           new Error('Missing required parameters'),
+          'Provide filepath parameter to specify which file to read. Use obsidian_list_files_in_vault to browse available files first',
           {
-            suggestion: 'Provide filepath parameter to specify which file to read',
-            workingAlternative: 'Use obsidian_list_files_in_vault to browse available files first',
-            example: {
-              filepath: 'notes/example.md',
-              format: 'content'
-            }
+            filepath: 'notes/example.md',
+            format: 'content'
           }
         );
       }
@@ -51,18 +48,12 @@ export class GetFileContentsTool extends BaseTool {
         return ObsidianErrorHandler.handleHttpError(error, this.name);
       }
       
-      // Fallback to basic error handling with alternatives
-      return this.handleError(error, [
-        {
-          description: 'Browse files in your vault',
-          tool: 'obsidian_list_files_in_vault'
-        },
-        {
-          description: 'Search for files by content',
-          tool: 'obsidian_simple_search',
-          example: { query: 'search term' }
-        }
-      ]);
+      // Fallback to basic error handling
+      return this.handleSimplifiedError(
+        error,
+        'Alternative options: Browse files in your vault (tool: obsidian_list_files_in_vault), Search for files by content (tool: obsidian_simple_search)',
+        { query: 'search term' }
+      );
     }
   }
 }
