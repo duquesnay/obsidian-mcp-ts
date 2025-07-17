@@ -1,6 +1,7 @@
 import { ObsidianClient } from '../obsidian/ObsidianClient.js';
 import { ConfigLoader } from '../utils/configLoader.js';
 import { isTestEnvironment } from '../utils/environment.js';
+import { SimplifiedError } from '../types/errors.js';
 
 // Type helper for defining tool argument types
 export type ToolArgs = Record<string, unknown>;
@@ -122,6 +123,37 @@ export abstract class BaseTool<TArgs = Record<string, unknown>> implements ToolI
     };
 
     return this.formatResponse(errorResponse);
+  }
+
+  /**
+   * Handle errors with simplified error structure
+   */
+  protected handleSimplifiedError(
+    error: unknown, 
+    suggestion?: string, 
+    example?: Record<string, unknown>
+  ): ToolResponse {
+    // Only log errors in non-test environments to avoid confusing test output
+    if (!isTestEnvironment()) {
+      console.error(`Error in ${this.name}:`, error);
+    }
+    
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const simplifiedError: SimplifiedError = {
+      success: false,
+      error: errorMessage,
+      tool: this.name
+    };
+
+    if (suggestion) {
+      simplifiedError.suggestion = suggestion;
+    }
+
+    if (example) {
+      simplifiedError.example = example;
+    }
+
+    return this.formatResponse(simplifiedError);
   }
 
 }
