@@ -1,4 +1,4 @@
-import { BaseTool, ToolMetadata } from './base.js';
+import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
 
 export class DeleteDirectoryTool extends BaseTool {
@@ -32,7 +32,7 @@ export class DeleteDirectoryTool extends BaseTool {
     required: ['directoryPath']
   };
 
-  async executeTyped(args: { directoryPath: string; recursive?: boolean; permanent?: boolean }): Promise<any> {
+  async executeTyped(args: { directoryPath: string; recursive?: boolean; permanent?: boolean }): Promise<ToolResponse> {
     try {
       if (!args.directoryPath) {
         throw new Error('directoryPath argument missing in arguments');

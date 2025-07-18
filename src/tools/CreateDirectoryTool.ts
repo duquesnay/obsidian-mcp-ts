@@ -1,4 +1,4 @@
-import { BaseTool, ToolMetadata } from './base.js';
+import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
 
 export class CreateDirectoryTool extends BaseTool {
@@ -27,7 +27,7 @@ export class CreateDirectoryTool extends BaseTool {
     required: ['directoryPath']
   };
 
-  async executeTyped(args: { directoryPath: string; createParents?: boolean }): Promise<any> {
+  async executeTyped(args: { directoryPath: string; createParents?: boolean }): Promise<ToolResponse> {
     try {
       if (!args.directoryPath) {
         throw new Error('directoryPath argument missing in arguments');

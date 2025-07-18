@@ -1,4 +1,4 @@
-import { BaseTool, ToolMetadata } from './base.js';
+import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 
 export class FindEmptyDirectoriesTool extends BaseTool {
   name = 'obsidian_find_empty_directories';
@@ -26,7 +26,7 @@ export class FindEmptyDirectoriesTool extends BaseTool {
     required: []
   };
 
-  async executeTyped(args: { searchPath?: string; includeHiddenFiles?: boolean }): Promise<any> {
+  async executeTyped(args: { searchPath?: string; includeHiddenFiles?: boolean }): Promise<ToolResponse> {
     try {
       const client = this.getClient();
       const searchPath = args.searchPath || '';

@@ -1,4 +1,4 @@
-import { BaseTool, ToolMetadata } from './base.js';
+import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
 
 export class ListFilesInVaultTool extends BaseTool {
@@ -17,7 +17,7 @@ export class ListFilesInVaultTool extends BaseTool {
     required: []
   };
 
-  async executeTyped(args: any): Promise<any> {
+  async executeTyped(args: any): Promise<ToolResponse> {
     try {
       const client = this.getClient();
       const files = await client.listFilesInVault();

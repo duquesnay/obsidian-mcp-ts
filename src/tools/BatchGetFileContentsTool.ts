@@ -1,4 +1,4 @@
-import { BaseTool, ToolMetadata } from './base.js';
+import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { validatePaths } from '../utils/pathValidator.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
 
@@ -34,7 +34,7 @@ export class BatchGetFileContentsTool extends BaseTool {
     required: ['filepaths']
   };
 
-  async executeTyped(args: { filepaths: string[]; page?: number; pageSize?: number }): Promise<any> {
+  async executeTyped(args: { filepaths: string[]; page?: number; pageSize?: number }): Promise<ToolResponse> {
     try {
       if (!args.filepaths || !Array.isArray(args.filepaths)) {
         throw new Error('filepaths argument must be an array');

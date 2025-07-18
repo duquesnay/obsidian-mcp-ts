@@ -1,4 +1,4 @@
-import { BaseTool, ToolMetadata } from './base.js';
+import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
 
 export class RenameFileTool extends BaseTool {
@@ -26,7 +26,7 @@ export class RenameFileTool extends BaseTool {
     required: ['oldPath', 'newPath']
   };
 
-  async executeTyped(args: { oldPath: string; newPath: string }): Promise<any> {
+  async executeTyped(args: { oldPath: string; newPath: string }): Promise<ToolResponse> {
     try {
       if (!args.oldPath) {
         throw new Error('oldPath argument missing in arguments');

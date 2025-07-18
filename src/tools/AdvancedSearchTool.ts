@@ -1,4 +1,4 @@
-import { BaseTool, ToolMetadata } from './base.js';
+import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
 
@@ -247,7 +247,7 @@ export class AdvancedSearchTool extends BaseTool {
   async executeTyped(args: {
     filters: SearchFilter;
     options?: SearchOptions;
-  }): Promise<any> {
+  }): Promise<ToolResponse> {
     try {
       if (!args.filters) {
         throw new McpError(ErrorCode.InvalidParams, 'filters are required');

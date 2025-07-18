@@ -1,4 +1,4 @@
-import { BaseTool, ToolMetadata } from './base.js';
+import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
 import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
 import { DeleteFileArgs } from './types/DeleteFileArgs.js';
@@ -24,7 +24,7 @@ export class DeleteFileTool extends BaseTool<DeleteFileArgs> {
     required: ['filepath']
   };
 
-  async executeTyped(args: DeleteFileArgs): Promise<any> {
+  async executeTyped(args: DeleteFileArgs): Promise<ToolResponse> {
     try {
       // Enhanced input validation with recovery
       if (!args.filepath) {

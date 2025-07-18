@@ -1,4 +1,4 @@
-import { BaseTool, ToolMetadata } from './base.js';
+import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 
 export class RenameTagTool extends BaseTool {
   name = 'obsidian_rename_tag';
@@ -25,7 +25,7 @@ export class RenameTagTool extends BaseTool {
     required: ['oldTagName', 'newTagName']
   };
 
-  async executeTyped(args: { oldTagName: string; newTagName: string }): Promise<any> {
+  async executeTyped(args: { oldTagName: string; newTagName: string }): Promise<ToolResponse> {
     try {
       if (!args.oldTagName) {
         throw new Error('oldTagName argument missing in arguments');

@@ -1,4 +1,4 @@
-import { BaseTool, ToolMetadata } from './base.js';
+import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
 
 export class ManageFileTagsTool extends BaseTool {
@@ -43,7 +43,7 @@ export class ManageFileTagsTool extends BaseTool {
     operation: 'add' | 'remove'; 
     tags: string[];
     location?: 'frontmatter' | 'inline' | 'both'
-  }): Promise<any> {
+  }): Promise<ToolResponse> {
     try {
       if (!args.filePath) {
         throw new Error('filePath argument missing in arguments');

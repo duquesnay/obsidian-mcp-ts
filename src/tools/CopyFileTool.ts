@@ -1,4 +1,4 @@
-import { BaseTool, ToolMetadata } from './base.js';
+import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
 
 export class CopyFileTool extends BaseTool {
@@ -31,7 +31,7 @@ export class CopyFileTool extends BaseTool {
     required: ['sourcePath', 'destinationPath']
   };
 
-  async executeTyped(args: { sourcePath: string; destinationPath: string; overwrite?: boolean }): Promise<any> {
+  async executeTyped(args: { sourcePath: string; destinationPath: string; overwrite?: boolean }): Promise<ToolResponse> {
     try {
       if (!args.sourcePath) {
         throw new Error('sourcePath argument missing in arguments');

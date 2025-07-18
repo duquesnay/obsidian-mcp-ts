@@ -1,4 +1,4 @@
-import { BaseTool, ToolMetadata } from './base.js';
+import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 
 export class ComplexSearchTool extends BaseTool {
   name = 'obsidian_complex_search';
@@ -21,7 +21,7 @@ export class ComplexSearchTool extends BaseTool {
     required: ['query']
   };
 
-  async executeTyped(args: { query: any }): Promise<any> {
+  async executeTyped(args: { query: any }): Promise<ToolResponse> {
     try {
       if (!args.query) {
         throw new Error('query argument missing in arguments');

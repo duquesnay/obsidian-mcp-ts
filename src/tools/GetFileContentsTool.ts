@@ -1,4 +1,4 @@
-import { BaseTool, ToolMetadata } from './base.js';
+import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
 import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
 import { GetFileContentsArgs } from './types/GetFileContentsArgs.js';
@@ -29,7 +29,7 @@ export class GetFileContentsTool extends BaseTool<GetFileContentsArgs> {
     required: ['filepath']
   };
 
-  async executeTyped(args: GetFileContentsArgs): Promise<any> {
+  async executeTyped(args: GetFileContentsArgs): Promise<ToolResponse> {
     try {
       // Enhanced input validation with recovery
       if (!args.filepath) {

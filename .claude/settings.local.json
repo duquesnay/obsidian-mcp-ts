@@ -41,7 +41,8 @@
       "Bash(npx tsc:*)",
       "Bash(source .env)",
       "Bash()",
-      "Bash(./composite-script.sh:*)"
+      "Bash(./composite-script.sh:*)",
+      "Bash(tsx:*)"
     ],
     "deny": []
   }

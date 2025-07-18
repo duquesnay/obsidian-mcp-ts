@@ -1,4 +1,4 @@
-import { BaseTool, ToolMetadata } from './base.js';
+import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 
 export class GetAllTagsTool extends BaseTool {
   name = 'obsidian_get_all_tags';
@@ -16,7 +16,7 @@ export class GetAllTagsTool extends BaseTool {
     required: []
   };
 
-  async executeTyped(args: Record<string, never>): Promise<any> {
+  async executeTyped(args: Record<string, never>): Promise<ToolResponse> {
     try {
       const client = this.getClient();
       const tags = await client.getAllTags();

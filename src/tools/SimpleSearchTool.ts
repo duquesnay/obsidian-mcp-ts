@@ -1,4 +1,4 @@
-import { BaseTool, ToolMetadata } from './base.js';
+import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
 import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
 import { SimpleSearchArgs } from './types/SimpleSearchArgs.js';
@@ -42,7 +42,7 @@ export class SimpleSearchTool extends BaseTool<SimpleSearchArgs> {
     required: ['query']
   };
 
-  async executeTyped(args: SimpleSearchArgs): Promise<any> {
+  async executeTyped(args: SimpleSearchArgs): Promise<ToolResponse> {
     try {
       // Enhanced input validation with recovery
       if (!args.query) {

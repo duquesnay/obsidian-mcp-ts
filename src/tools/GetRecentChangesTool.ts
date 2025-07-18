@@ -1,4 +1,4 @@
-import { BaseTool, ToolMetadata } from './base.js';
+import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
 
 export class GetRecentChangesTool extends BaseTool {
@@ -42,7 +42,7 @@ export class GetRecentChangesTool extends BaseTool {
     limit?: number;
     offset?: number;
     contentLength?: number;
-  }): Promise<any> {
+  }): Promise<ToolResponse> {
     try {
       const client = this.getClient();
       const result = await client.getRecentChanges(

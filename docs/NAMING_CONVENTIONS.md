@@ -32,6 +32,8 @@ This document outlines the naming conventions used in the Obsidian MCP TypeScrip
 - **Validators**: `validate{Target}` (e.g., `validatePath`, `validatePaths`)
 - **Formatters**: `format{Target}` (e.g., `formatResponse`)
 - **Executors**: `execute` for public API, `executeTyped` for type-safe internal
+  - All tools must return `Promise<ToolResponse>` from `executeTyped()`
+  - Standardized in v1.1.0 to ensure consistent typing
 
 ## Variable Naming
 - **Constants**: `UPPER_SNAKE_CASE` (e.g., `OBSIDIAN_DEFAULTS`)
@@ -81,3 +83,11 @@ function check()               // Unclear what it checks
   - `executeTyped()` - type-safe implementation (better DX)
 - Decision: Keep "Tool" suffix to avoid breaking changes
 - Decision: Keep execute/executeTyped pattern for type safety
+
+## Standardization History
+### v1.1.0 - Method Return Type Standardization
+- **Change**: All `executeTyped()` methods now return `Promise<ToolResponse>` 
+- **Previous**: Some tools returned `Promise<any>`
+- **Impact**: Better type safety, consistent error handling
+- **Files Updated**: 28 tool files standardized
+- **Implementation**: Added `ToolResponse` import to all tools

@@ -1,4 +1,4 @@
-import { BaseTool, ToolMetadata } from './base.js';
+import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 
 export class GetRecentPeriodicNotesTool extends BaseTool {
   name = 'obsidian_get_recent_periodic_notes';
@@ -29,7 +29,7 @@ export class GetRecentPeriodicNotesTool extends BaseTool {
   async executeTyped(args: { 
     period: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly';
     days?: number;
-  }): Promise<any> {
+  }): Promise<ToolResponse> {
     try {
       if (!args.period) {
         throw new Error('period argument missing in arguments');

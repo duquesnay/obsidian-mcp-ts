@@ -1,4 +1,4 @@
-import { BaseTool, ToolMetadata } from './base.js';
+import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 
 export class GetFilesByTagTool extends BaseTool {
   name = 'obsidian_get_files_by_tag';
@@ -21,7 +21,7 @@ export class GetFilesByTagTool extends BaseTool {
     required: ['tagName']
   };
 
-  async executeTyped(args: { tagName: string }): Promise<any> {
+  async executeTyped(args: { tagName: string }): Promise<ToolResponse> {
     try {
       if (!args.tagName) {
         throw new Error('tagName argument missing in arguments');

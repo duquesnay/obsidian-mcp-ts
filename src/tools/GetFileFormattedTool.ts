@@ -1,4 +1,4 @@
-import { BaseTool, ToolMetadata } from './base.js';
+import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
 
 export class GetFileFormattedTool extends BaseTool {
@@ -27,7 +27,7 @@ export class GetFileFormattedTool extends BaseTool {
     required: ['filepath', 'format']
   };
 
-  async executeTyped(args: { filepath: string; format: 'plain' | 'html' | 'content' }): Promise<any> {
+  async executeTyped(args: { filepath: string; format: 'plain' | 'html' | 'content' }): Promise<ToolResponse> {
     try {
       validatePath(args.filepath, 'filepath');
       

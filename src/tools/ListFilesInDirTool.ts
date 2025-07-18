@@ -1,4 +1,4 @@
-import { BaseTool, ToolMetadata } from './base.js';
+import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
 import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
 
@@ -23,7 +23,7 @@ export class ListFilesInDirTool extends BaseTool {
     required: ['dirpath']
   };
 
-  async executeTyped(args: { dirpath: string }): Promise<any> {
+  async executeTyped(args: { dirpath: string }): Promise<ToolResponse> {
     try {
       if (!args.dirpath) {
         throw new Error('dirpath argument missing in arguments');

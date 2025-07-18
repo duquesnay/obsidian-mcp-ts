@@ -1,4 +1,4 @@
-import { BaseTool, ToolMetadata } from './base.js';
+import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
 
 export class CheckPathExistsTool extends BaseTool {
@@ -22,7 +22,7 @@ export class CheckPathExistsTool extends BaseTool {
     required: ['path']
   };
 
-  async executeTyped(args: { path: string }): Promise<any> {
+  async executeTyped(args: { path: string }): Promise<ToolResponse> {
     try {
       if (!args.path) {
         throw new Error('path argument missing in arguments');
