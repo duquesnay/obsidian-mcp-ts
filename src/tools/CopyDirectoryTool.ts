@@ -1,9 +1,15 @@
-import { BaseTool } from './base.js';
+import { BaseTool, ToolMetadata } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
 
 export class CopyDirectoryTool extends BaseTool {
   name = 'obsidian_copy_directory';
   description = 'Copy folders within Obsidian vault (vault-only - NOT filesystem operations). Preserves folder structure.';
+  
+  metadata: ToolMetadata = {
+    category: 'file-operations',
+    keywords: ['copy', 'directory', 'folder', 'duplicate', 'clone'],
+    version: '1.0.0'
+  };
   
   inputSchema = {
     type: 'object' as const,

@@ -1,9 +1,15 @@
-import { BaseTool } from './base.js';
+import { BaseTool, ToolMetadata } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
 
 export class GetFileMetadataTool extends BaseTool {
   name = 'obsidian_get_file_metadata';
   description = 'Get Obsidian note metadata without content (vault-only - NOT filesystem metadata). Efficient for large notes.';
+  
+  metadata: ToolMetadata = {
+    category: 'file-operations',
+    keywords: ['get', 'read', 'metadata', 'info', 'stats'],
+    version: '1.0.0'
+  };
   
   inputSchema = {
     type: 'object' as const,

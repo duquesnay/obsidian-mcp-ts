@@ -1,8 +1,14 @@
-import { BaseTool } from './base.js';
+import { BaseTool, ToolMetadata } from './base.js';
 
 export class ComplexSearchTool extends BaseTool {
   name = 'obsidian_complex_search';
   description = 'Complex search in Obsidian vault using JsonLogic (vault-only - NOT filesystem search).';
+  
+  metadata: ToolMetadata = {
+    category: 'search',
+    keywords: ['search', 'complex', 'jsonlogic', 'query', 'advanced'],
+    version: '1.0.0'
+  };
   
   inputSchema = {
     type: 'object' as const,

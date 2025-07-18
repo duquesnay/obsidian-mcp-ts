@@ -1,9 +1,15 @@
-import { BaseTool } from './base.js';
+import { BaseTool, ToolMetadata } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
 
 export class CreateDirectoryTool extends BaseTool {
   name = 'obsidian_create_directory';
   description = 'Create folders in Obsidian vault (vault-only - NOT filesystem directories). Supports nested creation.';
+  
+  metadata: ToolMetadata = {
+    category: 'file-operations',
+    keywords: ['create', 'directory', 'folder', 'mkdir', 'new'],
+    version: '1.0.0'
+  };
   
   inputSchema = {
     type: 'object' as const,

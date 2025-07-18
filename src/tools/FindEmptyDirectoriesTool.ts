@@ -1,8 +1,14 @@
-import { BaseTool } from './base.js';
+import { BaseTool, ToolMetadata } from './base.js';
 
 export class FindEmptyDirectoriesTool extends BaseTool {
   name = 'obsidian_find_empty_directories';
   description = 'Find empty folders in Obsidian vault (vault-only - NOT filesystem scanning). Lists folders without notes.';
+  
+  metadata: ToolMetadata = {
+    category: 'directory-operations',
+    keywords: ['find', 'empty', 'directories', 'folders', 'cleanup'],
+    version: '1.0.0'
+  };
   
   inputSchema = {
     type: 'object' as const,

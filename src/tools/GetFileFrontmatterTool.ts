@@ -1,9 +1,15 @@
-import { BaseTool } from './base.js';
+import { BaseTool, ToolMetadata } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
 
 export class GetFileFrontmatterTool extends BaseTool {
   name = 'obsidian_get_file_frontmatter';
   description = 'Get frontmatter from Obsidian notes (vault-only - NOT filesystem files). Returns YAML metadata only.';
+  
+  metadata: ToolMetadata = {
+    category: 'file-operations',
+    keywords: ['get', 'read', 'frontmatter', 'metadata', 'yaml'],
+    version: '1.0.0'
+  };
   
   inputSchema = {
     type: 'object' as const,

@@ -1,4 +1,4 @@
-import { BaseTool } from './base.js';
+import { BaseTool, ToolMetadata } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
 import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
 import { DeleteFileArgs } from './types/DeleteFileArgs.js';
@@ -6,6 +6,12 @@ import { DeleteFileArgs } from './types/DeleteFileArgs.js';
 export class DeleteFileTool extends BaseTool<DeleteFileArgs> {
   name = 'obsidian_delete_file';
   description = 'Delete a note or folder from your Obsidian vault (vault-only operation - NOT filesystem deletion).';
+  
+  metadata: ToolMetadata = {
+    category: 'file-operations',
+    keywords: ['delete', 'file', 'remove', 'trash', 'note'],
+    version: '1.0.0'
+  };
   
   inputSchema = {
     type: 'object' as const,

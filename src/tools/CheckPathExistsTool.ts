@@ -1,9 +1,15 @@
-import { BaseTool } from './base.js';
+import { BaseTool, ToolMetadata } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
 
 export class CheckPathExistsTool extends BaseTool {
   name = 'obsidian_check_path_exists';
   description = 'Check if note or folder exists in Obsidian vault (vault-only - NOT filesystem paths). Returns type info.';
+  
+  metadata: ToolMetadata = {
+    category: 'file-operations',
+    keywords: ['check', 'exists', 'path', 'file', 'directory'],
+    version: '1.0.0'
+  };
   
   inputSchema = {
     type: 'object' as const,

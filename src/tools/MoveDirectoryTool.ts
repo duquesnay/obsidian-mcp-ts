@@ -1,9 +1,15 @@
-import { BaseTool } from './base.js';
+import { BaseTool, ToolMetadata } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
 
 export class MoveDirectoryTool extends BaseTool {
   name = 'obsidian_move_directory';
   description = 'Move folders within Obsidian vault (vault-only - NOT filesystem operations). Preserves structure and updates links.';
+  
+  metadata: ToolMetadata = {
+    category: 'file-operations',
+    keywords: ['move', 'directory', 'folder', 'rename', 'relocate'],
+    version: '1.0.0'
+  };
   
   inputSchema = {
     type: 'object' as const,

@@ -1,9 +1,15 @@
-import { BaseTool } from './base.js';
+import { BaseTool, ToolMetadata } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
 
 export class ManageFileTagsTool extends BaseTool {
   name = 'obsidian_manage_file_tags';
   description = 'Add or remove tags from a specific file. Can modify both inline tags and frontmatter tags.';
+  
+  metadata: ToolMetadata = {
+    category: 'tags',
+    keywords: ['tags', 'manage', 'add', 'remove', 'file', 'frontmatter'],
+    version: '1.0.0'
+  };
   
   inputSchema = {
     type: 'object' as const,

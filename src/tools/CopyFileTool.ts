@@ -1,9 +1,15 @@
-import { BaseTool } from './base.js';
+import { BaseTool, ToolMetadata } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
 
 export class CopyFileTool extends BaseTool {
   name = 'obsidian_copy_file';
   description = 'Copy Obsidian vault notes to new location (vault-only - NOT filesystem copying). Creates duplicate with content.';
+  
+  metadata: ToolMetadata = {
+    category: 'file-operations',
+    keywords: ['copy', 'file', 'duplicate', 'clone', 'note'],
+    version: '1.0.0'
+  };
   
   inputSchema = {
     type: 'object' as const,

@@ -1,4 +1,4 @@
-import { BaseTool, ToolResponse } from './base.js';
+import { BaseTool, ToolResponse, ToolMetadata } from './base.js';
 import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
 
 interface SimpleAppendArgs {
@@ -10,6 +10,12 @@ interface SimpleAppendArgs {
 export class SimpleAppendTool extends BaseTool<SimpleAppendArgs> {
   name = 'obsidian_simple_append';
   description = 'Append text to Obsidian vault notes (vault-only - NOT filesystem files). Simple text additions.';
+  
+  metadata: ToolMetadata = {
+    category: 'editing',
+    keywords: ['append', 'add', 'text', 'simple', 'edit'],
+    version: '1.0.0'
+  };
 
   inputSchema = {
     type: 'object' as const,

@@ -1,8 +1,14 @@
-import { BaseTool } from './base.js';
+import { BaseTool, ToolMetadata } from './base.js';
 
 export class GetFilesByTagTool extends BaseTool {
   name = 'obsidian_get_files_by_tag';
   description = 'Get all files that contain a specific tag. Searches both inline tags (#tag) and frontmatter tags.';
+  
+  metadata: ToolMetadata = {
+    category: 'tags',
+    keywords: ['tags', 'find', 'files', 'search', 'filter'],
+    version: '1.0.0'
+  };
   
   inputSchema = {
     type: 'object' as const,

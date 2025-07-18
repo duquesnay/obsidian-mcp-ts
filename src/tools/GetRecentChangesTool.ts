@@ -1,9 +1,15 @@
-import { BaseTool } from './base.js';
+import { BaseTool, ToolMetadata } from './base.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
 
 export class GetRecentChangesTool extends BaseTool {
   name = 'obsidian_get_recent_changes';
   description = 'Get recently modified files in the vault.';
+  
+  metadata: ToolMetadata = {
+    category: 'file-operations',
+    keywords: ['recent', 'changes', 'modified', 'files', 'history'],
+    version: '1.0.0'
+  };
   
   inputSchema = {
     type: 'object' as const,

@@ -2,6 +2,7 @@
   "permissions": {
     "allow": [
       "WebFetch(domain:github.com)",
+      "Bash()",
       "Bash(uv sync:*)",
       "Bash(chmod:*)",
       "Bash(python test:*)",
@@ -38,7 +39,9 @@
       "Bash(./tests/test-api-directly.sh:*)",
       "Bash(cat:*)",
       "Bash(npx tsc:*)",
-      "Bash(source .env)"
+      "Bash(source .env)",
+      "Bash()",
+      "Bash(./composite-script.sh:*)"
     ],
     "deny": []
   }

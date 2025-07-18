@@ -1,8 +1,14 @@
-import { BaseTool } from './base.js';
+import { BaseTool, ToolMetadata } from './base.js';
 
 export class GetRecentPeriodicNotesTool extends BaseTool {
   name = 'obsidian_get_recent_periodic_notes';
   description = 'Get most recent periodic notes for the specified period type.';
+  
+  metadata: ToolMetadata = {
+    category: 'periodic-notes',
+    keywords: ['periodic', 'recent', 'daily', 'weekly', 'monthly', 'history'],
+    version: '1.0.0'
+  };
   
   inputSchema = {
     type: 'object' as const,

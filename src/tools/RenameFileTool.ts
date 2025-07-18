@@ -1,9 +1,15 @@
-import { BaseTool } from './base.js';
+import { BaseTool, ToolMetadata } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
 
 export class RenameFileTool extends BaseTool {
   name = 'obsidian_rename_file';
   description = 'Rename an Obsidian vault note within same directory (vault-only - NOT filesystem). Updates all links automatically.';
+  
+  metadata: ToolMetadata = {
+    category: 'file-operations',
+    keywords: ['rename', 'file', 'change', 'name', 'note'],
+    version: '1.0.0'
+  };
   
   inputSchema = {
     type: 'object' as const,

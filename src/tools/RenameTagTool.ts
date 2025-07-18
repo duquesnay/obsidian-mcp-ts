@@ -1,8 +1,14 @@
-import { BaseTool } from './base.js';
+import { BaseTool, ToolMetadata } from './base.js';
 
 export class RenameTagTool extends BaseTool {
   name = 'obsidian_rename_tag';
   description = 'Rename a tag across the entire vault. Updates both inline tags (#tag) and frontmatter tags.';
+  
+  metadata: ToolMetadata = {
+    category: 'tags',
+    keywords: ['tags', 'rename', 'refactor', 'vault', 'global'],
+    version: '1.0.0'
+  };
   
   inputSchema = {
     type: 'object' as const,

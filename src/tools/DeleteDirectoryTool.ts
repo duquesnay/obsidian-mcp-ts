@@ -1,9 +1,15 @@
-import { BaseTool } from './base.js';
+import { BaseTool, ToolMetadata } from './base.js';
 import { validatePath } from '../utils/pathValidator.js';
 
 export class DeleteDirectoryTool extends BaseTool {
   name = 'obsidian_delete_directory';
   description = 'Delete folders from Obsidian vault (vault-only - NOT filesystem deletion). Supports recursive deletion.';
+  
+  metadata: ToolMetadata = {
+    category: 'file-operations',
+    keywords: ['delete', 'directory', 'folder', 'remove', 'trash'],
+    version: '1.0.0'
+  };
   
   inputSchema = {
     type: 'object' as const,
