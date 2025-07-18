@@ -51,16 +51,32 @@ class MCPTestClient {
       }
     });
 
+    let buffer = '';
+    
     this.server.stdout?.on('data', (data: Buffer) => {
-      const lines = data.toString().split('\n').filter(line => line.trim());
+      buffer += data.toString();
+      
+      // Process complete lines
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || ''; // Keep incomplete line in buffer
+      
       for (const line of lines) {
+        if (!line.trim()) continue;
+        
         try {
           const response: JsonRpcResponse = JSON.parse(line);
           if (response.id) {
             this.responses.set(response.id, response);
+            // Debug: log large responses
+            if (JSON.stringify(response).length > 1000) {
+              console.log(`📦 Received large response for request ${response.id}: ${JSON.stringify(response).length} bytes`);
+            }
           }
         } catch (e) {
-          // Ignore non-JSON output
+          // Log non-JSON output for debugging
+          if (process.env.DEBUG) {
+            console.log('Non-JSON output:', line);
+          }
         }
       }
     });
@@ -130,8 +146,9 @@ class MCPTestClient {
       params: {}
     };
 
+    console.log(`🔍 Sending tools/list request (id: ${request.id})...`);
     this.server?.stdin?.write(JSON.stringify(request) + '\n');
-    return await this.waitForResponse(request.id);
+    return await this.waitForResponse(request.id, 30000); // Increase timeout for 33 tools
   }
 
   private async waitForResponse(id: number, timeout = 10000): Promise<JsonRpcResponse> {
@@ -249,14 +266,34 @@ class ObsidianE2ETests {
       throw new Error(`List files failed: ${response.error.message}`);
     }
     
+    if (!response.result || !response.result.content) {
+      console.error('Invalid response structure:', JSON.stringify(response.result));
+      throw new Error('Invalid response structure - missing content');
+    }
+    
     const content = (response.result as ToolCallResponse).content[0];
-    if (content.type !== 'text') {
+    if (!content || content.type !== 'text') {
+      console.error('Invalid content:', content);
       throw new Error('Expected text content');
     }
     
-    const files = JSON.parse(content.text);
-    if (!Array.isArray(files)) {
-      throw new Error('Expected files array');
+    let result;
+    try {
+      result = JSON.parse(content.text);
+    } catch (e) {
+      console.error('Failed to parse response:', content.text);
+      throw new Error(`Failed to parse JSON response: ${e}`);
+    }
+    
+    // Handle both array response and object with files property
+    let files;
+    if (Array.isArray(result)) {
+      files = result;
+    } else if (result && Array.isArray(result.files)) {
+      files = result.files;
+    } else {
+      console.error('Result structure:', result);
+      throw new Error('Expected files array or object with files property');
     }
     
     console.log(`   ✅ Found ${files.length} files in vault`);

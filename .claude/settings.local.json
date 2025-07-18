@@ -37,7 +37,8 @@
       "Bash(./test-simple-move.sh:*)",
       "Bash(./tests/test-api-directly.sh:*)",
       "Bash(cat:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(source .env)"
     ],
     "deny": []
   }
