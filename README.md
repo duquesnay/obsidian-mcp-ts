@@ -4,6 +4,14 @@ A TypeScript MCP server to interact with Obsidian via the Local REST API communi
 
 **Note**: This is a TypeScript port of the original [mcp-obsidian](https://github.com/MarkusPfundstein/mcp-obsidian) Python project by MarkusPfundstein. All credit for the original concept and API design goes to the original author.
 
+## Features
+
+- **🚀 High Performance**: LRU caching, request deduplication, and optimized batch processing
+- **🔧 Type Safety**: Full TypeScript with strict typing and comprehensive error handling
+- **📋 Dynamic Tool Discovery**: Automatically discovers and loads tools with metadata
+- **🎯 Smart Error Handling**: Simplified error responses with actionable suggestions
+- **📦 Modular Architecture**: Clean separation of concerns with reusable utilities
+
 ## Components
 
 ### Tools
@@ -128,6 +136,17 @@ await obsidian_edit({
 ```
 
 See the [migration guide](docs/llm-ergonomic-migration-guide.md) for details.
+
+## Tool Categories
+
+Tools are organized into categories for better discoverability:
+
+- **File Operations**: Read, write, copy, move files
+- **Directory Operations**: Create, delete, move directories
+- **Search**: Simple and advanced search capabilities
+- **Editing**: Smart content editing with structure awareness
+- **Tags**: Tag management and operations
+- **Periodic Notes**: Daily, weekly, monthly note support
 
 ## Configuration
 
@@ -406,4 +425,29 @@ npm run build
 
 # Run the built server
 npm start
+
+# Lint code
+npm run lint
 ```
+
+### Performance Optimization
+
+The server includes several performance optimizations:
+
+- **LRU Cache**: Reduces API calls for frequently accessed data
+- **Request Deduplication**: Prevents duplicate concurrent requests
+- **Optimized Batch Processing**: Smart concurrency control with retry logic
+- **Streaming Results**: Process large datasets without loading everything into memory
+
+See [Performance Best Practices](docs/PERFORMANCE.md) for detailed optimization strategies.
+
+### Architecture
+
+The codebase follows clean architecture principles:
+
+- **Tools**: Each tool is a self-contained class with metadata
+- **Utilities**: Reusable components (Cache, BatchProcessor, ErrorHandler)
+- **Constants**: Centralized configuration values
+- **Types**: Comprehensive TypeScript types for all operations
+
+Tools are dynamically discovered at runtime, making it easy to add new functionality.
