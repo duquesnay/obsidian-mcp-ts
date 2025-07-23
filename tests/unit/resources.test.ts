@@ -19,8 +19,8 @@ describe('MCP Resources', () => {
       
       const result = await listHandler({ method: 'resources/list' });
       
-      // Should return both hardcoded resources
-      expect(result.resources).toHaveLength(2);
+      // Should return all three hardcoded resources
+      expect(result.resources).toHaveLength(3);
       expect(result.resources[0]).toEqual({
         uri: 'vault://tags',
         name: 'Vault Tags',
@@ -31,6 +31,12 @@ describe('MCP Resources', () => {
         uri: 'vault://stats',
         name: 'Vault Statistics',
         description: 'File and note counts for the vault',
+        mimeType: 'application/json'
+      });
+      expect(result.resources[2]).toEqual({
+        uri: 'vault://recent',
+        name: 'Recent Changes',
+        description: 'Recently modified notes in the vault',
         mimeType: 'application/json'
       });
     });
@@ -106,6 +112,50 @@ describe('MCP Resources', () => {
       expect(content).toHaveProperty('noteCount');
       expect(content.fileCount).toBe(42);
       expect(content.noteCount).toBe(35);
+    });
+
+    it('should register ReadResource handler for vault://recent', async () => {
+      // Create a mock server
+      const mockServer = {
+        setRequestHandler: vi.fn()
+      };
+      
+      // Register resources
+      await registerResources(mockServer as any);
+      
+      // Get the ReadResource handler
+      const readHandler = mockServer.setRequestHandler.mock.calls
+        .find(call => call[0] === ReadResourceRequestSchema)?.[1];
+      
+      expect(readHandler).toBeDefined();
+      
+      // Test reading the recent resource
+      const result = await readHandler({ 
+        method: 'resources/read',
+        params: { uri: 'vault://recent' }
+      });
+      
+      // Should return recent notes data
+      expect(result.contents).toBeDefined();
+      expect(result.contents[0]).toMatchObject({
+        uri: 'vault://recent',
+        mimeType: 'application/json',
+        text: expect.stringContaining('notes')
+      });
+      
+      // Verify the content structure
+      const content = JSON.parse(result.contents[0].text);
+      expect(content).toHaveProperty('notes');
+      expect(Array.isArray(content.notes)).toBe(true);
+      expect(content.notes.length).toBe(10);
+      
+      // Check each note has required fields
+      content.notes.forEach((note: any) => {
+        expect(note).toHaveProperty('path');
+        expect(note).toHaveProperty('modifiedAt');
+        expect(typeof note.path).toBe('string');
+        expect(typeof note.modifiedAt).toBe('string');
+      });
     });
   });
 });
