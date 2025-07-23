@@ -17,6 +17,127 @@ export interface BatchResult<T, R> {
 
 /**
  * Optimized batch processor with advanced concurrency control and retry logic
+ * 
+ * Provides sophisticated batch processing with dynamic concurrency, automatic retries,
+ * progress tracking, and streaming results. Ideal for complex workflows requiring
+ * resilience and fine-grained control.
+ * 
+ * @example
+ * // Basic usage with retry logic
+ * const processor = new OptimizedBatchProcessor({
+ *   maxConcurrency: 5,
+ *   retryAttempts: 3,
+ *   retryDelay: 1000,
+ *   onProgress: (completed, total) => {
+ *     console.log(`Progress: ${completed}/${total} (${(completed/total*100).toFixed(1)}%)`);
+ *   }
+ * });
+ * 
+ * const urls = ['http://api1.com', 'http://api2.com', ...];
+ * const results = await processor.process(urls, async (url) => {
+ *   const response = await fetch(url);
+ *   if (!response.ok) throw new Error(`HTTP ${response.status}`);
+ *   return response.json();
+ * });
+ * 
+ * // Analyze results
+ * const successful = results.filter(r => r.result);
+ * const failed = results.filter(r => r.error);
+ * console.log(`Success: ${successful.length}, Failed: ${failed.length}`);
+ * 
+ * @example
+ * // Stream processing for large datasets
+ * const processor = new OptimizedBatchProcessor({
+ *   maxConcurrency: 10,
+ *   retryAttempts: 2
+ * });
+ * 
+ * const files = getLargeFileList(); // Thousands of files
+ * 
+ * // Process files as they complete, not waiting for all
+ * for await (const result of processor.processStream(files, processFile)) {
+ *   if (result.error) {
+ *     console.error(`Failed after ${result.attempts} attempts:`, result.error);
+ *     await logError(result.item, result.error);
+ *   } else {
+ *     console.log(`Processed ${result.item} successfully`);
+ *     await saveResult(result.result);
+ *   }
+ * }
+ * 
+ * @example
+ * // Traditional batch processing with controlled chunks
+ * const processor = new OptimizedBatchProcessor({
+ *   batchSize: 20,      // Process in chunks of 20
+ *   retryAttempts: 1,   // No retries for speed
+ *   onProgress: (c, t) => updateProgressBar(c / t)
+ * });
+ * 
+ * const items = getItems();
+ * const results = await processor.processBatches(items, async (item) => {
+ *   // Each batch of 20 completes before next batch starts
+ *   return await processItem(item);
+ * });
+ * 
+ * @example
+ * // Complex workflow with mixed operations
+ * const processor = new OptimizedBatchProcessor({
+ *   maxConcurrency: 3,
+ *   retryAttempts: 3,
+ *   retryDelay: 2000, // Exponential backoff: 2s, 4s, 6s
+ * });
+ * 
+ * const tasks = [
+ *   { type: 'fetch', url: 'http://api.com/data' },
+ *   { type: 'compute', data: complexData },
+ *   { type: 'upload', file: largeFile }
+ * ];
+ * 
+ * const results = await processor.process(tasks, async (task) => {
+ *   switch (task.type) {
+ *     case 'fetch':
+ *       return await fetchWithTimeout(task.url, 5000);
+ *     case 'compute':
+ *       return await computeIntensive(task.data);
+ *     case 'upload':
+ *       return await uploadWithProgress(task.file);
+ *   }
+ * });
+ * 
+ * // Group results by attempt count
+ * const byAttempts = results.reduce((acc, r) => {
+ *   acc[r.attempts] = (acc[r.attempts] || 0) + 1;
+ *   return acc;
+ * }, {});
+ * console.log('Attempts distribution:', byAttempts);
+ * 
+ * @example
+ * // Using static helper for simple cases
+ * const results = await OptimizedBatchProcessor.processSimple(
+ *   items,
+ *   async (item) => processItem(item),
+ *   { maxConcurrency: 5, retryAttempts: 2 }
+ * );
+ * 
+ * @performance
+ * - Dynamic concurrency with semaphore pattern
+ * - Memory-efficient streaming for large datasets
+ * - Exponential backoff for retries
+ * - Maintains order in results array
+ * 
+ * @bestPractices
+ * - Use process() for moderate datasets where you need all results
+ * - Use processStream() for large datasets or real-time processing
+ * - Use processBatches() when you need strict batch boundaries
+ * - Set retryAttempts based on operation reliability
+ * - Configure retryDelay based on rate limits
+ * - Always provide onProgress for long-running operations
+ * 
+ * @commonPitfalls
+ * - Don't set maxConcurrency too high - can overwhelm resources
+ * - Remember that streaming doesn't preserve order
+ * - Retry delays are multiplied by attempt number (exponential backoff)
+ * - Results array maintains input order, not completion order
  */
 export class OptimizedBatchProcessor {
   private readonly options: Required<BatchProcessorOptions>;
@@ -33,6 +154,13 @@ export class OptimizedBatchProcessor {
 
   /**
    * Process items with optimized concurrency control using a semaphore pattern
+   * 
+   * @example
+   * const results = await processor.process(items, async (item) => {
+   *   return await processItem(item);
+   * });
+   * 
+   * @returns Array of results in the same order as input items
    */
   async process<T, R>(
     items: T[],
