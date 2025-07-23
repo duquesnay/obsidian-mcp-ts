@@ -40,52 +40,25 @@ export class StatsHandler extends BaseResourceHandler {
 }
 
 export class RecentHandler extends BaseResourceHandler {
-  async handleRequest(uri: string): Promise<any> {
-    const now = new Date();
-    const recentNotes = [
-      {
-        path: 'Daily Notes/2025-01-23.md',
-        modifiedAt: new Date(now.getTime() - 1000 * 60 * 5).toISOString() // 5 minutes ago
-      },
-      {
-        path: 'Projects/MCP Resources.md',
-        modifiedAt: new Date(now.getTime() - 1000 * 60 * 30).toISOString() // 30 minutes ago
-      },
-      {
-        path: 'Meeting Notes/Team Standup.md',
-        modifiedAt: new Date(now.getTime() - 1000 * 60 * 60).toISOString() // 1 hour ago
-      },
-      {
-        path: 'Ideas/New Feature Proposal.md',
-        modifiedAt: new Date(now.getTime() - 1000 * 60 * 60 * 2).toISOString() // 2 hours ago
-      },
-      {
-        path: 'Research/TypeScript Patterns.md',
-        modifiedAt: new Date(now.getTime() - 1000 * 60 * 60 * 3).toISOString() // 3 hours ago
-      },
-      {
-        path: 'Daily Notes/2025-01-22.md',
-        modifiedAt: new Date(now.getTime() - 1000 * 60 * 60 * 24).toISOString() // 1 day ago
-      },
-      {
-        path: 'Projects/Quality Improvements.md',
-        modifiedAt: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 2).toISOString() // 2 days ago
-      },
-      {
-        path: 'Reference/API Documentation.md',
-        modifiedAt: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 3).toISOString() // 3 days ago
-      },
-      {
-        path: 'Archive/Old Project Notes.md',
-        modifiedAt: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 7).toISOString() // 1 week ago
-      },
-      {
-        path: 'Templates/Meeting Template.md',
-        modifiedAt: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 14).toISOString() // 2 weeks ago
-      }
-    ];
+  async handleRequest(uri: string, server?: any): Promise<any> {
+    const client = this.getObsidianClient(server);
     
-    return { notes: recentNotes };
+    try {
+      // Use the getRecentChanges method, limiting to 10 files
+      const recentChanges = await client.getRecentChanges(undefined, 10);
+      
+      // Transform to match expected format
+      // Note: Actual modification times are not available from the API
+      const notes = recentChanges.map(change => ({
+        path: change.path,
+        modifiedAt: new Date(change.mtime).toISOString()
+      }));
+      
+      return { notes };
+    } catch (error: any) {
+      console.error('Failed to fetch recent changes:', error);
+      return { notes: [] };
+    }
   }
 }
 
