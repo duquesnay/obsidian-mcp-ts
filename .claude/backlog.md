@@ -200,8 +200,8 @@ This section tracks potential features and enhancements for the Obsidian MCP ser
 
 | Feature | Status | Description | Technical Notes |
 |---------|--------|-------------|-----------------|
-| `get_vault_statistics` | ❌ | Total files, folders, sizes | Traverse vault + aggregate data |
-| `get_vault_structure` | ❌ | Tree structure of entire vault | Recursive directory traversal |
+| `get_vault_statistics` | ✅ | Total files, folders, sizes | Implemented as resource: vault://stats |
+| `get_vault_structure` | 🔄 | Tree structure of entire vault | Planned as resource: vault://structure |
 | `export_vault_data` | ❌ | Export vault in various formats | Format converters needed |
 | `validate_vault_integrity` | ❌ | Check broken links, orphans | Link parser + validator |
 
@@ -326,3 +326,40 @@ Key improvements:
 - Query-first workflow for accurate targeting
 
 The original `patch_content` is now deprecated and will be removed in v1.0.0
+
+---
+
+# MCP Resources Implementation Status
+
+## Overview
+MCP Resources provide persistent read-only data access, complementing tools (which perform actions). Resources are ideal for reference material that LLMs need to maintain in context.
+
+## Implemented Resources
+
+### Core Resources ✅
+- `vault://tags` - All tags with usage counts
+- `vault://stats` - Vault statistics (files, folders, sizes)
+- `vault://recent` - Recently modified notes
+
+### Dynamic Resources ✅
+- `vault://note/{path}` - Individual note content by path
+- `vault://folder/{path}` - Folder contents listing
+
+## Planned Resources
+
+### Next Priority
+- `vault://structure` - Full vault folder hierarchy (replaces get_vault_structure tool)
+- `vault://daily/{date}` - Daily notes by date
+- `vault://tag/{tagname}` - All notes with specific tag
+
+### Future Considerations (Migrate from Tools)
+- `vault://backlinks/{path}` - All files linking to a specific file (replaces get_file_backlinks)
+- `vault://links/{path}` - All outgoing links from a file (replaces get_file_forward_links)
+- `vault://broken-links` - All broken internal links (replaces find_broken_links)
+- `vault://search/{query}` - Search results as resources
+
+## Resource Development Progress
+- Total Planned: 10 resources
+- Implemented: 5 (50%)
+- In Progress: 0
+- Remaining: 5
