@@ -400,6 +400,16 @@ This separation enables clean PRs by cherry-picking only non-claude commits.
 - **Chunked Response Handling**: Large tool lists (21KB for 33 tools) require buffered response parsing in E2E tests. Simple line-by-line parsing fails when JSON responses span multiple chunks.
 - **Tool Discovery File Extension Handling**: Dynamic discovery must handle both .ts (development) and .js (production) files. Using `file.endsWith('Tool.ts') || file.endsWith('Tool.js')` ensures compatibility across environments.
 
+## Project Learnings
+
+### 2025-07-23 - Git Worktree Package.json Confusion
+
+**Methodological:**
+- **Git Forensics Before Assumptions**: When facing persistent directory/project confusion, trace through git history (`git show`, `git diff`) to understand how files changed over time. The issue may be in commit history rather than current configuration. In our case, a single commit had replaced the entire package.json, creating the confusion.
+
+**Technical:**
+- **Interactive Rebase with Selective File Restoration**: During interactive rebase, use `git checkout HEAD~ -- filename` to surgically restore specific files from the parent commit while preserving all other changes. This is more precise than cherry-picking or full commit resets and maintains the integrity of the actual work done.
+
 ## Insights and Memories
 
 - **Obsidian MCP is only for obsidian notes, not filesystem access**
