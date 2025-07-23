@@ -15,14 +15,12 @@ export class ResourceRegistry {
       handler
     };
     
-    // If URI contains parameters, create a pattern for matching
-    if (resource.uri.includes('{path}') || resource.uri.includes('{date}') || resource.uri.includes('{tagname}')) {
-      // Convert vault://note/{path} or vault://daily/{date} or vault://tag/{tagname} to a regex that matches anything after prefix
-      const paramMatch = resource.uri.match(/\{[^}]+\}/);
-      if (paramMatch) {
-        const prefix = resource.uri.substring(0, resource.uri.indexOf(paramMatch[0]));
-        entry.pattern = new RegExp(`^${this.escapeRegex(prefix)}.*$`);
-      }
+    // If URI contains any parameters (generic pattern), create a pattern for matching
+    const paramMatch = resource.uri.match(/\{[^}]+\}/);
+    if (paramMatch) {
+      // Convert vault://note/{path} or vault://daily/{date} or any vault://resource/{param} to a regex
+      const prefix = resource.uri.substring(0, resource.uri.indexOf(paramMatch[0]));
+      entry.pattern = new RegExp(`^${this.escapeRegex(prefix)}.*$`);
     }
     
     this.resources.push(entry);

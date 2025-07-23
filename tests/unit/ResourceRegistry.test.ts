@@ -136,31 +136,102 @@ describe('ResourceRegistry', () => {
     });
   });
   
-  describe('extractPathParameter', () => {
-    it('should extract path from dynamic URI', () => {
+  describe('extractParameter', () => {
+    it('should extract path parameter from dynamic URI', () => {
       const registry = new ResourceRegistry();
-      registry.registerResource({
-        uri: 'vault://note/{path}',
-        name: 'Note',
-        description: 'Note',
-        mimeType: 'text/markdown'
-      }, async () => ({ contents: [] }));
       
-      const path = registry.extractPathParameter('vault://note/{path}', 'vault://note/Daily/2024-01-01.md');
+      const path = registry.extractParameter('vault://note/{path}', 'vault://note/Daily/2024-01-01.md', 'path');
       expect(path).toBe('Daily/2024-01-01.md');
     });
     
-    it('should handle root folder edge cases', () => {
+    it('should extract date parameter from dynamic URI', () => {
       const registry = new ResourceRegistry();
-      registry.registerResource({
-        uri: 'vault://folder/{path}',
-        name: 'Folder',
-        description: 'Folder',
-        mimeType: 'application/json'
-      }, async () => ({ contents: [] }));
       
-      expect(registry.extractPathParameter('vault://folder/{path}', 'vault://folder')).toBe('');
-      expect(registry.extractPathParameter('vault://folder/{path}', 'vault://folder/')).toBe('');
+      const date = registry.extractParameter('vault://daily/{date}', 'vault://daily/2024-01-01', 'date');
+      expect(date).toBe('2024-01-01');
+    });
+    
+    it('should extract tagname parameter from dynamic URI', () => {
+      const registry = new ResourceRegistry();
+      
+      const tagname = registry.extractParameter('vault://tag/{tagname}', 'vault://tag/important', 'tagname');
+      expect(tagname).toBe('important');
+    });
+    
+    it('should extract custom parameter from dynamic URI', () => {
+      const registry = new ResourceRegistry();
+      
+      const value = registry.extractParameter('vault://custom/{myParam}', 'vault://custom/test-value', 'myParam');
+      expect(value).toBe('test-value');
+    });
+    
+    it('should handle root folder edge cases for any parameter', () => {
+      const registry = new ResourceRegistry();
+      
+      expect(registry.extractParameter('vault://folder/{path}', 'vault://folder', 'path')).toBe('');
+      expect(registry.extractParameter('vault://folder/{path}', 'vault://folder/', 'path')).toBe('');
+      expect(registry.extractParameter('vault://daily/{date}', 'vault://daily', 'date')).toBe('');
+    });
+    
+    it('should return empty string for non-matching parameter', () => {
+      const registry = new ResourceRegistry();
+      
+      const value = registry.extractParameter('vault://note/{path}', 'vault://note/test.md', 'date');
+      expect(value).toBe('');
+    });
+  });
+  
+  describe('generic parameter detection', () => {
+    it('should detect any parameter pattern in URIs', () => {
+      const registry = new ResourceRegistry();
+      
+      // Custom parameter names should work
+      const customHandler: ResourceHandler = async () => ({
+        contents: [{ uri: '', mimeType: 'application/json', text: '{}' }]
+      });
+      
+      registry.registerResource({
+        uri: 'vault://resource/{customParam}',
+        name: 'Custom Resource',
+        description: 'Resource with custom parameter',
+        mimeType: 'application/json'
+      }, customHandler);
+      
+      const foundHandler = registry.getHandler('vault://resource/test-value');
+      expect(foundHandler).toBe(customHandler);
+    });
+    
+    it('should handle multiple different parameter names', () => {
+      const registry = new ResourceRegistry();
+      
+      const handler1: ResourceHandler = async () => ({ contents: [] });
+      const handler2: ResourceHandler = async () => ({ contents: [] });
+      const handler3: ResourceHandler = async () => ({ contents: [] });
+      
+      registry.registerResource({
+        uri: 'vault://user/{userId}',
+        name: 'User',
+        description: 'User by ID',
+        mimeType: 'application/json'
+      }, handler1);
+      
+      registry.registerResource({
+        uri: 'vault://project/{projectId}',
+        name: 'Project',
+        description: 'Project by ID',
+        mimeType: 'application/json'
+      }, handler2);
+      
+      registry.registerResource({
+        uri: 'vault://category/{categoryName}',
+        name: 'Category',
+        description: 'Category by name',
+        mimeType: 'application/json'
+      }, handler3);
+      
+      expect(registry.getHandler('vault://user/123')).toBe(handler1);
+      expect(registry.getHandler('vault://project/my-project')).toBe(handler2);
+      expect(registry.getHandler('vault://category/work')).toBe(handler3);
     });
   });
 });
