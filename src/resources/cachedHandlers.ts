@@ -1,5 +1,6 @@
 import { ResourceHandler } from './types.js';
-import { defaultCachedHandlers, createCachedHandlers, ResourceCacheConfig } from './CachedConcreteHandlers.js';
+import { defaultCachedHandlers, createCachedHandlers } from './CachedConcreteHandlers.js';
+import { ResourceCacheConfig } from './CachedResourceHandler.js';
 
 /**
  * Cached resource handlers for improved performance

@@ -142,7 +142,7 @@ export class CachedResourceHandler extends BaseResourceHandler {
   private extractDataFromResult(result: ReadResourceResult): any {
     const content = result.contents[0];
     
-    if (content.mimeType === 'application/json') {
+    if (content.mimeType === 'application/json' && typeof content.text === 'string') {
       return JSON.parse(content.text);
     } else {
       return content.text;

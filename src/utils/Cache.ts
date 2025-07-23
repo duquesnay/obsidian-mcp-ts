@@ -94,7 +94,7 @@ interface CacheOptions {
   ttl: number; // Time to live in milliseconds, 0 = no expiration
 }
 
-interface CacheStats {
+export interface CacheStats {
   hits: number;
   misses: number;
   hitRate: number;

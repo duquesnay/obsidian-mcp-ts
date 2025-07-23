@@ -1,5 +1,5 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { ListResourcesRequestSchema, ReadResourceRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+import { ListResourcesRequestSchema, ReadResourceRequestSchema, ListResourceTemplatesRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { ObsidianClient } from '../obsidian/ObsidianClient.js';
 import { ResourceRegistry } from './ResourceRegistry.js';
 import { 
@@ -89,6 +89,35 @@ export async function registerResources(server: ServerWithClient): Promise<void>
     mimeType: 'application/json'
   }, createCachedTagNotesHandler());
   
+  // Register resource templates for discovery
+  registry.registerResourceTemplate({
+    name: 'Note',
+    uriTemplate: 'vault://note/{path}',
+    description: 'Individual note by path - e.g., vault://note/Daily/2024-01-01.md or vault://note/Projects/myproject.md. The path parameter can include nested folders and must include the .md extension.',
+    mimeType: 'text/markdown'
+  });
+  
+  registry.registerResourceTemplate({
+    name: 'Folder',
+    uriTemplate: 'vault://folder/{path}',
+    description: 'Browse folder contents - e.g., vault://folder/Projects or vault://folder/Daily. Returns list of files and subfolders within the specified path.',
+    mimeType: 'application/json'
+  });
+  
+  registry.registerResourceTemplate({
+    name: 'Daily Note',
+    uriTemplate: 'vault://daily/{date}',
+    description: 'Access daily notes by date - e.g., vault://daily/2024-01-15, vault://daily/today, or vault://daily/yesterday. Supports ISO date format (YYYY-MM-DD) and relative date keywords.',
+    mimeType: 'text/markdown'
+  });
+  
+  registry.registerResourceTemplate({
+    name: 'Notes by Tag',
+    uriTemplate: 'vault://tag/{tagname}',
+    description: 'Find all notes with a specific tag - e.g., vault://tag/project, vault://tag/meeting, or vault://tag/todo. Returns list of notes containing the specified tag.',
+    mimeType: 'application/json'
+  });
+  
   // Set up ListResources handler
   server.setRequestHandler(ListResourcesRequestSchema, async () => {
     return { resources: registry.listResources() };
@@ -106,6 +135,11 @@ export async function registerResources(server: ServerWithClient): Promise<void>
     
     // Call the handler with the URI and server context
     return await handler(uri, server);
+  });
+
+  // Set up ListResourceTemplatesRequestSchema handler
+  server.setRequestHandler(ListResourceTemplatesRequestSchema, async () => {
+    return { resourceTemplates: registry.listResourceTemplates() };
   });
 }
 

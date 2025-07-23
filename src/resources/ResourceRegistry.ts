@@ -1,4 +1,5 @@
 import { Resource, ResourceHandler } from './types.js';
+import { ResourceTemplate } from '@modelcontextprotocol/sdk/types.js';
 
 interface ResourceEntry {
   resource: Resource;
@@ -8,6 +9,7 @@ interface ResourceEntry {
 
 export class ResourceRegistry {
   private resources: ResourceEntry[] = [];
+  private resourceTemplates: ResourceTemplate[] = [];
   
   registerResource(resource: Resource, handler: ResourceHandler): void {
     const entry: ResourceEntry = {
@@ -101,6 +103,18 @@ export class ResourceRegistry {
     }
     
     return paramValue;
+  }
+  
+  registerResourceTemplate(template: ResourceTemplate): void {
+    // Check if template already exists to avoid duplicates
+    const exists = this.resourceTemplates.some(t => t.uriTemplate === template.uriTemplate);
+    if (!exists) {
+      this.resourceTemplates.push(template);
+    }
+  }
+  
+  listResourceTemplates(): ResourceTemplate[] {
+    return [...this.resourceTemplates];
   }
   
   private escapeRegex(str: string): string {

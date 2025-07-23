@@ -3,7 +3,8 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { 
   ListResourcesRequestSchema, 
-  ReadResourceRequestSchema 
+  ReadResourceRequestSchema,
+  ListResourceTemplatesRequestSchema
 } from '@modelcontextprotocol/sdk/types.js';
 import { config } from 'dotenv';
 import { registerTools } from './tools/index.js';
