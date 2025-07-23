@@ -177,8 +177,8 @@ For each task:
 - [x] R6.3: Vault structure - Full folder hierarchy at vault://structure
 
 ### Priority 4: Advanced Features
-- [ ] R7.1: Resource caching for performance
-- [ ] R7.2: Resource templates for discovery
+- [x] R7.1: Resource caching for performance
+- [x] R7.2: Resource templates for discovery
 - [ ] R8.1: Live updates - Subscribe to resource changes
 - [ ] R8.2: Search results as resources - vault://search/{query}
 
@@ -196,13 +196,39 @@ For each task:
 
 **Resolution commits**: a717927, 3f06de6, d5946fa
 
+## Recent Completions (R7.1 & R7.2)
+
+### R7.1: Resource Caching for Performance ✅
+**Completed**: 2025-07-23 (commit eb33653)
+
+**Implementation Details**:
+- **CachedResourceHandler**: Decorator pattern wrapper for BaseResourceHandler
+- **Intelligent Cache Strategy**: Resource-specific TTLs (static: 5min, dynamic: 30s, parameterized: 2min)
+- **Performance Benefits**: LRU cache with configurable sizes and TTLs
+- **Cache Management**: Statistics, cache clearing, and monitoring utilities
+- **Testing**: 23 comprehensive test cases including performance demonstrations
+
+### R7.2: Resource Templates for Discovery ✅
+**Completed**: 2025-07-23 (commit b10f922)
+
+**Implementation Details**:
+- **ResourceTemplate Support**: Added to ResourceRegistry class
+- **URI Templates**: RFC 6570 compliant templates for parameterized resources
+- **Template Examples**: Comprehensive documentation for all resources:
+  - `vault://note/{path}` with path parameter examples
+  - `vault://folder/{path}` with folder browsing documentation  
+  - `vault://daily/{date}` with date format and relative date examples
+  - `vault://tag/{tagname}` with tag search examples
+- **Discoverability**: Templates provide metadata for users to understand available patterns
+- **Testing**: Unit and integration tests for template functionality
+
 ## Progress Status
 
-**Last Updated**: 2025-01-23
-**Current Priority**: 4 - Advanced Features
-**Next Task**: R7.1 - Resource caching for performance
+**Last Updated**: 2025-07-23
+**Current Priority**: 4 - Advanced Features  
+**Next Task**: R8.1 - Live updates - Subscribe to resource changes
 
 ## Total Project Summary
 
 **Quality Improvement Tasks**: 63 (100% completed)
-**Resource Tasks**: 11 completed, 4 remaining across 2 priorities
+**Resource Tasks**: 13 completed, 2 remaining across 2 priorities
