@@ -1,167 +1,125 @@
-import { CachedResourceHandler } from './CachedResourceHandler.js';
+import { CachedResourceHandler, ResourceCacheConfig } from './CachedResourceHandler.js';
+import { TagsHandler, StatsHandler, RecentHandler, NoteHandler, FolderHandler } from './concreteHandlers.js';
+import { VaultStructureHandler } from './VaultStructureHandler.js';
+import { DailyNoteHandler } from './DailyNoteHandler.js';
+import { TagNotesHandler } from './TagNotesHandler.js';
 import { CACHE_DEFAULTS } from '../constants.js';
 
-interface FolderStructure {
-  files: string[];
-  folders: { [key: string]: FolderStructure };
-}
-
-interface VaultStructureResponse {
-  structure: FolderStructure;
-  totalFiles: number;
-  totalFolders: number;
-}
+/**
+ * Pre-configured cached versions of concrete handlers
+ * 
+ * These classes provide ready-to-use cached implementations with appropriate TTL settings:
+ * - Static resources (tags, stats, structure): 5 minutes
+ * - Dynamic resources (recent): 30 seconds
+ * - Parameterized resources (note, folder, daily, tag): 2 minutes
+ */
 
 /**
- * Cached Tags Handler - uses stable TTL for tags that don't change frequently
+ * Cached version of TagsHandler with 5-minute TTL
  */
 export class CachedTagsHandler extends CachedResourceHandler {
-  private lastWasFallback = false;
-  
-  constructor() {
-    super(CACHE_DEFAULTS.MAX_SIZE, CACHE_DEFAULTS.STABLE_TTL);
-  }
-  
-  async handleRequest(uri: string, server?: any): Promise<any> {
-    const client = this.getObsidianClient(server);
-    
-    try {
-      const tags = await client.getAllTags();
-      this.lastWasFallback = false;
-      return { tags };
-    } catch (error: any) {
-      // If the API call fails, return an empty array as fallback
-      console.error('Failed to fetch tags:', error);
-      this.lastWasFallback = true;
-      return { tags: [] };
-    }
-  }
-  
-  protected shouldCache(result: any, uri: string): boolean {
-    // Don't cache fallback responses (empty arrays due to errors)
-    return !this.lastWasFallback;
+  constructor(config?: ResourceCacheConfig) {
+    super(new TagsHandler(), config);
   }
 }
 
 /**
- * Cached Stats Handler - uses stable TTL for vault statistics
+ * Cached version of StatsHandler with 5-minute TTL
  */
 export class CachedStatsHandler extends CachedResourceHandler {
-  private lastWasFallback = false;
-  
-  constructor() {
-    super(CACHE_DEFAULTS.MAX_SIZE, CACHE_DEFAULTS.STABLE_TTL);
-  }
-  
-  async handleRequest(uri: string, server?: any): Promise<any> {
-    const client = this.getObsidianClient(server);
-    
-    try {
-      const files = await client.listFilesInVault();
-      const fileCount = files.length;
-      // Count .md files as notes
-      const noteCount = files.filter(file => file.endsWith('.md')).length;
-      
-      this.lastWasFallback = false;
-      return {
-        fileCount,
-        noteCount
-      };
-    } catch (error: any) {
-      console.error('Failed to fetch vault statistics:', error);
-      this.lastWasFallback = true;
-      return {
-        fileCount: 0,
-        noteCount: 0
-      };
-    }
-  }
-  
-  protected shouldCache(result: any, uri: string): boolean {
-    // Don't cache fallback responses (zero counts due to errors)
-    return !this.lastWasFallback;
+  constructor(config?: ResourceCacheConfig) {
+    super(new StatsHandler(), config);
   }
 }
 
 /**
- * Cached Recent Handler - uses fast TTL for frequently changing recent files
+ * Cached version of RecentHandler with 30-second TTL
  */
 export class CachedRecentHandler extends CachedResourceHandler {
-  private lastWasFallback = false;
-  
-  constructor() {
-    super(CACHE_DEFAULTS.MAX_SIZE, CACHE_DEFAULTS.FAST_TTL);
-  }
-  
-  async handleRequest(uri: string, server?: any): Promise<any> {
-    const client = this.getObsidianClient(server);
-    
-    try {
-      // Use the getRecentChanges method, limiting to 10 files
-      const recentChanges = await client.getRecentChanges(undefined, 10);
-      
-      // Transform to match expected format
-      // Note: Actual modification times are not available from the API
-      const notes = recentChanges.map(change => ({
-        path: change.path,
-        modifiedAt: new Date(change.mtime).toISOString()
-      }));
-      
-      this.lastWasFallback = false;
-      return { notes };
-    } catch (error: any) {
-      console.error('Failed to fetch recent changes:', error);
-      this.lastWasFallback = true;
-      return { notes: [] };
-    }
-  }
-  
-  protected shouldCache(result: any, uri: string): boolean {
-    // Don't cache fallback responses (empty arrays due to errors)
-    return !this.lastWasFallback;
+  constructor(config?: ResourceCacheConfig) {
+    super(new RecentHandler(), config);
   }
 }
 
 /**
- * Cached Note Handler - uses note TTL for individual note caching
+ * Cached version of NoteHandler with 2-minute TTL per note
  */
 export class CachedNoteHandler extends CachedResourceHandler {
-  constructor() {
-    super(CACHE_DEFAULTS.MAX_SIZE, CACHE_DEFAULTS.NOTE_TTL);
-  }
-  
-  async handleRequest(uri: string, server?: any): Promise<any> {
-    const path = this.extractPath(uri, 'vault://note/');
-    const client = this.getObsidianClient(server);
-    
-    try {
-      return await client.getFileContents(path);
-    } catch (error: any) {
-      this.handleError(error, 'Note', path);
-    }
+  constructor(config?: ResourceCacheConfig) {
+    super(new NoteHandler(), config);
   }
 }
 
 /**
- * Cached Folder Handler - uses stable TTL for folder listings
+ * Cached version of FolderHandler with 2-minute TTL per folder
  */
 export class CachedFolderHandler extends CachedResourceHandler {
-  constructor() {
-    super(CACHE_DEFAULTS.MAX_SIZE, CACHE_DEFAULTS.STABLE_TTL);
-  }
-  
-  async handleRequest(uri: string, server?: any): Promise<any> {
-    const path = this.extractPath(uri, 'vault://folder/');
-    const client = this.getObsidianClient(server);
-    
-    try {
-      const items = await client.listFilesInDir(path);
-      return {
-        path: path,
-        items: items
-      };
-    } catch (error: any) {
-      this.handleError(error, 'Folder', path);
-    }
+  constructor(config?: ResourceCacheConfig) {
+    super(new FolderHandler(), config);
   }
 }
+
+/**
+ * Cached version of VaultStructureHandler with 5-minute TTL
+ */
+export class CachedVaultStructureHandler extends CachedResourceHandler {
+  constructor(config?: ResourceCacheConfig) {
+    super(new VaultStructureHandler(), config);
+  }
+}
+
+/**
+ * Cached version of DailyNoteHandler with 2-minute TTL per date
+ */
+export class CachedDailyNoteHandler extends CachedResourceHandler {
+  constructor(config?: ResourceCacheConfig) {
+    super(new DailyNoteHandler(), config);
+  }
+}
+
+/**
+ * Cached version of TagNotesHandler with 2-minute TTL per tag
+ */
+export class CachedTagNotesHandler extends CachedResourceHandler {
+  constructor(config?: ResourceCacheConfig) {
+    super(new TagNotesHandler(), config);
+  }
+}
+
+/**
+ * Factory function to create cached handlers with custom configuration
+ */
+export function createCachedHandlers(config?: Partial<ResourceCacheConfig>) {
+  const fullConfig: ResourceCacheConfig = {
+    maxSize: config?.maxSize ?? CACHE_DEFAULTS.MAX_SIZE,
+    defaultTtl: config?.defaultTtl ?? CACHE_DEFAULTS.STABLE_TTL,
+    resourceTtls: {
+      // Static resources - longer TTL
+      'vault://tags': CACHE_DEFAULTS.STABLE_TTL,
+      'vault://stats': CACHE_DEFAULTS.STABLE_TTL,
+      'vault://structure': CACHE_DEFAULTS.STABLE_TTL,
+      
+      // Dynamic resources - shorter TTL
+      'vault://recent': CACHE_DEFAULTS.FAST_TTL,
+      
+      // Merge any custom TTLs
+      ...config?.resourceTtls
+    }
+  };
+
+  return {
+    tags: new CachedTagsHandler(fullConfig),
+    stats: new CachedStatsHandler(fullConfig),
+    recent: new CachedRecentHandler(fullConfig),
+    note: new CachedNoteHandler(fullConfig),
+    folder: new CachedFolderHandler(fullConfig),
+    structure: new CachedVaultStructureHandler(fullConfig),
+    daily: new CachedDailyNoteHandler(fullConfig),
+    tagNotes: new CachedTagNotesHandler(fullConfig)
+  };
+}
+
+/**
+ * Default cached handlers with standard configuration
+ */
+export const defaultCachedHandlers = createCachedHandlers();

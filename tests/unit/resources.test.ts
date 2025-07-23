@@ -24,31 +24,31 @@ describe('MCP Resources', () => {
       expect(result.resources[0]).toEqual({
         uri: 'vault://tags',
         name: 'Vault Tags',
-        description: 'All tags in the vault with usage counts',
+        description: 'All tags in the vault with usage counts (cached 5min)',
         mimeType: 'application/json'
       });
       expect(result.resources[1]).toEqual({
         uri: 'vault://stats',
         name: 'Vault Statistics',
-        description: 'File and note counts for the vault',
+        description: 'File and note counts for the vault (cached 5min)',
         mimeType: 'application/json'
       });
       expect(result.resources[2]).toEqual({
         uri: 'vault://recent',
         name: 'Recent Changes',
-        description: 'Recently modified notes in the vault',
+        description: 'Recently modified notes in the vault (cached 30s)',
         mimeType: 'application/json'
       });
       expect(result.resources[3]).toEqual({
         uri: 'vault://structure',
         name: 'Vault Structure',
-        description: 'Complete hierarchical structure of the vault with folders and files',
+        description: 'Complete hierarchical structure of the vault with folders and files (cached 5min)',
         mimeType: 'application/json'
       });
       expect(result.resources[4]).toEqual({
         uri: 'vault://note/{path}',
         name: 'Note',
-        description: 'Individual note by path (e.g., vault://note/Daily/2024-01-01.md)',
+        description: 'Individual note by path (cached 2min per note) - e.g., vault://note/Daily/2024-01-01.md',
         mimeType: 'text/markdown'
       });
     });
@@ -362,7 +362,7 @@ describe('MCP Resources', () => {
       expect(result.resources).toContainEqual({
         uri: 'vault://folder/{path}',
         name: 'Folder',
-        description: 'Browse folder contents (e.g., vault://folder/Projects)',
+        description: 'Browse folder contents (cached 2min per folder) - e.g., vault://folder/Projects',
         mimeType: 'application/json'
       });
     });
@@ -453,7 +453,7 @@ describe('MCP Resources', () => {
       expect(result.resources).toContainEqual({
         uri: 'vault://note/{path}',
         name: 'Note',
-        description: 'Individual note by path (e.g., vault://note/Daily/2024-01-01.md)',
+        description: 'Individual note by path (cached 2min per note) - e.g., vault://note/Daily/2024-01-01.md',
         mimeType: 'text/markdown'
       });
     });
