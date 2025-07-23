@@ -160,7 +160,7 @@ For each task:
 ### Priority 1: Core Resources (Foundation)
 - [x] R2.1: Integration tests for existing resources functionality
 - [x] R2.2: Documentation for resources feature
-- [ ] R3.1: Vault statistics - Get file and note counts at vault://stats
+- [x] R3.1: Vault statistics - Get file and note counts at vault://stats
 - [ ] R3.2: Recent changes - View recently modified notes at vault://recent
 
 ### Priority 2: Dynamic Resources (Real Value)
@@ -188,7 +188,7 @@ For each task:
 
 **Last Updated**: 2025-01-23
 **Current Priority**: 1
-**Next Task**: R3.1 - Vault statistics
+**Next Task**: R3.2 - Recent changes
 
 ## Total Project Summary
 
