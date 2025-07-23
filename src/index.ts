@@ -1,8 +1,13 @@
 #!/usr/bin/env node
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { 
+  ListResourcesRequestSchema, 
+  ReadResourceRequestSchema 
+} from '@modelcontextprotocol/sdk/types.js';
 import { config } from 'dotenv';
 import { registerTools } from './tools/index.js';
+import { registerResources } from './resources/index.js';
 
 // Load environment variables
 config();
@@ -17,6 +22,7 @@ const server = new Server(
   {
     capabilities: {
       tools: {},
+      resources: {},
     },
   }
 );
@@ -31,6 +37,9 @@ async function main() {
     
     // Register all tools
     await registerTools(server);
+    
+    // Register resources
+    await registerResources(server);
     
     // Create and connect transport
     const transport = new StdioServerTransport();
