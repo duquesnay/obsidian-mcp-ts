@@ -62,7 +62,7 @@ describe('Content Negotiation Tools', () => {
       expect(result.type).toBe('text');
       const response = JSON.parse(result.text);
       expect(response.success).toBe(false);
-      expect(response.error).toContain('contains dangerous pattern');
+      expect(response.error).toContain('filepath contains parent directory traversal');
       expect(mockClient.getFileContents).not.toHaveBeenCalled();
     });
 

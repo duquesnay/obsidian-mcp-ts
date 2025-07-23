@@ -1,5 +1,4 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
-import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
 
 export class ListFilesInVaultTool extends BaseTool {
   name = 'obsidian_list_files_in_vault';
@@ -30,9 +29,11 @@ export class ListFilesInVaultTool extends BaseTool {
       
       return this.formatResponse(response);
     } catch (error: any) {
-      // Use common error handler for HTTP errors
+      // Use the new handleHttpError method with custom handlers
       if (error.response?.status) {
-        return ObsidianErrorHandler.handleHttpError(error, this.name);
+        return this.handleHttpError(error, {
+          500: 'Server error. The Obsidian REST API may be experiencing issues'
+        });
       }
       
       if (error.message?.includes('vault') || error.message?.includes('connection')) {

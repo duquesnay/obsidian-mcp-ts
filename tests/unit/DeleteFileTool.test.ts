@@ -7,10 +7,7 @@ vi.mock('../../src/obsidian/ObsidianClient.js', () => ({
   ObsidianClient: vi.fn()
 }));
 
-// Mock path validator
-vi.mock('../../src/utils/pathValidator.js', () => ({
-  validatePath: vi.fn().mockImplementation(() => {}) // Default to no-op
-}));
+// Path validation is now done by PathValidationUtil internally
 
 describe('DeleteFileTool', () => {
   let tool: DeleteFileTool;
@@ -24,10 +21,6 @@ describe('DeleteFileTool', () => {
     tool = new DeleteFileTool();
     // Mock the getClient method to return our mock
     vi.spyOn(tool as any, 'getClient').mockReturnValue(mockClient);
-    
-    // Reset path validator mock to default behavior
-    const { validatePath } = await import('../../src/utils/pathValidator.js');
-    vi.mocked(validatePath).mockImplementation(() => {});
   });
 
   describe('success scenarios', () => {
@@ -252,9 +245,7 @@ describe('DeleteFileTool', () => {
   });
 
   describe('path validation', () => {
-    it('should validate filepath using path validator', async () => {
-      const { validatePath } = await import('../../src/utils/pathValidator.js');
-      
+    it('should validate filepath using PathValidationUtil', async () => {
       const args = {
         filepath: 'valid/path/file.md'
       };
@@ -263,15 +254,11 @@ describe('DeleteFileTool', () => {
 
       await tool.execute(args);
 
-      expect(validatePath).toHaveBeenCalledWith('valid/path/file.md', 'filepath');
+      // The path validation happens internally now, just verify the call succeeds
+      expect(mockClient.deleteFile).toHaveBeenCalled();
     });
 
     it('should handle path validation errors', async () => {
-      const { validatePath } = await import('../../src/utils/pathValidator.js');
-      vi.mocked(validatePath).mockImplementation(() => {
-        throw new Error('Invalid path: contains dangerous characters');
-      });
-
       const args = {
         filepath: '../../../etc/passwd'
       };
@@ -280,15 +267,10 @@ describe('DeleteFileTool', () => {
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('Invalid path: contains dangerous characters');
+      expect(response.error).toContain('filepath contains parent directory traversal');
     });
 
     it('should handle path traversal attempts', async () => {
-      const { validatePath } = await import('../../src/utils/pathValidator.js');
-      vi.mocked(validatePath).mockImplementation(() => {
-        throw new Error('Path traversal detected');
-      });
-
       const args = {
         filepath: '../../sensitive/file.txt'
       };
@@ -297,15 +279,10 @@ describe('DeleteFileTool', () => {
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('Path traversal detected');
+      expect(response.error).toContain('filepath contains parent directory traversal');
     });
 
     it('should handle absolute path attempts', async () => {
-      const { validatePath } = await import('../../src/utils/pathValidator.js');
-      vi.mocked(validatePath).mockImplementation(() => {
-        throw new Error('Absolute paths not allowed');
-      });
-
       const args = {
         filepath: '/absolute/path/file.md'
       };
@@ -314,7 +291,7 @@ describe('DeleteFileTool', () => {
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('Absolute paths not allowed');
+      expect(response.error).toContain('filepath cannot be an absolute path');
     });
   });
 

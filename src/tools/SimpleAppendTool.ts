@@ -1,5 +1,5 @@
 import { BaseTool, ToolResponse, ToolMetadata } from './base.js';
-import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
+import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 
 interface SimpleAppendArgs {
   filepath: string;
@@ -50,6 +50,8 @@ export class SimpleAppendTool extends BaseTool<SimpleAppendArgs> {
     }
 
     try {
+      // Validate the filepath
+      PathValidationUtil.validate(filepath, 'filepath', { type: PathValidationType.FILE });
       const client = this.getClient();
       
       // Use the existing append_content functionality
@@ -62,17 +64,19 @@ export class SimpleAppendTool extends BaseTool<SimpleAppendArgs> {
         filepath
       });
     } catch (error: any) {
-      // Use common error handler for HTTP errors
+      // Use the new handleHttpError method with custom handlers
       if (error.response?.status) {
         // Special handling for 404 - suggest creating the file
         if (error.response.status === 404 && !create_file_if_missing) {
-          return this.handleSimplifiedError(
-            error,
-            'File does not exist. Try setting create_file_if_missing to true.',
-            { filepath, content, create_file_if_missing: true }
-          );
+          return this.handleHttpError(error, {
+            404: {
+              message: 'File not found',
+              suggestion: 'File does not exist. Try setting create_file_if_missing to true',
+              example: { filepath, content, create_file_if_missing: true }
+            }
+          });
         }
-        return ObsidianErrorHandler.handleHttpError(error, this.name);
+        return this.handleHttpError(error);
       }
 
       return this.handleSimplifiedError(error);

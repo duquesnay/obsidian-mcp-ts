@@ -1,5 +1,5 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
-import { validatePath } from '../utils/pathValidator.js';
+import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 
 export class GetFileFormattedTool extends BaseTool {
   name = 'obsidian_get_file_formatted';
@@ -29,7 +29,7 @@ export class GetFileFormattedTool extends BaseTool {
 
   async executeTyped(args: { filepath: string; format: 'plain' | 'html' | 'content' }): Promise<ToolResponse> {
     try {
-      validatePath(args.filepath, 'filepath');
+      PathValidationUtil.validate(args.filepath, 'filepath', { type: PathValidationType.FILE });
       
       const client = this.getClient();
       const content = await client.getFileContents(args.filepath, args.format);

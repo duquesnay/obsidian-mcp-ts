@@ -1,22 +1,20 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { GetFileContentsTool } from '../../src/tools/GetFileContentsTool.js';
 import { ObsidianClient } from '../../src/obsidian/ObsidianClient.js';
+import { PathValidationUtil } from '../../src/utils/PathValidationUtil.js';
 
 // Mock ObsidianClient
 vi.mock('../../src/obsidian/ObsidianClient.js', () => ({
   ObsidianClient: vi.fn()
 }));
 
-// Mock path validator
-vi.mock('../../src/utils/pathValidator.js', () => ({
-  validatePath: vi.fn().mockImplementation(() => {}) // Default to no-op
-}));
+// Path validation is now done by PathValidationUtil internally
 
 describe('GetFileContentsTool', () => {
   let tool: GetFileContentsTool;
   let mockClient: Partial<ObsidianClient>;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     mockClient = {
       getFileContents: vi.fn()
     };
@@ -25,9 +23,8 @@ describe('GetFileContentsTool', () => {
     // Mock the getClient method to return our mock
     vi.spyOn(tool as any, 'getClient').mockReturnValue(mockClient);
     
-    // Reset path validator mock to default behavior
-    const { validatePath } = await import('../../src/utils/pathValidator.js');
-    vi.mocked(validatePath).mockImplementation(() => {});
+    // Clear all mocks
+    vi.clearAllMocks();
   });
 
   describe('success scenarios', () => {
@@ -118,7 +115,7 @@ describe('GetFileContentsTool', () => {
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('Missing required parameters');
+      expect(response.error).toBe('filepath cannot be empty');
       expect(response.tool).toBe('obsidian_get_file_contents');
     });
 
@@ -131,7 +128,7 @@ describe('GetFileContentsTool', () => {
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('Missing required parameters');
+      expect(response.error).toBe('filepath cannot be empty');
     });
 
     it('should handle null filepath parameter', async () => {
@@ -143,7 +140,7 @@ describe('GetFileContentsTool', () => {
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('Missing required parameters');
+      expect(response.error).toBe('filepath cannot be empty');
     });
   });
 
@@ -214,26 +211,22 @@ describe('GetFileContentsTool', () => {
   });
 
   describe('path validation', () => {
-    it('should validate filepath using path validator', async () => {
-      const { validatePath } = await import('../../src/utils/pathValidator.js');
-      
+    it('should validate filepath using PathValidationUtil', async () => {
       const args = {
         filepath: 'test/file.md'
       };
 
-      vi.mocked(mockClient.getFileContents!).mockResolvedValue('content');
+      vi.mocked(mockClient.getFileContents!).mockResolvedValue('Test content');
 
-      await tool.execute(args);
-
-      expect(validatePath).toHaveBeenCalledWith('test/file.md', 'filepath');
+      const result = await tool.execute(args);
+      
+      // Verify the tool executes successfully with a valid path
+      expect(result.type).toBe('text');
+      expect(result.text).toBe('Test content');
+      expect(mockClient.getFileContents).toHaveBeenCalled();
     });
 
     it('should handle path validation errors', async () => {
-      const { validatePath } = await import('../../src/utils/pathValidator.js');
-      vi.mocked(validatePath).mockImplementation(() => {
-        throw new Error('Invalid path: contains dangerous characters');
-      });
-
       const args = {
         filepath: '../../../etc/passwd'
       };
@@ -242,7 +235,7 @@ describe('GetFileContentsTool', () => {
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('Invalid path: contains dangerous characters');
+      expect(response.error).toBe('filepath contains parent directory traversal');
     });
   });
 

@@ -1,5 +1,5 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
-import { validatePath } from '../utils/pathValidator.js';
+import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 
 export class MoveFileTool extends BaseTool {
   name = 'obsidian_move_file';
@@ -36,8 +36,8 @@ export class MoveFileTool extends BaseTool {
       }
       
       // Validate both paths
-      validatePath(args.sourcePath, 'sourcePath');
-      validatePath(args.destinationPath, 'destinationPath');
+      PathValidationUtil.validate(args.sourcePath, 'sourcePath', { type: PathValidationType.FILE });
+      PathValidationUtil.validate(args.destinationPath, 'destinationPath', { type: PathValidationType.FILE });
       
       const client = this.getClient();
       await client.moveFile(args.sourcePath, args.destinationPath);

@@ -1,5 +1,5 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
-import { validatePath } from '../utils/pathValidator.js';
+import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 
 export class CopyFileTool extends BaseTool {
   name = 'obsidian_copy_file';
@@ -41,8 +41,8 @@ export class CopyFileTool extends BaseTool {
       }
       
       // Validate both paths
-      validatePath(args.sourcePath, 'sourcePath');
-      validatePath(args.destinationPath, 'destinationPath');
+      PathValidationUtil.validate(args.sourcePath, 'sourcePath', { type: PathValidationType.FILE });
+      PathValidationUtil.validate(args.destinationPath, 'destinationPath', { type: PathValidationType.FILE });
       
       // Prevent copying a file to itself
       if (args.sourcePath === args.destinationPath) {

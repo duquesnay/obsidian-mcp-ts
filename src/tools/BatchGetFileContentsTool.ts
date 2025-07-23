@@ -1,5 +1,5 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
-import { validatePaths } from '../utils/pathValidator.js';
+import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
 
 export class BatchGetFileContentsTool extends BaseTool {
@@ -41,7 +41,7 @@ export class BatchGetFileContentsTool extends BaseTool {
       }
       
       // Validate all filepaths
-      validatePaths(args.filepaths, 'filepaths');
+      PathValidationUtil.validateBatch(args.filepaths, { type: PathValidationType.FILE });
       
       // Apply pagination if specified
       let filesToProcess = args.filepaths;

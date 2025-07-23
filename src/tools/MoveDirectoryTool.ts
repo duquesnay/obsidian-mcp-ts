@@ -1,5 +1,5 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
-import { validatePath } from '../utils/pathValidator.js';
+import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 
 export class MoveDirectoryTool extends BaseTool {
   name = 'obsidian_move_directory';
@@ -36,8 +36,8 @@ export class MoveDirectoryTool extends BaseTool {
       }
       
       // Validate both paths
-      validatePath(args.sourcePath, 'sourcePath');
-      validatePath(args.destinationPath, 'destinationPath');
+      PathValidationUtil.validate(args.sourcePath, 'sourcePath', { type: PathValidationType.DIRECTORY });
+      PathValidationUtil.validate(args.destinationPath, 'destinationPath', { type: PathValidationType.DIRECTORY });
       
       // Ensure paths don't end with slash for consistency
       const sourcePath = args.sourcePath.replace(/\/$/, '');

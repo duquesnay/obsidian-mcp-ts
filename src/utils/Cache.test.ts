@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { LRUCache } from './Cache.js';
 
+// @TODO tests on the source folder?
+
 describe('LRUCache', () => {
   let cache: LRUCache<string, any>;
 
@@ -63,7 +65,7 @@ describe('LRUCache', () => {
       cache.set('key1', 'value1');
       cache.set('key2', 'value2');
       cache.set('key3', 'value3');
-      
+
       cache.get('key1'); // Makes key1 most recently used
       cache.set('key4', 'value4'); // Should evict key2
 
@@ -77,7 +79,7 @@ describe('LRUCache', () => {
       cache.set('key1', 'value1');
       cache.set('key2', 'value2');
       cache.set('key3', 'value3');
-      
+
       cache.set('key1', 'updated'); // Makes key1 most recently used
       cache.set('key4', 'value4'); // Should evict key2
 
@@ -111,7 +113,7 @@ describe('LRUCache', () => {
     it('should not expire if TTL is 0', () => {
       const noTtlCache = new LRUCache<string, string>({ maxSize: 3, ttl: 0 });
       noTtlCache.set('key1', 'value1');
-      
+
       vi.advanceTimersByTime(10000);
       expect(noTtlCache.get('key1')).toBe('value1');
     });
@@ -120,11 +122,11 @@ describe('LRUCache', () => {
   describe('statistics', () => {
     it('should track cache hits and misses', () => {
       cache.set('key1', 'value1');
-      
+
       cache.get('key1'); // hit
       cache.get('key1'); // hit
       cache.get('key2'); // miss
-      
+
       const stats = cache.getStats();
       expect(stats.hits).toBe(2);
       expect(stats.misses).toBe(1);
@@ -135,7 +137,7 @@ describe('LRUCache', () => {
       cache.set('key1', 'value1');
       cache.get('key1');
       cache.get('key2');
-      
+
       cache.resetStats();
       const stats = cache.getStats();
       expect(stats.hits).toBe(0);

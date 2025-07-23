@@ -1,5 +1,5 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
-import { validatePath } from '../utils/pathValidator.js';
+import { PathValidationUtil, PathValidationType, PathValidationError } from '../utils/PathValidationUtil.js';
 
 export class CreateDirectoryTool extends BaseTool {
   name = 'obsidian_create_directory';
@@ -29,15 +29,27 @@ export class CreateDirectoryTool extends BaseTool {
 
   async executeTyped(args: { directoryPath: string; createParents?: boolean }): Promise<ToolResponse> {
     try {
-      if (!args.directoryPath) {
-        throw new Error('directoryPath argument missing in arguments');
+      // Validate and normalize the directory path
+      try {
+        PathValidationUtil.validate(args.directoryPath, 'directoryPath', { 
+          type: PathValidationType.DIRECTORY 
+        });
+      } catch (error) {
+        if (error instanceof PathValidationError) {
+          return this.handleSimplifiedError(
+            error,
+            'Provide a valid directory path. Directory paths should be relative to the vault root',
+            {
+              directoryPath: 'projects/new-folder',
+              createParents: true
+            }
+          );
+        }
+        throw error;
       }
       
-      // Validate the path
-      validatePath(args.directoryPath, 'directoryPath');
-      
-      // Clean up the path (remove trailing slashes)
-      const cleanPath = args.directoryPath.replace(/\/$/, '');
+      // Normalize the path (removes trailing slashes)
+      const cleanPath = PathValidationUtil.normalize(args.directoryPath, PathValidationType.DIRECTORY);
       
       const client = this.getClient();
       const result = await client.createDirectory(cleanPath, args.createParents !== false);

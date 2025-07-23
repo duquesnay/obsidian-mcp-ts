@@ -13,18 +13,41 @@ A TypeScript MCP server to interact with Obsidian via the Local REST API communi
 - **📦 Modular Architecture**: Clean separation of concerns with reusable utilities
 - **📊 MCP Resources**: Read-only access to vault data through the resources protocol
 
-## Components
+## Feature Status
 
-### Resources
+This section shows what resources and capabilities are available in the Obsidian MCP server.
 
-MCP Resources provide read-only access to data from your Obsidian vault. Unlike tools which perform actions, resources offer a way to expose vault information that can be queried by AI assistants.
+### MCP Resources Available ✅
 
-#### Available Resources
+MCP Resources provide read-only access to data from your Obsidian vault through the resources protocol. These are ideal for AI assistants to maintain context about your vault.
 
-- **vault://tags** - All unique tags in your vault with usage counts
-  - Returns a JSON list of tags and their occurrence count
-  - Includes both inline tags (#tag) and frontmatter tags
-  - Useful for understanding the taxonomy and organization of your vault
+#### Core Resources
+
+| Resource | Status | Description | Example URI |
+|----------|--------|-------------|-------------|
+| **Vault Tags** | ✅ | All unique tags with usage counts | `vault://tags` |
+| **Vault Statistics** | ✅ | File and note counts for the vault | `vault://stats` |
+| **Recent Changes** | ✅ | Recently modified notes in the vault | `vault://recent` |
+
+#### Dynamic Resources
+
+| Resource | Status | Description | Example URI |
+|----------|--------|-------------|-------------|
+| **Individual Notes** | ✅ | Read any note by path | `vault://note/Daily/2024-01-01.md` |
+| **Folder Contents** | ✅ | Browse folder contents by path | `vault://folder/Projects` |
+| **Daily Notes** | ✅ | Access daily notes by date | `vault://daily/2024-01-15` |
+| **Notes by Tag** | ✅ | Find all notes with specific tag | `vault://tag/project` |
+
+#### Planned Resources
+
+| Resource | Status | Description | Expected URI |
+|----------|--------|-------------|--------------|
+| **Vault Structure** | 🔄 | Full vault folder hierarchy | `vault://structure` |
+| **Search Results** | 📋 | Search results as resources | `vault://search/{query}` |
+| **Backlinks** | 📋 | Files linking to a specific note | `vault://backlinks/{path}` |
+| **Forward Links** | 📋 | Outgoing links from a note | `vault://links/{path}` |
+
+**Legend**: ✅ Implemented | 🔄 In Progress | 📋 Planned
 
 #### Using Resources
 
@@ -33,19 +56,20 @@ Resources are accessed through the MCP protocol's `resources/list` and `resource
 ```typescript
 // List available resources
 const resources = await client.listResources();
-// Returns: [{ uri: 'vault://tags', name: 'Vault Tags', ... }]
 
-// Read a specific resource
-const tagsData = await client.readResource('vault://tags');
-// Returns: { tags: [{ name: '#project', count: 10 }, ...] }
+// Read specific resources
+const tags = await client.readResource('vault://tags');
+const stats = await client.readResource('vault://stats');
+const note = await client.readResource('vault://note/meeting-notes.md');
+const folder = await client.readResource('vault://folder/Projects');
 ```
 
-#### Resource vs Tool
+#### Resource vs Tool Decision
 
-- **Resources**: Provide read-only data access, cached responses, ideal for reference information
-- **Tools**: Perform actions like creating/editing files, real-time operations, can modify vault state
+- **Resources**: Read-only data access, cached responses, reference information that AI needs in context
+- **Tools**: Actions that modify content, real-time operations, one-time queries
 
-Example: Use the `vault://tags` resource to see all available tags, then use the `obsidian_get_files_by_tag` tool to find specific files with a tag.
+**Example workflow**: Use `vault://tags` resource to see available tags → Use `obsidian_get_files_by_tag` tool to find specific files → Use `vault://note/{path}` resource to read those files.
 
 ### Tools
 

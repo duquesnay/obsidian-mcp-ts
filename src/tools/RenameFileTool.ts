@@ -1,5 +1,5 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
-import { validatePath } from '../utils/pathValidator.js';
+import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 
 export class RenameFileTool extends BaseTool {
   name = 'obsidian_rename_file';
@@ -36,8 +36,8 @@ export class RenameFileTool extends BaseTool {
       }
       
       // Validate both paths
-      validatePath(args.oldPath, 'oldPath');
-      validatePath(args.newPath, 'newPath');
+      PathValidationUtil.validate(args.oldPath, 'oldPath', { type: PathValidationType.FILE });
+      PathValidationUtil.validate(args.newPath, 'newPath', { type: PathValidationType.FILE });
       
       const client = this.getClient();
       await client.renameFile(args.oldPath, args.newPath);

@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { OptimizedBatchProcessor } from './OptimizedBatchProcessor.js';
 
+// @TODO test in the source base?
+
 describe('OptimizedBatchProcessor', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -45,7 +47,7 @@ describe('OptimizedBatchProcessor', () => {
         return 'success';
       });
 
-      const batchProcessor = new OptimizedBatchProcessor({ 
+      const batchProcessor = new OptimizedBatchProcessor({
         retryAttempts: 3,
         retryDelay: 1
       });
@@ -61,9 +63,9 @@ describe('OptimizedBatchProcessor', () => {
       const onProgress = vi.fn();
       const processor = vi.fn(async (num: number) => num * 2);
 
-      const batchProcessor = new OptimizedBatchProcessor({ 
+      const batchProcessor = new OptimizedBatchProcessor({
         maxConcurrency: 2,
-        onProgress 
+        onProgress
       });
       await batchProcessor.process(items, processor);
 
@@ -74,7 +76,7 @@ describe('OptimizedBatchProcessor', () => {
     it('should maintain order of results', async () => {
       const items = [1, 2, 3, 4, 5];
       const delays = [50, 10, 30, 5, 20];
-      
+
       const processor = vi.fn(async (num: number) => {
         await new Promise(resolve => setTimeout(resolve, delays[num - 1]));
         return num * 10;
@@ -103,7 +105,7 @@ describe('OptimizedBatchProcessor', () => {
     it('should wait for entire batch before processing next', async () => {
       const items = [1, 2, 3, 4];
       const completionOrder: number[] = [];
-      
+
       const processor = vi.fn(async (num: number) => {
         const delay = num % 2 === 0 ? 10 : 50; // Even numbers are fast
         await new Promise(resolve => setTimeout(resolve, delay));
@@ -118,7 +120,7 @@ describe('OptimizedBatchProcessor', () => {
       // So we should see [2,1] or [1,2], then [4,3] or [3,4]
       const firstBatch = completionOrder.slice(0, 2).sort();
       const secondBatch = completionOrder.slice(2, 4).sort();
-      
+
       expect(firstBatch).toEqual([1, 2]);
       expect(secondBatch).toEqual([3, 4]);
     });
@@ -175,7 +177,7 @@ describe('OptimizedBatchProcessor', () => {
       const processor = vi.fn(async (num: number) => num * 3);
 
       const results = await OptimizedBatchProcessor.processSimple(
-        items, 
+        items,
         processor,
         { maxConcurrency: 2 }
       );
