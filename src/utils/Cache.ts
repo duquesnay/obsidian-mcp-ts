@@ -1,5 +1,84 @@
 /**
  * LRU (Least Recently Used) Cache with TTL support
+ * 
+ * A high-performance cache implementation that automatically evicts least recently used items
+ * when the cache reaches its maximum size. Supports time-to-live (TTL) for automatic expiration.
+ * 
+ * @example
+ * // Basic usage with file metadata caching
+ * const metadataCache = new LRUCache<string, FileMetadata>({
+ *   maxSize: 100,  // Keep up to 100 files in cache
+ *   ttl: 60000     // Expire after 1 minute
+ * });
+ * 
+ * // Cache file metadata
+ * const metadata = await fetchFileMetadata(filePath);
+ * metadataCache.set(filePath, metadata);
+ * 
+ * // Retrieve with automatic cache hit tracking
+ * const cached = metadataCache.get(filePath);
+ * if (cached) {
+ *   console.log('Cache hit!', cached);
+ * } else {
+ *   console.log('Cache miss, fetching from API...');
+ * }
+ * 
+ * @example
+ * // Search results caching with custom TTL
+ * const searchCache = new LRUCache<string, SearchResult[]>({
+ *   maxSize: 50,   // Keep 50 most recent searches
+ *   ttl: 300000    // 5 minutes default TTL
+ * });
+ * 
+ * // Cache search results with shorter TTL for volatile queries
+ * const results = await performSearch(query);
+ * const ttl = query.includes('recent') ? 30000 : undefined; // 30s for "recent" queries
+ * searchCache.set(query, results, ttl);
+ * 
+ * @example
+ * // Performance monitoring
+ * const cache = new LRUCache<string, any>({ maxSize: 1000, ttl: 0 }); // No expiration
+ * 
+ * // Use cache with monitoring
+ * for (const key of keys) {
+ *   cache.get(key) || cache.set(key, await fetchData(key));
+ * }
+ * 
+ * // Check cache performance
+ * const stats = cache.getStats();
+ * console.log(`Hit rate: ${(stats.hitRate * 100).toFixed(2)}%`);
+ * console.log(`Hits: ${stats.hits}, Misses: ${stats.misses}`);
+ * 
+ * // Reset stats for next measurement period
+ * cache.resetStats();
+ * 
+ * @example
+ * // Preemptive cache cleanup for memory management
+ * const cache = new LRUCache<string, LargeObject>({
+ *   maxSize: 20,
+ *   ttl: 3600000  // 1 hour
+ * });
+ * 
+ * // Periodic cleanup of expired entries
+ * setInterval(() => {
+ *   const sizeBefore = cache.size();
+ *   cache.size(); // Triggers internal cleanup
+ *   const sizeAfter = cache.size();
+ *   console.log(`Cleaned up ${sizeBefore - sizeAfter} expired entries`);
+ * }, 300000); // Every 5 minutes
+ * 
+ * @performance
+ * - O(1) get/set operations with hash map lookup
+ * - O(1) LRU eviction with doubly linked list
+ * - Automatic cleanup on size() calls
+ * - Memory overhead: ~200 bytes per entry
+ * 
+ * @bestPractices
+ * - Set appropriate maxSize based on memory constraints
+ * - Use TTL for data that changes frequently
+ * - Monitor hit rate to tune cache size
+ * - Call size() periodically to trigger cleanup
+ * - Consider cache warming for predictable access patterns
  */
 
 interface CacheNode<K, V> {
@@ -39,6 +118,14 @@ export class LRUCache<K, V> {
 
   /**
    * Get value from cache
+   * 
+   * @example
+   * const value = cache.get('my-key');
+   * if (value === undefined) {
+   *   // Handle cache miss
+   *   const freshData = await fetchData();
+   *   cache.set('my-key', freshData);
+   * }
    */
   get(key: K): V | undefined {
     const node = this.cache.get(key);
@@ -63,6 +150,14 @@ export class LRUCache<K, V> {
 
   /**
    * Set value in cache
+   * 
+   * @example
+   * // Basic caching
+   * cache.set('user:123', userData);
+   * 
+   * // With custom TTL for specific entries
+   * cache.set('volatile-data', data, 10000); // 10 second TTL
+   * cache.set('stable-data', data); // Uses default TTL
    */
   set(key: K, value: V, customTtl?: number): void {
     const existingNode = this.cache.get(key);
