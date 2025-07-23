@@ -11,8 +11,41 @@ A TypeScript MCP server to interact with Obsidian via the Local REST API communi
 - **📋 Dynamic Tool Discovery**: Automatically discovers and loads tools with metadata
 - **🎯 Smart Error Handling**: Simplified error responses with actionable suggestions
 - **📦 Modular Architecture**: Clean separation of concerns with reusable utilities
+- **📊 MCP Resources**: Read-only access to vault data through the resources protocol
 
 ## Components
+
+### Resources
+
+MCP Resources provide read-only access to data from your Obsidian vault. Unlike tools which perform actions, resources offer a way to expose vault information that can be queried by AI assistants.
+
+#### Available Resources
+
+- **vault://tags** - All unique tags in your vault with usage counts
+  - Returns a JSON list of tags and their occurrence count
+  - Includes both inline tags (#tag) and frontmatter tags
+  - Useful for understanding the taxonomy and organization of your vault
+
+#### Using Resources
+
+Resources are accessed through the MCP protocol's `resources/list` and `resources/read` methods:
+
+```typescript
+// List available resources
+const resources = await client.listResources();
+// Returns: [{ uri: 'vault://tags', name: 'Vault Tags', ... }]
+
+// Read a specific resource
+const tagsData = await client.readResource('vault://tags');
+// Returns: { tags: [{ name: '#project', count: 10 }, ...] }
+```
+
+#### Resource vs Tool
+
+- **Resources**: Provide read-only data access, cached responses, ideal for reference information
+- **Tools**: Perform actions like creating/editing files, real-time operations, can modify vault state
+
+Example: Use the `vault://tags` resource to see all available tags, then use the `obsidian_get_files_by_tag` tool to find specific files with a tag.
 
 ### Tools
 
