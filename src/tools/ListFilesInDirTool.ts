@@ -1,6 +1,5 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
-import { validatePath } from '../utils/pathValidator.js';
-import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
+import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 
 export class ListFilesInDirTool extends BaseTool {
   name = 'obsidian_list_files_in_dir';
@@ -30,7 +29,7 @@ export class ListFilesInDirTool extends BaseTool {
       }
       
       // Validate the directory path
-      validatePath(args.dirpath, 'dirpath');
+      PathValidationUtil.validate(args.dirpath, 'dirpath', { type: PathValidationType.DIRECTORY });
       
       const client = this.getClient();
       
@@ -53,9 +52,15 @@ export class ListFilesInDirTool extends BaseTool {
         throw error;
       }
     } catch (error: any) {
-      // Use common error handler for HTTP errors
+      // Use the new handleHttpError method with custom handlers
       if (error.response?.status) {
-        return ObsidianErrorHandler.handleHttpError(error, this.name);
+        return this.handleHttpError(error, {
+          404: {
+            message: 'Directory not found',
+            suggestion: 'Make sure the directory path exists in your vault. Use obsidian_list_files_in_vault to browse available directories',
+            example: { dirpath: 'existing-folder' }
+          }
+        });
       }
       
       return this.handleError(error);

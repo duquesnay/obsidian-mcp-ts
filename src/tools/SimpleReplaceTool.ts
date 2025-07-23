@@ -1,5 +1,5 @@
 import { BaseTool, ToolResponse, ToolMetadata } from './base.js';
-import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
+import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 
 interface SimpleReplaceArgs {
   filepath: string;
@@ -49,6 +49,9 @@ export class SimpleReplaceTool extends BaseTool<SimpleReplaceArgs> {
     }
 
     try {
+      // Validate the filepath
+      PathValidationUtil.validate(filepath, 'filepath', { type: PathValidationType.FILE });
+      
       const client = this.getClient();
       
       // Get the current content
@@ -80,9 +83,15 @@ export class SimpleReplaceTool extends BaseTool<SimpleReplaceArgs> {
         replace
       });
     } catch (error: any) {
-      // Use common error handler for HTTP errors
+      // Use the new handleHttpError method with custom handlers
       if (error.response?.status) {
-        return ObsidianErrorHandler.handleHttpError(error, this.name);
+        return this.handleHttpError(error, {
+          404: {
+            message: 'File not found',
+            suggestion: 'File does not exist. Verify the path and use obsidian_list_files_in_vault to browse available files',
+            example: { filepath: 'existing-file.md', find: 'text to find', replace: 'replacement text' }
+          }
+        });
       }
 
       return this.handleSimplifiedError(error);
