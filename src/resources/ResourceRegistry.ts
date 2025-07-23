@@ -15,11 +15,14 @@ export class ResourceRegistry {
       handler
     };
     
-    // If URI contains {path}, create a pattern for matching
-    if (resource.uri.includes('{path}')) {
-      // Convert vault://note/{path} to a regex that matches vault://note/anything
-      const prefix = resource.uri.substring(0, resource.uri.indexOf('{path}'));
-      entry.pattern = new RegExp(`^${this.escapeRegex(prefix)}.*$`);
+    // If URI contains parameters, create a pattern for matching
+    if (resource.uri.includes('{path}') || resource.uri.includes('{date}')) {
+      // Convert vault://note/{path} or vault://daily/{date} to a regex that matches anything after prefix
+      const paramMatch = resource.uri.match(/\{[^}]+\}/);
+      if (paramMatch) {
+        const prefix = resource.uri.substring(0, resource.uri.indexOf(paramMatch[0]));
+        entry.pattern = new RegExp(`^${this.escapeRegex(prefix)}.*$`);
+      }
     }
     
     this.resources.push(entry);
@@ -42,11 +45,14 @@ export class ResourceRegistry {
       if (entry.pattern) {
         // Special handling for dynamic resources
         const template = entry.resource.uri;
-        const prefix = template.substring(0, template.indexOf('{path}'));
-        
-        // Match if URI starts with prefix (including edge cases like vault://folder)
-        if (uri === prefix.slice(0, -1) || uri.startsWith(prefix)) {
-          return entry.handler;
+        const paramMatch = template.match(/\{[^}]+\}/);
+        if (paramMatch) {
+          const prefix = template.substring(0, template.indexOf(paramMatch[0]));
+          
+          // Match if URI starts with prefix (including edge cases like vault://folder)
+          if (uri === prefix.slice(0, -1) || uri.startsWith(prefix)) {
+            return entry.handler;
+          }
         }
       }
     }

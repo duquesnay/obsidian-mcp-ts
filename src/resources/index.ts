@@ -2,7 +2,7 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { ListResourcesRequestSchema, ReadResourceRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { ObsidianClient } from '../obsidian/ObsidianClient.js';
 import { ResourceRegistry } from './ResourceRegistry.js';
-import { createTagsHandler, createStatsHandler, createRecentHandler, createNoteHandler, createFolderHandler } from './handlers.js';
+import { createTagsHandler, createStatsHandler, createRecentHandler, createNoteHandler, createFolderHandler, createDailyNoteHandler } from './handlers.js';
 
 // Extend Server type to include obsidianClient for testing
 interface ServerWithClient extends Server {
@@ -50,6 +50,13 @@ export async function registerResources(server: ServerWithClient): Promise<void>
     description: 'Browse folder contents (e.g., vault://folder/Projects)',
     mimeType: 'application/json'
   }, createFolderHandler());
+  
+  registry.registerResource({
+    uri: 'vault://daily/{date}',
+    name: 'Daily Note',
+    description: 'Access daily notes by date (e.g., vault://daily/2024-01-15 or vault://daily/today)',
+    mimeType: 'text/markdown'
+  }, createDailyNoteHandler());
   
   // Set up ListResources handler
   server.setRequestHandler(ListResourcesRequestSchema, async () => {
