@@ -3,6 +3,7 @@ import { TagsHandler, StatsHandler, RecentHandler, NoteHandler, FolderHandler } 
 import { VaultStructureHandler } from './VaultStructureHandler.js';
 import { DailyNoteHandler } from './DailyNoteHandler.js';
 import { TagNotesHandler } from './TagNotesHandler.js';
+import { SearchHandler } from './SearchHandler.js';
 import { CACHE_DEFAULTS } from '../constants.js';
 
 /**
@@ -87,6 +88,15 @@ export class CachedTagNotesHandler extends CachedResourceHandler {
 }
 
 /**
+ * Cached version of SearchHandler with 1-minute TTL per query
+ */
+export class CachedSearchHandler extends CachedResourceHandler {
+  constructor(config?: ResourceCacheConfig) {
+    super(new SearchHandler(), config);
+  }
+}
+
+/**
  * Factory function to create cached handlers with custom configuration
  */
 export function createCachedHandlers(config?: Partial<ResourceCacheConfig>) {
@@ -115,7 +125,8 @@ export function createCachedHandlers(config?: Partial<ResourceCacheConfig>) {
     folder: new CachedFolderHandler(fullConfig),
     structure: new CachedVaultStructureHandler(fullConfig),
     daily: new CachedDailyNoteHandler(fullConfig),
-    tagNotes: new CachedTagNotesHandler(fullConfig)
+    tagNotes: new CachedTagNotesHandler(fullConfig),
+    search: new CachedSearchHandler(fullConfig)
   };
 }
 

@@ -222,13 +222,45 @@ For each task:
 - **Discoverability**: Templates provide metadata for users to understand available patterns
 - **Testing**: Unit and integration tests for template functionality
 
+### R8.1: Live Updates - Subscribe to Resource Changes ✅
+**Completed**: 2025-07-23 (commit 8f0e7bb)
+
+**Implementation Details**:
+- **SubscriptionManager**: Tracks client subscriptions and validates subscribable resources
+- **SubscriptionHandlers**: MCP protocol integration for subscribe/unsubscribe requests
+- **NotificationTrigger**: Manual notification utilities for resource update events
+- **Subscribable Resources**: vault://recent, vault://stats, vault://tags
+- **Protocol Compliance**: Full MCP subscription protocol implementation
+- **Documentation**: Comprehensive SUBSCRIPTIONS.md with examples and architecture
+- **Testing**: 100% test coverage with unit and integration tests
+
+### R8.2: Search Results as Resources - vault://search/{query} 🚧
+**Status**: In Progress (RED phase)
+**Started**: 2025-07-23
+
+**Current Progress**:
+- ✅ Achieved true green line (578 tests passing)
+- 🚧 Created SearchHandler test (RED phase)
+- ⏳ Pending: Implement SearchHandler (GREEN phase)
+- ⏳ Pending: Register search resource in registry
+- ⏳ Pending: Add cached search handler support
+
+**Implementation Plan**:
+- **SearchHandler**: Extract query from vault://search/{query} URI pattern
+- **ObsidianClient Integration**: Use simpleSearch method for search operations
+- **Response Format**: Structure search results with query, results, totalResults, hasMore
+- **URL Decoding**: Handle encoded queries (spaces, special characters)
+- **Error Handling**: Validate query presence and handle API errors
+- **Caching**: Add cached version with appropriate TTL
+
 ## Progress Status
 
 **Last Updated**: 2025-07-23
 **Current Priority**: 4 - Advanced Features  
-**Next Task**: R8.1 - Live updates - Subscribe to resource changes
+**Next Task**: R8.2 - Complete SearchHandler implementation
+**Green Line Status**: ✅ All 578 tests passing
 
 ## Total Project Summary
 
 **Quality Improvement Tasks**: 63 (100% completed)
-**Resource Tasks**: 13 completed, 2 remaining across 2 priorities
+**Resource Tasks**: 14 completed, 1 in progress, 1 remaining across 2 priorities

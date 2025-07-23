@@ -43,6 +43,10 @@ export function createCachedVaultStructureHandler(): ResourceHandler {
   return (uri: string, server?: any) => defaultCachedHandlers.structure.execute(uri, server);
 }
 
+export function createCachedSearchHandler(): ResourceHandler {
+  return (uri: string, server?: any) => defaultCachedHandlers.search.execute(uri, server);
+}
+
 /**
  * Factory to create all cached handlers with custom configuration
  */
@@ -73,7 +77,8 @@ export function getAllCacheStats() {
     folder: defaultCachedHandlers.folder.getCacheStats(),
     daily: defaultCachedHandlers.daily.getCacheStats(),
     tagNotes: defaultCachedHandlers.tagNotes.getCacheStats(),
-    structure: defaultCachedHandlers.structure.getCacheStats()
+    structure: defaultCachedHandlers.structure.getCacheStats(),
+    search: defaultCachedHandlers.search.getCacheStats()
   };
 }
 
@@ -89,6 +94,7 @@ export function clearAllCaches() {
   defaultCachedHandlers.daily.clearCache();
   defaultCachedHandlers.tagNotes.clearCache();
   defaultCachedHandlers.structure.clearCache();
+  defaultCachedHandlers.search.clearCache();
 }
 
 /**
@@ -103,4 +109,5 @@ export function resetAllCacheStats() {
   defaultCachedHandlers.daily.resetCacheStats();
   defaultCachedHandlers.tagNotes.resetCacheStats();
   defaultCachedHandlers.structure.resetCacheStats();
+  defaultCachedHandlers.search.resetCacheStats();
 }

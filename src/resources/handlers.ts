@@ -3,6 +3,7 @@ import { TagsHandler, StatsHandler, RecentHandler, NoteHandler, FolderHandler } 
 import { DailyNoteHandler } from './DailyNoteHandler.js';
 import { TagNotesHandler } from './TagNotesHandler.js';
 import { VaultStructureHandler } from './VaultStructureHandler.js';
+import { SearchHandler } from './SearchHandler.js';
 
 // Create singleton instances of handlers
 const tagsHandler = new TagsHandler();
@@ -13,6 +14,7 @@ const folderHandler = new FolderHandler();
 const dailyNoteHandler = new DailyNoteHandler();
 const tagNotesHandler = new TagNotesHandler();
 const vaultStructureHandler = new VaultStructureHandler();
+const searchHandler = new SearchHandler();
 
 export function createTagsHandler(): ResourceHandler {
   return (uri: string, server?: any) => tagsHandler.execute(uri, server);
@@ -44,4 +46,8 @@ export function createTagNotesHandler(): ResourceHandler {
 
 export function createVaultStructureHandler(): ResourceHandler {
   return (uri: string, server?: any) => vaultStructureHandler.execute(uri, server);
+}
+
+export function createSearchHandler(): ResourceHandler {
+  return (uri: string, server?: any) => searchHandler.execute(uri, server);
 }

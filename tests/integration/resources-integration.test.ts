@@ -214,7 +214,7 @@ describe('MCP Resources Integration Tests', () => {
       // Should still work with empty params
       expect(response.error).toBeUndefined();
       expect(response.result?.resources).toBeDefined();
-      expect(response.result.resources).toHaveLength(8);
+      expect(response.result.resources).toHaveLength(9);
     });
   });
 
@@ -414,6 +414,63 @@ describe('MCP Resources Integration Tests', () => {
       const content = JSON.parse(readResponse.result.contents[0].text);
       expect(content).toBeDefined();
       expect(content.tags).toBeDefined();
+    });
+
+    it('should read vault://search/{query} resource and return search results', async () => {
+      const request: JsonRpcRequest = {
+        jsonrpc: '2.0',
+        id: requestId++,
+        method: 'resources/read',
+        params: {
+          uri: 'vault://search/test'
+        }
+      };
+
+      sendRequest(request);
+      const response = await waitForResponse(request.id);
+
+      expect(response.error).toBeUndefined();
+      expect(response.result).toBeDefined();
+      expect(response.result.contents).toBeDefined();
+      expect(Array.isArray(response.result.contents)).toBe(true);
+      expect(response.result.contents).toHaveLength(1);
+
+      const content = response.result.contents[0];
+      expect(content.uri).toBe('vault://search/test');
+      expect(content.mimeType).toBe('application/json');
+      expect(content.text).toBeDefined();
+
+      // Parse and verify the JSON content structure
+      const parsedContent = JSON.parse(content.text);
+      expect(parsedContent.query).toBe('test');
+      expect(parsedContent.results).toBeDefined();
+      expect(Array.isArray(parsedContent.results)).toBe(true);
+      expect(parsedContent.totalResults).toBeDefined();
+      expect(typeof parsedContent.totalResults).toBe('number');
+      expect(parsedContent.hasMore).toBeDefined();
+      expect(typeof parsedContent.hasMore).toBe('boolean');
+    });
+
+    it('should handle URL-encoded search queries', async () => {
+      const request: JsonRpcRequest = {
+        jsonrpc: '2.0',
+        id: requestId++,
+        method: 'resources/read',
+        params: {
+          uri: 'vault://search/meeting%20notes'
+        }
+      };
+
+      sendRequest(request);
+      const response = await waitForResponse(request.id);
+
+      expect(response.error).toBeUndefined();
+      expect(response.result).toBeDefined();
+      expect(response.result.contents).toBeDefined();
+
+      const content = response.result.contents[0];
+      const parsedContent = JSON.parse(content.text);
+      expect(parsedContent.query).toBe('meeting notes');
     });
   });
 

@@ -11,11 +11,12 @@ import {
   createCachedDailyNoteHandler, 
   createCachedTagNotesHandler, 
   createCachedVaultStructureHandler,
+  createCachedSearchHandler,
   getAllCacheStats,
   clearAllCaches,
   resetAllCacheStats
 } from './cachedHandlers.js';
-import { createTagsHandler, createStatsHandler, createRecentHandler, createNoteHandler, createFolderHandler, createDailyNoteHandler, createTagNotesHandler, createVaultStructureHandler } from './handlers.js';
+import { createTagsHandler, createStatsHandler, createRecentHandler, createNoteHandler, createFolderHandler, createDailyNoteHandler, createTagNotesHandler, createVaultStructureHandler, createSearchHandler } from './handlers.js';
 
 // Extend Server type to include obsidianClient for testing
 interface ServerWithClient extends Server {
@@ -89,6 +90,13 @@ export async function registerResources(server: ServerWithClient): Promise<void>
     mimeType: 'application/json'
   }, createCachedTagNotesHandler());
   
+  registry.registerResource({
+    uri: 'vault://search/{query}',
+    name: 'Search Results',
+    description: 'Search vault for content (cached 1min per query) - e.g., vault://search/meeting%20notes or vault://search/TODO',
+    mimeType: 'application/json'
+  }, createCachedSearchHandler());
+  
   // Register resource templates for discovery
   registry.registerResourceTemplate({
     name: 'Note',
@@ -115,6 +123,13 @@ export async function registerResources(server: ServerWithClient): Promise<void>
     name: 'Notes by Tag',
     uriTemplate: 'vault://tag/{tagname}',
     description: 'Find all notes with a specific tag - e.g., vault://tag/project, vault://tag/meeting, or vault://tag/todo. Returns list of notes containing the specified tag.',
+    mimeType: 'application/json'
+  });
+  
+  registry.registerResourceTemplate({
+    name: 'Search Results',
+    uriTemplate: 'vault://search/{query}',
+    description: 'Search vault for content - e.g., vault://search/meeting%20notes, vault://search/TODO, or vault://search/project%20roadmap. Returns search results with context snippets. Use URL encoding for queries with spaces.',
     mimeType: 'application/json'
   });
   
