@@ -9,6 +9,7 @@ import {
 import { config } from 'dotenv';
 import { registerTools } from './tools/index.js';
 import { registerResources } from './resources/index.js';
+import { registerSubscriptions } from './subscriptions/index.js';
 
 // Load environment variables
 config();
@@ -23,7 +24,9 @@ const server = new Server(
   {
     capabilities: {
       tools: {},
-      resources: {},
+      resources: {
+        subscribe: true
+      },
     },
   }
 );
@@ -41,6 +44,9 @@ async function main() {
     
     // Register resources
     await registerResources(server);
+    
+    // Register subscription capabilities
+    await registerSubscriptions(server);
     
     // Create and connect transport
     const transport = new StdioServerTransport();
