@@ -4,7 +4,6 @@
 This backlog decomposes quality improvement recommendations into fine-grained, incremental tasks following TDD principles and green-line development.
 
 ## Task Categories
-
 ### 1. Constants and Magic Numbers (DRY)
 - [x] T1.1: Create constants file for Obsidian defaults
 - [x] T1.2: Replace hardcoded port 27124 with constant

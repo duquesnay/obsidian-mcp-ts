@@ -177,9 +177,9 @@ Status: **COMPLETED** ✅
 
 ### API Limitations
 
-Some features may require enhancements to the Obsidian Local REST API plugin:
-- Directory operations (create, delete, move)
-- File metadata access
+Some features have required enhancements to the Obsidian Local REST API plugin:
+- Done: Directory operations (create, delete, move)
+- Done: File metadata access
 - Bulk operations with transaction support
 - Plugin interaction APIs
 
