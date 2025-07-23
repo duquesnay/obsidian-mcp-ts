@@ -164,7 +164,7 @@ For each task:
 - [x] R3.2: Recent changes - View recently modified notes at vault://recent
 
 ### Priority 2: Dynamic Resources (Real Value)
-- [ ] R4.1: Individual notes - Read any note by path at vault://note/{path}
+- [x] R4.1: Individual notes - Read any note by path at vault://note/{path}
 - [ ] R4.2: Folder contents - Browse folders at vault://folder/{path}
 - [ ] R5.1: Quality review and refactoring based on patterns found
 
