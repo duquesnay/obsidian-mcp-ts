@@ -16,12 +16,26 @@ export class TagsHandler extends BaseResourceHandler {
 }
 
 export class StatsHandler extends BaseResourceHandler {
-  async handleRequest(uri: string): Promise<any> {
-    // Return hardcoded stats data
-    return {
-      fileCount: 42,
-      noteCount: 35
-    };
+  async handleRequest(uri: string, server?: any): Promise<any> {
+    const client = this.getObsidianClient(server);
+    
+    try {
+      const files = await client.listFilesInVault();
+      const fileCount = files.length;
+      // Count .md files as notes
+      const noteCount = files.filter(file => file.endsWith('.md')).length;
+      
+      return {
+        fileCount,
+        noteCount
+      };
+    } catch (error: any) {
+      console.error('Failed to fetch vault statistics:', error);
+      return {
+        fileCount: 0,
+        noteCount: 0
+      };
+    }
   }
 }
 

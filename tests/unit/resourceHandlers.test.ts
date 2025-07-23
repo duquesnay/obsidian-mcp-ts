@@ -20,10 +20,20 @@ describe('Resource Handlers', () => {
   });
   
   describe('createStatsHandler', () => {
-    it('should return hardcoded stats data', async () => {
-      const handler = createStatsHandler();
-      const result = await handler('vault://stats');
+    it('should fetch real vault statistics', async () => {
+      const mockListFilesInVault = vi.fn().mockResolvedValue([
+        'file1.md', 'file2.md', 'file3.txt', 'folder/note.md'
+      ]);
+      const mockServer = {
+        obsidianClient: {
+          listFilesInVault: mockListFilesInVault
+        }
+      };
       
+      const handler = createStatsHandler();
+      const result = await handler('vault://stats', mockServer);
+      
+      expect(mockListFilesInVault).toHaveBeenCalled();
       expect(result.contents).toHaveLength(1);
       expect(result.contents[0]).toMatchObject({
         uri: 'vault://stats',
@@ -31,8 +41,8 @@ describe('Resource Handlers', () => {
       });
       
       const data = JSON.parse(result.contents[0].text);
-      expect(data).toHaveProperty('fileCount', 42);
-      expect(data).toHaveProperty('noteCount', 35);
+      expect(data).toHaveProperty('fileCount', 4);
+      expect(data).toHaveProperty('noteCount', 3); // Only .md files
     });
   });
   
