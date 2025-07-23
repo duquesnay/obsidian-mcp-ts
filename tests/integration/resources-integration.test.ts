@@ -214,7 +214,7 @@ describe('MCP Resources Integration Tests', () => {
       // Should still work with empty params
       expect(response.error).toBeUndefined();
       expect(response.result?.resources).toBeDefined();
-      expect(response.result.resources).toHaveLength(3);
+      expect(response.result.resources).toHaveLength(8);
     });
   });
 
