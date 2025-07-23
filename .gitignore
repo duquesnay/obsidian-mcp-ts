@@ -12,6 +12,13 @@ npm-debug.log*
 # TypeScript cache
 *.tsbuildinfo
 
+# Test coverage
+coverage/
+
+# Temporary scripts
+composite-script.sh
+test-*.sh
+
 # dotenv environment variable files
 .env
 .env.local
