@@ -165,7 +165,7 @@ For each task:
 
 ### Priority 2: Dynamic Resources (Real Value)
 - [x] R4.1: Individual notes - Read any note by path at vault://note/{path}
-- [ ] R4.2: Folder contents - Browse folders at vault://folder/{path}
+- [x] R4.2: Folder contents - Browse folders at vault://folder/{path}
 - [ ] R5.1: Quality review and refactoring based on patterns found
 
 ### Priority 3: Specialized Resources
@@ -187,8 +187,8 @@ For each task:
 ## Progress Status
 
 **Last Updated**: 2025-01-23
-**Current Priority**: 1 (Complete) → Moving to Priority 2
-**Next Task**: R4.1 - Individual notes by path
+**Current Priority**: 2 - Dynamic Resources
+**Next Task**: R5.1 - Quality review and refactoring based on patterns found
 
 ## Total Project Summary
 

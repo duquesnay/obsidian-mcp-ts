@@ -1,6 +1,6 @@
 # Emerging Patterns in MCP Resources Implementation
 
-After implementing three resources (vault://tags, vault://stats, vault://recent), several patterns are emerging:
+After implementing five resources (vault://tags, vault://stats, vault://recent, vault://note/{path}, vault://folder/{path}), several patterns are emerging:
 
 ## Code Duplication Patterns
 
@@ -42,30 +42,41 @@ All resources return:
 
 ## Observations
 
-### Current Issues
-1. **Linear if-else chain**: Each new resource adds another if statement
-2. **Hardcoded data**: All three resources return static data
-3. **No abstraction**: Direct implementation without helper functions
+### Current State (After R4.2)
+1. **Linear if-else chain**: Five if-else branches for resource handling
+2. **Mixed patterns**: Static resources (tags, stats, recent) vs dynamic resources (note/{path}, folder/{path})
+3. **Duplication emerging**: Error handling, response formatting, client creation
 
-### Potential Refactoring (After Rule of Three)
-Since we now have three resources with identical patterns, we could consider:
+### Dynamic Resource Patterns
+With the addition of vault://note/{path} and vault://folder/{path}, new patterns emerged:
 
-1. **Resource Registry**: Map of resource definitions
-2. **Handler Factory**: Generate handlers from resource config
-3. **Data Provider Interface**: Separate data fetching from response formatting
+1. **Path extraction**: Different logic for extracting paths from URIs
+   - Note: `uri.substring('vault://note/'.length)`
+   - Folder: Special handling for root folder cases
 
-### Why Not Refactor Yet?
-Following the project's principles:
-- Architecture should emerge from working code
-- Refactor when patterns repeat (Rule of Three) ✓
-- Each increment should add user value
+2. **Error messages**: Resource-specific error messages
+   - "Note not found: {path}"
+   - "Folder not found: {path}"
 
-The patterns are clear, but:
-- The next resources (R4.1, R4.2) will introduce dynamic paths (vault://note/{path})
-- This will break the current pattern and require different handling
-- Better to wait and see how dynamic resources affect the architecture
+3. **Response formatting**: Different content types
+   - Notes: text/markdown with raw content
+   - Folders: application/json with structured data
+
+### Potential Refactoring (Now with 5 Resources)
+With five resources and clear patterns, we could consider:
+
+1. **Resource Handler Registry**: Map URI patterns to handler functions
+2. **Dynamic Path Parser**: Extract paths based on resource type
+3. **Response Builder**: Standardize response formatting
+4. **Error Handler Factory**: Generate appropriate error messages
+
+### Why Consider Refactoring Now?
+- We have 5 resources (passed Rule of Three)
+- Clear patterns between static and dynamic resources
+- Next resources (R6.1-R6.3) will likely follow similar patterns
+- Code is becoming harder to navigate with linear if-else chain
 
 ## Next Steps
-- Implement R4.1 (dynamic paths) to see how patterns evolve
-- Consider refactoring after R4.2 when we have 5 resources total
-- Keep this document updated as patterns emerge or change
+- R5.1: Quality review and refactoring based on these patterns
+- Consider resource handler architecture before implementing R6.x
+- Focus on maintainability as we prepare to add more resources
