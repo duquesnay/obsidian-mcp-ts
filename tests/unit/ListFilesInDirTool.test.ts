@@ -111,6 +111,6 @@ describe('ListFilesInDirTool', () => {
     
     const response = JSON.parse(result.text);
     expect(response.success).toBe(false);
-    expect(response.error).toContain('Invalid');
+    expect(response.error).toContain('dirpath contains parent directory traversal');
   });
 });

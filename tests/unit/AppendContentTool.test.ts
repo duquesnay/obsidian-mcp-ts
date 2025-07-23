@@ -7,10 +7,7 @@ vi.mock('../../src/obsidian/ObsidianClient.js', () => ({
   ObsidianClient: vi.fn()
 }));
 
-// Mock path validator
-vi.mock('../../src/utils/pathValidator.js', () => ({
-  validatePath: vi.fn().mockImplementation(() => {}) // Default to no-op
-}));
+// Path validation is now done by PathValidationUtil internally
 
 describe('AppendContentTool', () => {
   let tool: AppendContentTool;
@@ -24,10 +21,6 @@ describe('AppendContentTool', () => {
     tool = new AppendContentTool();
     // Mock the getClient method to return our mock
     vi.spyOn(tool as any, 'getClient').mockReturnValue(mockClient);
-    
-    // Reset path validator mock to default behavior
-    const { validatePath } = await import('../../src/utils/pathValidator.js');
-    vi.mocked(validatePath).mockImplementation(() => {});
   });
 
   describe('success scenarios', () => {
@@ -351,9 +344,7 @@ console.log('Code block');
   });
 
   describe('path validation', () => {
-    it('should validate filepath using path validator', async () => {
-      const { validatePath } = await import('../../src/utils/pathValidator.js');
-      
+    it('should validate filepath using PathValidationUtil', async () => {
       const args = {
         filepath: 'valid/path.md',
         content: 'Content'
@@ -363,15 +354,11 @@ console.log('Code block');
 
       await tool.execute(args);
 
-      expect(validatePath).toHaveBeenCalledWith('valid/path.md', 'filepath');
+      // The path validation happens internally now, just verify the call succeeds
+      expect(mockClient.appendContent).toHaveBeenCalled();
     });
 
     it('should handle path validation errors', async () => {
-      const { validatePath } = await import('../../src/utils/pathValidator.js');
-      vi.mocked(validatePath).mockImplementation(() => {
-        throw new Error('Invalid path: contains dangerous characters');
-      });
-
       const args = {
         filepath: '../../../etc/passwd',
         content: 'Malicious content'
@@ -381,15 +368,10 @@ console.log('Code block');
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('Invalid path: contains dangerous characters');
+      expect(response.error).toContain('filepath contains parent directory traversal');
     });
 
     it('should handle path traversal attempts', async () => {
-      const { validatePath } = await import('../../src/utils/pathValidator.js');
-      vi.mocked(validatePath).mockImplementation(() => {
-        throw new Error('Path traversal detected');
-      });
-
       const args = {
         filepath: '../../sensitive.txt',
         content: 'Content'
@@ -399,15 +381,10 @@ console.log('Code block');
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('Path traversal detected');
+      expect(response.error).toContain('filepath contains parent directory traversal');
     });
 
     it('should handle absolute path attempts', async () => {
-      const { validatePath } = await import('../../src/utils/pathValidator.js');
-      vi.mocked(validatePath).mockImplementation(() => {
-        throw new Error('Absolute paths not allowed');
-      });
-
       const args = {
         filepath: '/absolute/path.md',
         content: 'Content'
@@ -417,7 +394,7 @@ console.log('Code block');
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('Absolute paths not allowed');
+      expect(response.error).toContain('filepath cannot be an absolute path');
     });
   });
 
