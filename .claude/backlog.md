@@ -84,11 +84,11 @@ This backlog decomposes quality improvement recommendations into fine-grained, i
 - [x] T9.7: Update tool listing to group by category
 
 ### 10. Performance and Optimization
-- [x] T10.1: Implement caching strategy for ObsidianClient
-- [x] T10.2: Add request deduplication
-- [x] T10.3: Optimize batch processing logic
+- [x] T10.1: Implement caching strategy for ObsidianClient (LRUCache with TTL)
+- [x] T10.2: Add request deduplication (RequestDeduplicator utility)
+- [x] T10.3: Optimize batch processing logic (OptimizedBatchProcessor)
 - [x] T10.4: Add performance metrics collection (skipped - not needed)
-- [x] T10.5: Document performance best practices
+- [x] T10.5: Document performance best practices (in utility-usage-examples.md)
 
 ## Implementation Strategy
 
@@ -276,9 +276,9 @@ This section tracks potential features and enhancements for the Obsidian MCP ser
 
 | Feature | Status | Description | Technical Notes |
 |---------|--------|-------------|-----------------|
-| `cache_management` | ❌ | Clear/manage MCP cache | Cache implementation |
-| `batch_prefetch` | ❌ | Prefetch multiple files | Async optimization |
-| `incremental_updates` | ❌ | Get only changed content | Change detection |
+| `cache_management` | 🔧 | Clear/manage MCP cache | Core caching implemented (T10.1), management UI needed |
+| `batch_prefetch` | ❌ | Prefetch multiple files | Can use OptimizedBatchProcessor |
+| `incremental_updates` | ❌ | Get only changed content | Change detection needed |
 
 ### 13. Security & Access (Low Priority)
 
@@ -291,24 +291,28 @@ This section tracks potential features and enhancements for the Obsidian MCP ser
 
 ## Next Priority Features (User Interest)
 
-Based on user feedback, the following features are prioritized for next implementation:
+Based on user feedback and architectural decisions, the following features are prioritized:
 
-### 1. Link Management  
-- `get_file_backlinks` - Get all files linking to a specific file
-- `get_file_forward_links` - Get all files linked from a specific file
-- `find_broken_links` - Identify broken internal links
-- `batch_update_links` - Update multiple links at once
+### 1. Complete Resource Implementation
+- `vault://structure` - Full vault folder hierarchy 
+- `vault://daily/{date}` - Daily notes access
+- `vault://tag/{tagname}` - Notes by tag
+- Resource subscriptions for live updates
 
-### 2. Bulk Operations
+### 2. Link Management (Consider as Resources)
+- `get_file_backlinks` → Consider `vault://backlinks/{path}`
+- `get_file_forward_links` → Consider `vault://links/{path}`
+- `find_broken_links` → Consider `vault://broken-links`
+- `batch_update_links` - Keep as tool (modifies content)
+
+### 3. Bulk Operations (Keep as Tools)
 - `bulk_move_files` - Move multiple files in one operation
 - `bulk_delete_files` - Delete multiple files efficiently
 - `bulk_rename_files` - Rename files with patterns
 - `bulk_copy_files` - Copy multiple files
 
-### 3. Vault Management
-- `get_vault_statistics` - Total files, folders, sizes
-- `get_vault_structure` - Tree structure of entire vault
-- `validate_vault_integrity` - Check broken links, orphans
+### 4. Vault Integrity
+- `validate_vault_integrity` - Check broken links, orphans (partially done via resources)
 
 ## Recent Updates
 
