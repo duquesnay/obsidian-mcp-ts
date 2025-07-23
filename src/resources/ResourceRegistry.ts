@@ -73,6 +73,36 @@ export class ResourceRegistry {
     return uri.substring(prefix.length);
   }
   
+  extractParameter(template: string, uri: string, paramName: string): string {
+    const paramPlaceholder = `{${paramName}}`;
+    
+    if (!template.includes(paramPlaceholder)) {
+      return '';
+    }
+    
+    const prefix = template.substring(0, template.indexOf(paramPlaceholder));
+    const suffix = template.substring(template.indexOf(paramPlaceholder) + paramPlaceholder.length);
+    
+    // Handle edge cases - if URI matches just the prefix or prefix with trailing slash
+    if (uri === prefix.slice(0, -1) || uri === prefix) {
+      return '';
+    }
+    
+    // Extract the parameter value between prefix and suffix
+    if (!uri.startsWith(prefix)) {
+      return '';
+    }
+    
+    let paramValue = uri.substring(prefix.length);
+    
+    // Remove suffix if present
+    if (suffix && paramValue.endsWith(suffix)) {
+      paramValue = paramValue.substring(0, paramValue.length - suffix.length);
+    }
+    
+    return paramValue;
+  }
+  
   private escapeRegex(str: string): string {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
