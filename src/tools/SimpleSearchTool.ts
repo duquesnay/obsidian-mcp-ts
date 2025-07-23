@@ -1,6 +1,5 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
-import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
 import { SimpleSearchArgs } from './types/SimpleSearchArgs.js';
 
 export class SimpleSearchTool extends BaseTool<SimpleSearchArgs> {
@@ -64,9 +63,11 @@ export class SimpleSearchTool extends BaseTool<SimpleSearchArgs> {
       const results = await client.search(args.query, args.contextLength || OBSIDIAN_DEFAULTS.CONTEXT_LENGTH, limit, offset);
       return this.formatResponse(results);
     } catch (error: any) {
-      // Use centralized error handler for common HTTP errors
+      // Use the new handleHttpError method with custom handlers
       if (error.response?.status) {
-        return ObsidianErrorHandler.handleHttpError(error, this.name);
+        return this.handleHttpError(error, {
+          500: 'Search service error. The Obsidian REST API may be experiencing issues'
+        });
       }
       
       // Handle search-specific errors

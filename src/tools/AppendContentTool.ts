@@ -1,6 +1,5 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
-import { validatePath } from '../utils/pathValidator.js';
-import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
+import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 import { AppendContentArgs } from './types/AppendContentArgs.js';
 
 export class AppendContentTool extends BaseTool<AppendContentArgs> {
@@ -49,7 +48,7 @@ export class AppendContentTool extends BaseTool<AppendContentArgs> {
       }
       
       // Validate the filepath
-      validatePath(args.filepath, 'filepath');
+      PathValidationUtil.validate(args.filepath, 'filepath', { type: PathValidationType.FILE });
       
       const client = this.getClient();
       await client.appendContent(
@@ -73,10 +72,6 @@ export class AppendContentTool extends BaseTool<AppendContentArgs> {
         );
       }
       
-      // Use centralized error handler for common HTTP errors
-      if (error.response?.status) {
-        return ObsidianErrorHandler.handleHttpError(error, this.name);
-      }
       
       // Handle disk space errors
       if (error.message?.includes('disk space') || error.message?.includes('space')) {
@@ -90,7 +85,13 @@ export class AppendContentTool extends BaseTool<AppendContentArgs> {
         );
       }
       
-      // Fallback to basic error handling
+      // Use the new handleHttpError method to handle HTTP errors
+      // For non-HTTP errors, provide fallback suggestions
+      if (error.response?.status) {
+        return this.handleHttpError(error);
+      }
+      
+      // Fallback to basic error handling for non-HTTP errors
       return this.handleSimplifiedError(
         error,
         'Alternative options: Browse files in your vault (tool: obsidian_list_files_in_vault), Get existing file content first (tool: obsidian_get_file_contents), Replace content instead of appending (tool: obsidian_simple_replace)',

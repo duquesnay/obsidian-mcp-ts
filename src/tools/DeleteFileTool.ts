@@ -1,6 +1,5 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
-import { validatePath } from '../utils/pathValidator.js';
-import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
+import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 import { DeleteFileArgs } from './types/DeleteFileArgs.js';
 
 export class DeleteFileTool extends BaseTool<DeleteFileArgs> {
@@ -37,17 +36,23 @@ export class DeleteFileTool extends BaseTool<DeleteFileArgs> {
         );
       }
       
-      // Validate the filepath
-      validatePath(args.filepath, 'filepath');
+      // Validate the filepath (works with both files and directories)
+      PathValidationUtil.validate(args.filepath, 'filepath', { type: PathValidationType.ANY });
       
       const client = this.getClient();
       await client.deleteFile(args.filepath);
       
       return this.formatResponse({ success: true, message: 'File deleted successfully' });
     } catch (error: any) {
-      // Use centralized error handler for common HTTP errors
+      // Use the new handleHttpError method with custom handlers
       if (error.response?.status) {
-        return ObsidianErrorHandler.handleHttpError(error, this.name);
+        return this.handleHttpError(error, {
+          404: {
+            message: 'File not found',
+            suggestion: 'The file may have already been deleted or the path is incorrect. Use obsidian_list_files_in_vault to verify file existence',
+            example: { filepath: 'existing-file.md' }
+          }
+        });
       }
       
       // Handle file lock errors

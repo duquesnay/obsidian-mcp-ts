@@ -1,6 +1,5 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
-import { validatePath } from '../utils/pathValidator.js';
-import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
+import { PathValidationUtil, PathValidationError } from '../utils/PathValidationUtil.js';
 import { GetFileContentsArgs } from './types/GetFileContentsArgs.js';
 
 export class GetFileContentsTool extends BaseTool<GetFileContentsArgs> {
@@ -31,31 +30,39 @@ export class GetFileContentsTool extends BaseTool<GetFileContentsArgs> {
 
   async executeTyped(args: GetFileContentsArgs): Promise<ToolResponse> {
     try {
-      // Enhanced input validation with recovery
-      if (!args.filepath) {
-        return this.handleSimplifiedError(
-          new Error('Missing required parameters'),
-          'Provide filepath parameter to specify which file to read. Use obsidian_list_files_in_vault to browse available files first',
-          {
-            filepath: 'notes/example.md',
-            format: 'content'
-          }
-        );
+      // Validate the filepath using new utility
+      try {
+        PathValidationUtil.validate(args.filepath, 'filepath');
+      } catch (error) {
+        if (error instanceof PathValidationError) {
+          return this.handleSimplifiedError(
+            error,
+            'Provide a valid filepath to read. Use obsidian_list_files_in_vault to browse available files first',
+            {
+              filepath: 'notes/example.md',
+              format: 'content'
+            }
+          );
+        }
+        throw error;
       }
-      
-      // Validate the filepath
-      validatePath(args.filepath, 'filepath');
       
       const client = this.getClient();
       const result = await client.getFileContents(args.filepath, args.format);
       return this.formatResponse(result);
     } catch (error: any) {
-      // Use centralized error handler for common HTTP errors
+      // Use the new handleHttpError method with custom handlers for specific status codes
       if (error.response?.status) {
-        return ObsidianErrorHandler.handleHttpError(error, this.name);
+        return this.handleHttpError(error, {
+          404: {
+            message: 'File not found',
+            suggestion: 'Alternative options: Browse files in your vault (tool: obsidian_list_files_in_vault), Search for files by content (tool: obsidian_simple_search)',
+            example: { query: 'search term' }
+          }
+        });
       }
       
-      // Fallback to basic error handling
+      // Fallback to basic error handling for non-HTTP errors
       return this.handleSimplifiedError(
         error,
         'Alternative options: Browse files in your vault (tool: obsidian_list_files_in_vault), Search for files by content (tool: obsidian_simple_search)',
