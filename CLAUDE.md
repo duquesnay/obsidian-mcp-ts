@@ -416,3 +416,4 @@ This separation enables clean PRs by cherry-picking only non-claude commits.
 - **Performance optimization should be practical, not theoretical**
 - **Tool ergonomics matter more than feature completeness**
 - **Clean architecture enables easy extension and maintenance**
+- **Obsidian API limitation**: The getPeriodicNote('daily') endpoint returns the current daily note only, not historical dates. This means vault://daily/{date} currently works the same for any date - it returns today's note. Future API updates may support date-specific queries.

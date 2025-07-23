@@ -172,7 +172,7 @@ For each task:
   - Improved maintainability and extensibility
 
 ### Priority 3: Specialized Resources
-- [ ] R6.1: Daily notes - Access periodic notes at vault://daily/{date}
+- [x] R6.1: Daily notes - Access periodic notes at vault://daily/{date}
 - [ ] R6.2: Notes by tag - Find tagged notes at vault://tag/{tagname}
 - [ ] R6.3: Vault structure - Full folder hierarchy at vault://structure
 
