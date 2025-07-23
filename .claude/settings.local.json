@@ -43,7 +43,8 @@
       "Bash()",
       "Bash(./composite-script.sh:*)",
       "Bash(tsx:*)",
-      "Bash(npx vitest run:*)"
+      "Bash(npx vitest run:*)",
+      "Bash(export GIT_SEQUENCE_EDITOR=/tmp/rebase-script.sh)"
     ],
     "deny": []
   }

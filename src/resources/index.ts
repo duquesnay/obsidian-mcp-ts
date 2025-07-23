@@ -2,7 +2,7 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { ListResourcesRequestSchema, ReadResourceRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 
 export async function registerResources(server: Server): Promise<void> {
-  // Register ListResources handler with hardcoded tags resource
+  // Register ListResources handler with hardcoded tags and stats resources
   server.setRequestHandler(ListResourcesRequestSchema, async () => {
     return { 
       resources: [
@@ -11,12 +11,18 @@ export async function registerResources(server: Server): Promise<void> {
           name: 'Vault Tags',
           description: 'All tags in the vault with usage counts',
           mimeType: 'application/json'
+        },
+        {
+          uri: 'vault://stats',
+          name: 'Vault Statistics',
+          description: 'File and note counts for the vault',
+          mimeType: 'application/json'
         }
       ] 
     };
   });
 
-  // Register ReadResource handler for vault://tags
+  // Register ReadResource handler for vault://tags and vault://stats
   server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
     const { uri } = request.params;
     
@@ -33,6 +39,22 @@ export async function registerResources(server: Server): Promise<void> {
                 { name: '#meeting', count: 5 },
                 { name: '#idea', count: 15 }
               ]
+            }, null, 2)
+          }
+        ]
+      };
+    }
+    
+    if (uri === 'vault://stats') {
+      // Return hardcoded stats data (for now, to keep it simple)
+      return {
+        contents: [
+          {
+            uri: 'vault://stats',
+            mimeType: 'application/json',
+            text: JSON.stringify({
+              fileCount: 42,
+              noteCount: 35
             }, null, 2)
           }
         ]
