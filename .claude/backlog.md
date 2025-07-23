@@ -155,13 +155,22 @@ For each task:
 
 ### Completed
 - [x] R1.1: List available resources
-- [x] R1.2: Read vault tags with counts
+- [x] R1.2: Read vault tags with counts ⚠️ **FIXED**: Now uses real ObsidianClient.getAllTags()
 
 ### Priority 1: Core Resources (Foundation)
 - [x] R2.1: Integration tests for existing resources functionality
 - [x] R2.2: Documentation for resources feature
-- [x] R3.1: Vault statistics - Get file and note counts at vault://stats
-- [x] R3.2: Recent changes - View recently modified notes at vault://recent
+- [x] R3.1: Vault statistics - Get file and note counts at vault://stats ⚠️ **FIXED**: Now uses real vault file counts
+- [x] R3.2: Recent changes - View recently modified notes at vault://recent ⚠️ **FIXED**: Now uses real ObsidianClient.getRecentChanges()
+
+## Critical Issue Resolution
+
+**CRITICAL BUG FIXED**: Three resources were marked as complete but were using hardcoded mock data instead of real Obsidian API calls:
+- **R1.2**: vault://tags returned fake tags (#project, #meeting, #idea) → Now returns real vault tags
+- **R3.1**: vault://stats returned hardcoded counts (42 files, 35 notes) → Now calculates actual vault statistics  
+- **R3.2**: vault://recent returned fake timestamps → Now fetches real files from vault
+
+**Resolution commits**: a717927, 3f06de6, d5946fa
 
 ### Priority 2: Dynamic Resources (Real Value)
 - [x] R4.1: Individual notes - Read any note by path at vault://note/{path}
