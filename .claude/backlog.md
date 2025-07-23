@@ -367,3 +367,42 @@ MCP Resources provide persistent read-only data access, complementing tools (whi
 - Implemented: 5 (50%)
 - In Progress: 0
 - Remaining: 5
+
+---
+
+# Overall Project Status Summary
+
+## Completed Work
+1. **Quality Improvements** (T1-T10): 63 tasks (100% complete)
+   - All code quality, architecture, and performance improvements done
+   - Dynamic tool discovery, error handling, caching, type safety all implemented
+
+2. **Core Features**: 
+   - ✅ All directory operations (create, delete, move, copy)
+   - ✅ All tag management operations
+   - ✅ Advanced search with filters
+   - ✅ Content modification (query_structure, patch_content_v2)
+   - ✅ File operations and metadata
+
+3. **MCP Resources** (50% complete):
+   - ✅ Core resources: tags, stats, recent changes
+   - ✅ Dynamic resources: note/{path}, folder/{path}
+   - ⏳ Remaining: structure, daily notes, tag filtering, subscriptions
+
+## Architecture Direction
+- **Tools**: For actions that modify content or have side effects
+- **Resources**: For read-only data that LLMs need in persistent context
+- Migration path: Moving read-only features from tools to resources
+
+## Next Development Focus
+1. Complete remaining resources (vault://structure, daily, tag)
+2. Implement resource subscriptions for live updates
+3. Consider link management as resources
+4. Implement bulk operations as tools
+5. Add vault integrity checking
+
+## Maintenance Items
+- Remove deprecated `patch_content` in v1.0.0
+- Complete section-scoped replace and frontmatter operations
+- Add cache management UI
+- Document resource vs tool decision guide
