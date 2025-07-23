@@ -169,7 +169,7 @@ describe('MCP Resources Integration Tests', () => {
       expect(tagsResource).toEqual({
         uri: 'vault://tags',
         name: 'Vault Tags',
-        description: 'All tags in the vault with usage counts',
+        description: 'All tags in the vault with usage counts (cached 5min)',
         mimeType: 'application/json'
       });
 
@@ -182,7 +182,7 @@ describe('MCP Resources Integration Tests', () => {
       expect(statsResource).toEqual({
         uri: 'vault://stats',
         name: 'Vault Statistics',
-        description: 'File and note counts for the vault',
+        description: 'File and note counts for the vault (cached 5min)',
         mimeType: 'application/json'
       });
 
@@ -195,7 +195,7 @@ describe('MCP Resources Integration Tests', () => {
       expect(recentResource).toEqual({
         uri: 'vault://recent',
         name: 'Recent Changes',
-        description: 'Recently modified notes in the vault',
+        description: 'Recently modified notes in the vault (cached 30s)',
         mimeType: 'application/json'
       });
     });
@@ -243,16 +243,20 @@ describe('MCP Resources Integration Tests', () => {
       expect(content.mimeType).toBe('application/json');
       expect(content.text).toBeDefined();
 
-      // Parse and verify the JSON content
+      // Parse and verify the JSON content structure
       const parsedContent = JSON.parse(content.text);
       expect(parsedContent.tags).toBeDefined();
       expect(Array.isArray(parsedContent.tags)).toBe(true);
-      expect(parsedContent.tags).toHaveLength(3);
+      expect(parsedContent.tags.length).toBeGreaterThan(0);
 
-      // Verify the hardcoded tags
-      expect(parsedContent.tags).toContainEqual({ name: '#project', count: 10 });
-      expect(parsedContent.tags).toContainEqual({ name: '#meeting', count: 5 });
-      expect(parsedContent.tags).toContainEqual({ name: '#idea', count: 15 });
+      // Verify that tags have the expected structure (real Obsidian format)
+      if (parsedContent.tags.length > 0) {
+        const firstTag = parsedContent.tags[0];
+        expect(firstTag).toHaveProperty('tag');
+        expect(firstTag).toHaveProperty('count');
+        expect(typeof firstTag.tag).toBe('string');
+        expect(typeof firstTag.count).toBe('number');
+      }
     });
 
     it('should read vault://stats resource and return file/note counts', async () => {
