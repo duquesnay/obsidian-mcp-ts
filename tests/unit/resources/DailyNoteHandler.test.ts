@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { DailyNoteHandler } from './DailyNoteHandler.js';
-import { ObsidianClient } from '../obsidian/ObsidianClient.js';
+import { DailyNoteHandler } from '../../../src/resources/DailyNoteHandler.js';
+import { ObsidianClient } from '../../../src/obsidian/ObsidianClient.js';
 
 describe('DailyNoteHandler', () => {
   let handler: DailyNoteHandler;

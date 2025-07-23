@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { TagNotesHandler } from './TagNotesHandler.js';
-import { ObsidianClient } from '../obsidian/ObsidianClient.js';
+import { TagNotesHandler } from '../../../src/resources/TagNotesHandler.js';
+import { ObsidianClient } from '../../../src/obsidian/ObsidianClient.js';
 
 // Mock the ObsidianClient
-vi.mock('../obsidian/ObsidianClient.js');
+vi.mock('../../../src/obsidian/ObsidianClient.js');
 
 describe('TagNotesHandler', () => {
   let handler: TagNotesHandler;
