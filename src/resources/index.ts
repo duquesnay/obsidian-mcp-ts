@@ -52,6 +52,12 @@ export async function registerResources(server: ServerWithClient): Promise<void>
           name: 'Note',
           description: 'Individual note by path (e.g., vault://note/Daily/2024-01-01.md)',
           mimeType: 'text/markdown'
+        },
+        {
+          uri: 'vault://folder/{path}',
+          name: 'Folder',
+          description: 'Browse folder contents (e.g., vault://folder/Projects)',
+          mimeType: 'application/json'
         }
       ] 
     };
@@ -81,6 +87,42 @@ export async function registerResources(server: ServerWithClient): Promise<void>
         // Handle 404 specifically for missing notes
         if (error?.response?.status === 404) {
           throw new Error(`Note not found: ${path}`);
+        }
+        throw error;
+      }
+    }
+    
+    // Handle dynamic folder resources
+    if (uri.startsWith('vault://folder')) {
+      // Extract path after 'vault://folder/', handling edge cases
+      let path = '';
+      if (uri === 'vault://folder' || uri === 'vault://folder/') {
+        // Root folder
+        path = '';
+      } else {
+        path = uri.substring('vault://folder/'.length);
+      }
+      
+      const client = getObsidianClient(server);
+      
+      try {
+        const items = await client.listFilesInDir(path);
+        return {
+          contents: [
+            {
+              uri: uri,
+              mimeType: 'application/json',
+              text: JSON.stringify({
+                path: path,
+                items: items
+              }, null, 2)
+            }
+          ]
+        };
+      } catch (error: any) {
+        // Handle 404 specifically for missing folders
+        if (error?.response?.status === 404) {
+          throw new Error(`Folder not found: ${path}`);
         }
         throw error;
       }

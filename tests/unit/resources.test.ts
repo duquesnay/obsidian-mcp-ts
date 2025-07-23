@@ -19,8 +19,8 @@ describe('MCP Resources', () => {
       
       const result = await listHandler({ method: 'resources/list' });
       
-      // Should return all resources including dynamic note template
-      expect(result.resources).toHaveLength(4);
+      // Should return all resources including dynamic note and folder templates
+      expect(result.resources).toHaveLength(5);
       expect(result.resources[0]).toEqual({
         uri: 'vault://tags',
         name: 'Vault Tags',
@@ -182,6 +182,183 @@ describe('MCP Resources', () => {
         method: 'resources/read',
         params: { uri: 'vault://unknown' }
       })).rejects.toThrow('Resource not found: vault://unknown');
+    });
+  });
+
+  describe('Dynamic folder resources', () => {
+    it('should list folder contents by path', async () => {
+      // Create a mock server with ObsidianClient
+      const mockListFilesInDir = vi.fn().mockResolvedValue([
+        'Note1.md',
+        'Note2.md',
+        'Subfolder',
+        'Document.pdf'
+      ]);
+      const mockServer = {
+        setRequestHandler: vi.fn(),
+        obsidianClient: {
+          listFilesInDir: mockListFilesInDir
+        }
+      };
+      
+      // Register resources
+      await registerResources(mockServer as any);
+      
+      // Get the ReadResource handler
+      const readHandler = mockServer.setRequestHandler.mock.calls
+        .find(call => call[0] === ReadResourceRequestSchema)?.[1];
+      
+      // Test reading a folder
+      const result = await readHandler({ 
+        method: 'resources/read',
+        params: { uri: 'vault://folder/Projects/Work' }
+      });
+      
+      // Should call obsidianClient with the correct path
+      expect(mockListFilesInDir).toHaveBeenCalledWith('Projects/Work');
+      
+      // Should return the folder contents
+      expect(result.contents).toBeDefined();
+      expect(result.contents[0]).toMatchObject({
+        uri: 'vault://folder/Projects/Work',
+        mimeType: 'application/json',
+        text: expect.any(String)
+      });
+      
+      // Verify the content structure
+      const content = JSON.parse(result.contents[0].text);
+      expect(content).toHaveProperty('path', 'Projects/Work');
+      expect(content).toHaveProperty('items');
+      expect(Array.isArray(content.items)).toBe(true);
+      expect(content.items).toHaveLength(4);
+      expect(content.items).toContain('Note1.md');
+      expect(content.items).toContain('Subfolder');
+    });
+
+    it('should handle root folder (vault://folder/)', async () => {
+      // Create a mock server with ObsidianClient
+      const mockListFilesInDir = vi.fn().mockResolvedValue([
+        'Projects',
+        'Archive',
+        'README.md'
+      ]);
+      const mockServer = {
+        setRequestHandler: vi.fn(),
+        obsidianClient: {
+          listFilesInDir: mockListFilesInDir
+        }
+      };
+      
+      // Register resources
+      await registerResources(mockServer as any);
+      
+      // Get the ReadResource handler
+      const readHandler = mockServer.setRequestHandler.mock.calls
+        .find(call => call[0] === ReadResourceRequestSchema)?.[1];
+      
+      // Test reading root folder
+      const result = await readHandler({ 
+        method: 'resources/read',
+        params: { uri: 'vault://folder/' }
+      });
+      
+      // Should call obsidianClient with empty string for root
+      expect(mockListFilesInDir).toHaveBeenCalledWith('');
+      
+      // Should return the folder contents
+      const content = JSON.parse(result.contents[0].text);
+      expect(content.path).toBe('');
+      expect(content.items).toHaveLength(3);
+    });
+
+    it('should handle root folder without trailing slash', async () => {
+      // Create a mock server with ObsidianClient
+      const mockListFilesInDir = vi.fn().mockResolvedValue([
+        'Projects',
+        'Archive',
+        'README.md'
+      ]);
+      const mockServer = {
+        setRequestHandler: vi.fn(),
+        obsidianClient: {
+          listFilesInDir: mockListFilesInDir
+        }
+      };
+      
+      // Register resources
+      await registerResources(mockServer as any);
+      
+      // Get the ReadResource handler
+      const readHandler = mockServer.setRequestHandler.mock.calls
+        .find(call => call[0] === ReadResourceRequestSchema)?.[1];
+      
+      // Test reading root folder without trailing slash
+      const result = await readHandler({ 
+        method: 'resources/read',
+        params: { uri: 'vault://folder' }
+      });
+      
+      // Should call obsidianClient with empty string for root
+      expect(mockListFilesInDir).toHaveBeenCalledWith('');
+      
+      // Should return the folder contents
+      const content = JSON.parse(result.contents[0].text);
+      expect(content.path).toBe('');
+      expect(content.items).toHaveLength(3);
+    });
+
+    it('should handle missing folders gracefully', async () => {
+      // Create a mock server with ObsidianClient that throws 404
+      const mockListFilesInDir = vi.fn().mockRejectedValue({
+        response: { status: 404 },
+        message: 'Folder not found'
+      });
+      const mockServer = {
+        setRequestHandler: vi.fn(),
+        obsidianClient: {
+          listFilesInDir: mockListFilesInDir
+        }
+      };
+      
+      // Register resources
+      await registerResources(mockServer as any);
+      
+      // Get the ReadResource handler
+      const readHandler = mockServer.setRequestHandler.mock.calls
+        .find(call => call[0] === ReadResourceRequestSchema)?.[1];
+      
+      // Test reading a missing folder
+      await expect(readHandler({ 
+        method: 'resources/read',
+        params: { uri: 'vault://folder/NonExistent/Folder' }
+      })).rejects.toThrow('Folder not found: NonExistent/Folder');
+      
+      // Should have tried to list the folder
+      expect(mockListFilesInDir).toHaveBeenCalledWith('NonExistent/Folder');
+    });
+
+    it('should include dynamic folder resources in list with placeholder', async () => {
+      // Create a mock server
+      const mockServer = {
+        setRequestHandler: vi.fn()
+      };
+      
+      // Register resources
+      await registerResources(mockServer as any);
+      
+      // Get the ListResources handler
+      const listHandler = mockServer.setRequestHandler.mock.calls
+        .find(call => call[0] === ListResourcesRequestSchema)?.[1];
+      
+      const result = await listHandler({ method: 'resources/list' });
+      
+      // Should include a placeholder for folders
+      expect(result.resources).toContainEqual({
+        uri: 'vault://folder/{path}',
+        name: 'Folder',
+        description: 'Browse folder contents (e.g., vault://folder/Projects)',
+        mimeType: 'application/json'
+      });
     });
   });
 
