@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.4.0] - 2025-01-03
+## [0.4.0] - 2025-07-03
 
 ### Added
 - New `obsidian_find_empty_directories` tool to find all empty directories in the vault
