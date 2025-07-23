@@ -161,7 +161,7 @@ For each task:
 - [x] R2.1: Integration tests for existing resources functionality
 - [x] R2.2: Documentation for resources feature
 - [x] R3.1: Vault statistics - Get file and note counts at vault://stats
-- [ ] R3.2: Recent changes - View recently modified notes at vault://recent
+- [x] R3.2: Recent changes - View recently modified notes at vault://recent
 
 ### Priority 2: Dynamic Resources (Real Value)
 - [ ] R4.1: Individual notes - Read any note by path at vault://note/{path}
@@ -187,8 +187,8 @@ For each task:
 ## Progress Status
 
 **Last Updated**: 2025-01-23
-**Current Priority**: 1
-**Next Task**: R3.2 - Recent changes
+**Current Priority**: 1 (Complete) → Moving to Priority 2
+**Next Task**: R4.1 - Individual notes by path
 
 ## Total Project Summary
 
