@@ -1,5 +1,5 @@
 import { BaseTool, ToolResponse, ToolMetadata } from './base.js';
-import { validatePath } from '../utils/pathValidator.js';
+import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
 
 interface HeadingInfo {
@@ -109,7 +109,7 @@ export class QueryStructureTool extends BaseTool {
     };
   }): Promise<ToolResponse> {
     try {
-      validatePath(args.filepath, 'filepath');
+      PathValidationUtil.validate(args.filepath, 'filepath', { type: PathValidationType.FILE });
       
       const client = this.getClient();
       const content = await client.getFileContents(args.filepath);

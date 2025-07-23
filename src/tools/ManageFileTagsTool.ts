@@ -1,5 +1,5 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
-import { validatePath } from '../utils/pathValidator.js';
+import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 
 export class ManageFileTagsTool extends BaseTool {
   name = 'obsidian_manage_file_tags';
@@ -56,7 +56,7 @@ export class ManageFileTagsTool extends BaseTool {
       }
       
       // Validate the file path
-      validatePath(args.filePath, 'filePath');
+      PathValidationUtil.validate(args.filePath, 'filePath', { type: PathValidationType.FILE });
       
       // Normalize tags (remove # if present)
       const normalizedTags = args.tags.map(tag => 

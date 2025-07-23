@@ -1,5 +1,5 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
-import { validatePath } from '../utils/pathValidator.js';
+import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 
 export class DeleteDirectoryTool extends BaseTool {
   name = 'obsidian_delete_directory';
@@ -39,7 +39,7 @@ export class DeleteDirectoryTool extends BaseTool {
       }
       
       // Validate the path
-      validatePath(args.directoryPath, 'directoryPath');
+      PathValidationUtil.validate(args.directoryPath, 'directoryPath', { type: PathValidationType.DIRECTORY });
       
       // Clean up the path (remove trailing slashes)
       const cleanPath = args.directoryPath.replace(/\/$/, '');
