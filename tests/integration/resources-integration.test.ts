@@ -185,6 +185,19 @@ describe('MCP Resources Integration Tests', () => {
         description: 'File and note counts for the vault',
         mimeType: 'application/json'
       });
+
+      // Find the recent resource
+      const recentResource = response.result.resources.find(
+        (r: any) => r.uri === 'vault://recent'
+      );
+
+      expect(recentResource).toBeDefined();
+      expect(recentResource).toEqual({
+        uri: 'vault://recent',
+        name: 'Recent Changes',
+        description: 'Recently modified notes in the vault',
+        mimeType: 'application/json'
+      });
     });
 
     it('should handle resources/list with empty params object', async () => {
@@ -201,7 +214,7 @@ describe('MCP Resources Integration Tests', () => {
       // Should still work with empty params
       expect(response.error).toBeUndefined();
       expect(response.result?.resources).toBeDefined();
-      expect(response.result.resources).toHaveLength(2);
+      expect(response.result.resources).toHaveLength(3);
     });
   });
 
@@ -274,6 +287,49 @@ describe('MCP Resources Integration Tests', () => {
       expect(typeof parsedContent.noteCount).toBe('number');
       expect(parsedContent.fileCount).toBeGreaterThanOrEqual(0);
       expect(parsedContent.noteCount).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should read vault://recent resource and return recently modified notes', async () => {
+      const request: JsonRpcRequest = {
+        jsonrpc: '2.0',
+        id: requestId++,
+        method: 'resources/read',
+        params: {
+          uri: 'vault://recent'
+        }
+      };
+
+      sendRequest(request);
+      const response = await waitForResponse(request.id);
+
+      expect(response.error).toBeUndefined();
+      expect(response.result).toBeDefined();
+      expect(response.result.contents).toBeDefined();
+      expect(Array.isArray(response.result.contents)).toBe(true);
+      expect(response.result.contents).toHaveLength(1);
+
+      const content = response.result.contents[0];
+      expect(content.uri).toBe('vault://recent');
+      expect(content.mimeType).toBe('application/json');
+      expect(content.text).toBeDefined();
+
+      // Parse and verify the JSON content
+      const parsedContent = JSON.parse(content.text);
+      expect(parsedContent.notes).toBeDefined();
+      expect(Array.isArray(parsedContent.notes)).toBe(true);
+      
+      // Should return up to 10 recent notes
+      expect(parsedContent.notes.length).toBeLessThanOrEqual(10);
+      
+      // Each note should have path and modifiedAt
+      parsedContent.notes.forEach((note: any) => {
+        expect(note.path).toBeDefined();
+        expect(typeof note.path).toBe('string');
+        expect(note.modifiedAt).toBeDefined();
+        expect(typeof note.modifiedAt).toBe('string');
+        // Verify it's a valid ISO date string
+        expect(new Date(note.modifiedAt).toISOString()).toBe(note.modifiedAt);
+      });
     });
 
     it('should return error for non-existent resource', async () => {
