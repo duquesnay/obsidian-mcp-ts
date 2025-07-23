@@ -4,7 +4,7 @@ import { registerResources } from '../../src/resources/index.js';
 
 describe('MCP Resources', () => {
   describe('registerResources', () => {
-    it('should register ListResources handler that returns empty array', async () => {
+    it('should register ListResources handler that returns hardcoded tags resource', async () => {
       // Create a mock server
       const mockServer = {
         setRequestHandler: vi.fn()
@@ -13,17 +13,20 @@ describe('MCP Resources', () => {
       // Register resources
       await registerResources(mockServer as any);
       
-      // Verify handler was registered with ListResourcesRequestSchema
-      expect(mockServer.setRequestHandler).toHaveBeenCalledWith(
-        ListResourcesRequestSchema,
-        expect.any(Function)
-      );
+      // Get the ListResources handler
+      const listHandler = mockServer.setRequestHandler.mock.calls
+        .find(call => call[0] === ListResourcesRequestSchema)?.[1];
       
-      // Get the handler and test it
-      const handler = mockServer.setRequestHandler.mock.calls[0][1];
-      const result = await handler({ method: 'resources/list' });
+      const result = await listHandler({ method: 'resources/list' });
       
-      expect(result).toEqual({ resources: [] });
+      // Should return the hardcoded tags resource
+      expect(result.resources).toHaveLength(1);
+      expect(result.resources[0]).toEqual({
+        uri: 'vault://tags',
+        name: 'Vault Tags',
+        description: 'All tags in the vault with usage counts',
+        mimeType: 'application/json'
+      });
     });
   });
 });
