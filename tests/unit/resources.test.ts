@@ -19,8 +19,8 @@ describe('MCP Resources', () => {
       
       const result = await listHandler({ method: 'resources/list' });
       
-      // Should return all three hardcoded resources
-      expect(result.resources).toHaveLength(3);
+      // Should return all resources including dynamic note template
+      expect(result.resources).toHaveLength(4);
       expect(result.resources[0]).toEqual({
         uri: 'vault://tags',
         name: 'Vault Tags',
@@ -38,6 +38,12 @@ describe('MCP Resources', () => {
         name: 'Recent Changes',
         description: 'Recently modified notes in the vault',
         mimeType: 'application/json'
+      });
+      expect(result.resources[3]).toEqual({
+        uri: 'vault://note/{path}',
+        name: 'Note',
+        description: 'Individual note by path (e.g., vault://note/Daily/2024-01-01.md)',
+        mimeType: 'text/markdown'
       });
     });
 
@@ -155,6 +161,117 @@ describe('MCP Resources', () => {
         expect(note).toHaveProperty('modifiedAt');
         expect(typeof note.path).toBe('string');
         expect(typeof note.modifiedAt).toBe('string');
+      });
+    });
+
+    it('should throw error for unknown resource URI', async () => {
+      // Create a mock server
+      const mockServer = {
+        setRequestHandler: vi.fn()
+      };
+      
+      // Register resources
+      await registerResources(mockServer as any);
+      
+      // Get the ReadResource handler
+      const readHandler = mockServer.setRequestHandler.mock.calls
+        .find(call => call[0] === ReadResourceRequestSchema)?.[1];
+      
+      // Test reading an unknown resource
+      await expect(readHandler({ 
+        method: 'resources/read',
+        params: { uri: 'vault://unknown' }
+      })).rejects.toThrow('Resource not found: vault://unknown');
+    });
+  });
+
+  describe('Dynamic note resources', () => {
+    it('should read individual note by path', async () => {
+      // Create a mock server with ObsidianClient
+      const mockGetFileContents = vi.fn().mockResolvedValue('# Test Note\n\nThis is the content.');
+      const mockServer = {
+        setRequestHandler: vi.fn(),
+        obsidianClient: {
+          getFileContents: mockGetFileContents
+        }
+      };
+      
+      // Register resources
+      await registerResources(mockServer as any);
+      
+      // Get the ReadResource handler
+      const readHandler = mockServer.setRequestHandler.mock.calls
+        .find(call => call[0] === ReadResourceRequestSchema)?.[1];
+      
+      // Test reading a note
+      const result = await readHandler({ 
+        method: 'resources/read',
+        params: { uri: 'vault://note/Daily/2024-01-01.md' }
+      });
+      
+      // Should call obsidianClient with the correct path
+      expect(mockGetFileContents).toHaveBeenCalledWith('Daily/2024-01-01.md');
+      
+      // Should return the note content
+      expect(result.contents).toBeDefined();
+      expect(result.contents[0]).toMatchObject({
+        uri: 'vault://note/Daily/2024-01-01.md',
+        mimeType: 'text/markdown',
+        text: '# Test Note\n\nThis is the content.'
+      });
+    });
+
+    it('should handle missing notes gracefully', async () => {
+      // Create a mock server with ObsidianClient that throws 404
+      const mockGetFileContents = vi.fn().mockRejectedValue({
+        response: { status: 404 },
+        message: 'File not found'
+      });
+      const mockServer = {
+        setRequestHandler: vi.fn(),
+        obsidianClient: {
+          getFileContents: mockGetFileContents
+        }
+      };
+      
+      // Register resources
+      await registerResources(mockServer as any);
+      
+      // Get the ReadResource handler
+      const readHandler = mockServer.setRequestHandler.mock.calls
+        .find(call => call[0] === ReadResourceRequestSchema)?.[1];
+      
+      // Test reading a missing note
+      await expect(readHandler({ 
+        method: 'resources/read',
+        params: { uri: 'vault://note/Missing/Note.md' }
+      })).rejects.toThrow('Note not found: Missing/Note.md');
+      
+      // Should have tried to get the file
+      expect(mockGetFileContents).toHaveBeenCalledWith('Missing/Note.md');
+    });
+
+    it('should include dynamic note resources in list with placeholder', async () => {
+      // Create a mock server
+      const mockServer = {
+        setRequestHandler: vi.fn()
+      };
+      
+      // Register resources
+      await registerResources(mockServer as any);
+      
+      // Get the ListResources handler
+      const listHandler = mockServer.setRequestHandler.mock.calls
+        .find(call => call[0] === ListResourcesRequestSchema)?.[1];
+      
+      const result = await listHandler({ method: 'resources/list' });
+      
+      // Should include a placeholder for individual notes
+      expect(result.resources).toContainEqual({
+        uri: 'vault://note/{path}',
+        name: 'Note',
+        description: 'Individual note by path (e.g., vault://note/Daily/2024-01-01.md)',
+        mimeType: 'text/markdown'
       });
     });
   });

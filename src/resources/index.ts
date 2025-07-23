@@ -1,7 +1,30 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { ListResourcesRequestSchema, ReadResourceRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+import { ObsidianClient } from '../obsidian/ObsidianClient.js';
+import { ConfigLoader } from '../utils/configLoader.js';
 
-export async function registerResources(server: Server): Promise<void> {
+// Extend Server type to include obsidianClient for testing
+interface ServerWithClient extends Server {
+  obsidianClient?: ObsidianClient;
+}
+
+// Helper to get ObsidianClient
+function getObsidianClient(server: ServerWithClient): ObsidianClient {
+  // For testing, use the provided client
+  if (server.obsidianClient) {
+    return server.obsidianClient;
+  }
+  
+  // For production, create a new client
+  const configLoader = ConfigLoader.getInstance();
+  return new ObsidianClient({
+    apiKey: configLoader.getApiKey(),
+    host: configLoader.getHost(),
+    verifySsl: false  // Disable SSL verification for self-signed Obsidian certificates
+  });
+}
+
+export async function registerResources(server: ServerWithClient): Promise<void> {
   // Register ListResources handler with hardcoded tags and stats resources
   server.setRequestHandler(ListResourcesRequestSchema, async () => {
     return { 
@@ -23,6 +46,12 @@ export async function registerResources(server: Server): Promise<void> {
           name: 'Recent Changes',
           description: 'Recently modified notes in the vault',
           mimeType: 'application/json'
+        },
+        {
+          uri: 'vault://note/{path}',
+          name: 'Note',
+          description: 'Individual note by path (e.g., vault://note/Daily/2024-01-01.md)',
+          mimeType: 'text/markdown'
         }
       ] 
     };
@@ -31,6 +60,31 @@ export async function registerResources(server: Server): Promise<void> {
   // Register ReadResource handler for vault://tags and vault://stats
   server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
     const { uri } = request.params;
+    
+    // Handle dynamic note resources
+    if (uri.startsWith('vault://note/')) {
+      const path = uri.substring('vault://note/'.length);
+      const client = getObsidianClient(server);
+      
+      try {
+        const content = await client.getFileContents(path);
+        return {
+          contents: [
+            {
+              uri: uri,
+              mimeType: 'text/markdown',
+              text: content
+            }
+          ]
+        };
+      } catch (error: any) {
+        // Handle 404 specifically for missing notes
+        if (error?.response?.status === 404) {
+          throw new Error(`Note not found: ${path}`);
+        }
+        throw error;
+      }
+    }
     
     if (uri === 'vault://tags') {
       // Return hardcoded tags data
