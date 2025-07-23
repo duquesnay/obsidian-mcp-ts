@@ -1,9 +1,11 @@
 # Obsidian MCP TypeScript - Quality Improvement Backlog
 
-## Overview
+## 🤖 AI Agent Instructions
+
+### Overview
 This backlog decomposes quality improvement recommendations into fine-grained, incremental tasks following TDD principles and green-line development.
 
-## Task Template
+### Task Template
 
 For each task:
 1. Write failing test first (Red)
@@ -13,7 +15,7 @@ For each task:
 5. Commit with descriptive message
 6. Update this backlog
 
-## Success Metrics
+### Success Metrics
 - All tests passing after each change
 - No regression in functionality
 - Improved code coverage
@@ -21,12 +23,16 @@ For each task:
 - Better type safety
 - Each increment adds user value
 
-## Implementation Principles
+### Implementation Principles
 - Each task should produce working software
 - Refactor only when patterns emerge (Rule of Three)
 - Test at every step - no big bang integration
 - Document as you go - not at the end
 - Let architecture emerge from working code
+
+---
+
+# 📋 Backlog Items
 
 ## Task Categories
 ### 1. Constants and Magic Numbers (DRY)
@@ -119,27 +125,6 @@ For each task:
 
 **Total Tasks**: 63
 **Completed**: 63 (100%)
-**Skipped**: 0
-
-### Key Achievements:
-1. **Constants & Magic Numbers**: All magic numbers extracted to constants
-2. **Error Handling**: Consolidated error handling with ObsidianErrorHandler utility
-3. **Type Safety**: Removed all `any` types, added generics throughout
-4. **Architecture**: Split responsibilities, created reusable utilities
-5. **Tool System**: Dynamic discovery with metadata and categorization
-6. **Performance**: LRU cache, request deduplication, optimized batch processing
-7. **Documentation**: Comprehensive docs for naming conventions and performance
-
-### Architectural Decisions:
-- Kept "Tool" suffix for clarity in dynamic discovery
-- Standardized execute/executeTyped pattern with consistent return types
-- Focused on practical performance optimizations over metrics collection
-
-### Final Standardization (T8.3 & T8.4):
-- All 28 tools now properly return `Promise<ToolResponse>` from `executeTyped()`
-- Fixed missing `ToolResponse` imports across all affected files
-- Maintained backward compatibility while improving type safety
-- Updated documentation to reflect standardization decisions
 
 ---
 
@@ -179,88 +164,44 @@ For each task:
 ### Priority 4: Advanced Features
 - [x] R7.1: Resource caching for performance
 - [x] R7.2: Resource templates for discovery
-- [ ] R8.1: Live updates - Subscribe to resource changes
-- [ ] R8.2: Search results as resources - vault://search/{query}
+- [x] R8.1: Live updates - Subscribe to resource changes
+- [x] R8.2: Search results as resources - vault://search/{query}
 
 ### Priority 5: Polish
 - [ ] R9.1: Optimize for large vaults (>10k notes)
 - [ ] R9.2: Comprehensive error handling
 - [ ] R9.3: Resource usage documentation
 
-## Critical Issue Resolution
-
-**CRITICAL BUG FIXED**: Three resources were marked as complete but were using hardcoded mock data instead of real Obsidian API calls:
-- **R1.2**: vault://tags returned fake tags (#project, #meeting, #idea) → Now returns real vault tags
-- **R3.1**: vault://stats returned hardcoded counts (42 files, 35 notes) → Now calculates actual vault statistics  
-- **R3.2**: vault://recent returned fake timestamps → Now fetches real files from vault
-
-**Resolution commits**: a717927, 3f06de6, d5946fa
-
-## Recent Completions (R7.1 & R7.2)
-
-### R7.1: Resource Caching for Performance ✅
-**Completed**: 2025-07-23 (commit eb33653)
-
-**Implementation Details**:
-- **CachedResourceHandler**: Decorator pattern wrapper for BaseResourceHandler
-- **Intelligent Cache Strategy**: Resource-specific TTLs (static: 5min, dynamic: 30s, parameterized: 2min)
-- **Performance Benefits**: LRU cache with configurable sizes and TTLs
-- **Cache Management**: Statistics, cache clearing, and monitoring utilities
-- **Testing**: 23 comprehensive test cases including performance demonstrations
-
-### R7.2: Resource Templates for Discovery ✅
-**Completed**: 2025-07-23 (commit b10f922)
-
-**Implementation Details**:
-- **ResourceTemplate Support**: Added to ResourceRegistry class
-- **URI Templates**: RFC 6570 compliant templates for parameterized resources
-- **Template Examples**: Comprehensive documentation for all resources:
-  - `vault://note/{path}` with path parameter examples
-  - `vault://folder/{path}` with folder browsing documentation  
-  - `vault://daily/{date}` with date format and relative date examples
-  - `vault://tag/{tagname}` with tag search examples
-- **Discoverability**: Templates provide metadata for users to understand available patterns
-- **Testing**: Unit and integration tests for template functionality
-
-### R8.1: Live Updates - Subscribe to Resource Changes ✅
-**Completed**: 2025-07-23 (commit 8f0e7bb)
-
-**Implementation Details**:
-- **SubscriptionManager**: Tracks client subscriptions and validates subscribable resources
-- **SubscriptionHandlers**: MCP protocol integration for subscribe/unsubscribe requests
-- **NotificationTrigger**: Manual notification utilities for resource update events
-- **Subscribable Resources**: vault://recent, vault://stats, vault://tags
-- **Protocol Compliance**: Full MCP subscription protocol implementation
-- **Documentation**: Comprehensive SUBSCRIPTIONS.md with examples and architecture
-- **Testing**: 100% test coverage with unit and integration tests
-
-### R8.2: Search Results as Resources - vault://search/{query} 🚧
-**Status**: In Progress (RED phase)
-**Started**: 2025-07-23
-
-**Current Progress**:
-- ✅ Achieved true green line (578 tests passing)
-- 🚧 Created SearchHandler test (RED phase)
-- ⏳ Pending: Implement SearchHandler (GREEN phase)
-- ⏳ Pending: Register search resource in registry
-- ⏳ Pending: Add cached search handler support
-
-**Implementation Plan**:
-- **SearchHandler**: Extract query from vault://search/{query} URI pattern
-- **ObsidianClient Integration**: Use simpleSearch method for search operations
-- **Response Format**: Structure search results with query, results, totalResults, hasMore
-- **URL Decoding**: Handle encoded queries (spaces, special characters)
-- **Error Handling**: Validate query presence and handle API errors
-- **Caching**: Add cached version with appropriate TTL
 
 ## Progress Status
 
-**Last Updated**: 2025-07-23
-**Current Priority**: 4 - Advanced Features  
-**Next Task**: R8.2 - Complete SearchHandler implementation
-**Green Line Status**: ✅ All 578 tests passing
+**Last Updated**: 2025-01-23
+**Current Priority**: 5 - Polish  
+**Next Task**: Q2.1 - Create shared error handling utility for resource handlers
+**Green Line Status**: ✅ All tests passing
+**High Priority TODOs**: ✅ All 3 completed
 
 ## Total Project Summary
 
 **Quality Improvement Tasks**: 63 (100% completed)
-**Resource Tasks**: 14 completed, 1 in progress, 1 remaining across 2 priorities
+**Resource Tasks**: 15 completed, 3 remaining
+
+---
+
+## Future Work from Quality Check (2025-01-23)
+
+### High Priority
+- [x] Q1.1: Address TODO in RecentChangesHandler.ts about content length parameter - Added TODO comment in ObsidianClient documenting API limitation
+- [x] Q1.2: Address TODO in AdvancedSearchTool.ts about JsonLogic query support - AdvancedSearchTool uses structured filters, not JsonLogic
+- [x] Q1.3: Address TODO in ComplexSearchTool.ts about JsonLogic implementation - Added JsonLogic validation to ensure proper query structure
+
+### Medium Priority
+- [ ] Q2.1: Create shared error handling utility for resource handlers
+- [ ] Q2.2: Extract common validation patterns into reusable functions
+- [ ] Q2.3: Replace remaining `any` types with specific interfaces
+- [ ] Q2.4: Add stricter type checking for dynamic tool discovery
+
+### Low Priority
+- [ ] Q3.1: Add performance benchmarks for optimization utilities
+- [ ] Q3.2: Create troubleshooting guide for common issues
+- [ ] Q3.3: Document SSL verification rationale (disabled for local Obsidian access)

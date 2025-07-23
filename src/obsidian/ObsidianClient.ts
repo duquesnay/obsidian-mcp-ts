@@ -683,6 +683,7 @@ export class ObsidianClient {
         path: file,
         mtime: Date.now(), // Placeholder since API doesn't provide modification times
         content: undefined // No content preview available without additional API calls
+        // TODO: When the Obsidian API supports it, use contentLength to fetch preview content
       }));
     });
   }

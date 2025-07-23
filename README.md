@@ -81,7 +81,8 @@ The server implements multiple tools to interact with Obsidian:
 - get_file_contents: Return the content of a single file in your vault
 - batch_get_file_contents: Return the contents of multiple files in your vault, concatenated with headers
 - simple_search: Simple search for documents matching a specified text query across all files in the vault
-- complex_search: Complex search for documents using a JsonLogic query
+- advanced_search: Advanced search with structured filters for content, metadata, tags, and frontmatter (recommended)
+- complex_search: Complex search using JsonLogic queries - requires Obsidian REST API support for JsonLogic operators
 - obsidian_edit: Edit Obsidian vault notes with smart operations - progressive complexity from simple appends to structured edits
 - simple_append: Simple text appending to files - reliable for basic additions
 - simple_replace: Simple find and replace operations - straightforward text replacement
@@ -102,8 +103,7 @@ The server implements multiple tools to interact with Obsidian:
 - manage_file_tags: Add or remove tags from a specific file
 - get_periodic_note: Get current periodic note for the specified period (daily, weekly, monthly, quarterly, yearly)
 - get_recent_periodic_notes: Get most recent periodic notes for the specified period type
-- get_recent_changes: Get recently modified files in the vault
-- advanced_search: Advanced search with comprehensive filtering options including content, frontmatter, file metadata, and tags
+- get_recent_changes: Get recently modified files in the vault (note: content preview parameter not yet supported by API)
 - get_file_metadata: Get file metadata (size, dates, permissions) without retrieving content - efficient for large files
 - get_file_frontmatter: Get only the frontmatter of a file without content - efficient for metadata analysis
 - get_file_formatted: Get file in different formats (plain text, HTML, etc.) for token optimization

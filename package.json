@@ -43,9 +43,11 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.1.0",
     "axios": "^1.7.9",
-    "dotenv": "^16.4.7"
+    "dotenv": "^16.4.7",
+    "json-logic-js": "^2.0.5"
   },
   "devDependencies": {
+    "@types/json-logic-js": "^2.0.8",
     "@types/node": "^22.10.6",
     "@vitest/coverage-v8": "^2.1.9",
     "tsx": "^4.19.2",
