@@ -1,5 +1,5 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { ListResourcesRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+import { ListResourcesRequestSchema, ReadResourceRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 
 export async function registerResources(server: Server): Promise<void> {
   // Register ListResources handler with hardcoded tags resource
@@ -14,5 +14,31 @@ export async function registerResources(server: Server): Promise<void> {
         }
       ] 
     };
+  });
+
+  // Register ReadResource handler for vault://tags
+  server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+    const { uri } = request.params;
+    
+    if (uri === 'vault://tags') {
+      // Return hardcoded tags data
+      return {
+        contents: [
+          {
+            uri: 'vault://tags',
+            mimeType: 'application/json',
+            text: JSON.stringify({
+              tags: [
+                { name: '#project', count: 10 },
+                { name: '#meeting', count: 5 },
+                { name: '#idea', count: 15 }
+              ]
+            }, null, 2)
+          }
+        ]
+      };
+    }
+    
+    throw new Error(`Resource not found: ${uri}`);
   });
 }
