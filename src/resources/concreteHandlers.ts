@@ -1,15 +1,17 @@
 import { BaseResourceHandler } from './BaseResourceHandler.js';
 
 export class TagsHandler extends BaseResourceHandler {
-  async handleRequest(uri: string): Promise<any> {
-    // Return hardcoded tags data
-    return {
-      tags: [
-        { name: '#project', count: 10 },
-        { name: '#meeting', count: 5 },
-        { name: '#idea', count: 15 }
-      ]
-    };
+  async handleRequest(uri: string, server?: any): Promise<any> {
+    const client = this.getObsidianClient(server);
+    
+    try {
+      const tags = await client.getAllTags();
+      return { tags };
+    } catch (error: any) {
+      // If the API call fails, return an empty array
+      console.error('Failed to fetch tags:', error);
+      return { tags: [] };
+    }
   }
 }
 

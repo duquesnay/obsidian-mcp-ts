@@ -3,41 +3,72 @@ import { TagsHandler, StatsHandler, RecentHandler, NoteHandler, FolderHandler } 
 
 describe('Concrete Resource Handlers', () => {
   describe('TagsHandler', () => {
-    it('should return hardcoded tags data', async () => {
-      const handler = new TagsHandler();
-      const result = await handler.execute('vault://tags');
+    it('should fetch real tags data from Obsidian API', async () => {
+      const mockGetAllTags = vi.fn().mockResolvedValue([
+        { name: '#project', count: 10 },
+        { name: '#meeting', count: 5 }
+      ]);
+      const server = {
+        obsidianClient: {
+          getAllTags: mockGetAllTags
+        }
+      };
       
+      const handler = new TagsHandler();
+      const result = await handler.execute('vault://tags', server);
+      
+      expect(mockGetAllTags).toHaveBeenCalled();
       expect(result.contents[0].mimeType).toBe('application/json');
       const data = JSON.parse(result.contents[0].text);
       expect(data).toHaveProperty('tags');
-      expect(Array.isArray(data.tags)).toBe(true);
+      expect(data.tags).toHaveLength(2);
+      expect(data.tags[0]).toEqual({ name: '#project', count: 10 });
     });
   });
   
   describe('StatsHandler', () => {
-    it('should return hardcoded stats data', async () => {
-      const handler = new StatsHandler();
-      const result = await handler.execute('vault://stats');
+    it('should fetch real vault statistics from Obsidian API', async () => {
+      const mockListFilesInVault = vi.fn().mockResolvedValue([
+        'file1.md', 'file2.md', 'file3.txt', 'folder/note.md'
+      ]);
+      const server = {
+        obsidianClient: {
+          listFilesInVault: mockListFilesInVault
+        }
+      };
       
+      const handler = new StatsHandler();
+      const result = await handler.execute('vault://stats', server);
+      
+      expect(mockListFilesInVault).toHaveBeenCalled();
       const data = JSON.parse(result.contents[0].text);
       expect(data).toEqual({
-        fileCount: 42,
-        noteCount: 35
+        fileCount: 4,
+        noteCount: 3 // Only .md files
       });
     });
   });
   
   describe('RecentHandler', () => {
-    it('should return recent notes with timestamps', async () => {
-      const handler = new RecentHandler();
-      const result = await handler.execute('vault://recent');
+    it('should fetch recent changes from Obsidian API', async () => {
+      const mockGetRecentChanges = vi.fn().mockResolvedValue([
+        { path: 'recent1.md', mtime: 1640995200000 }, // Jan 1, 2022
+        { path: 'recent2.md', mtime: 1640995100000 }  // Jan 1, 2022
+      ]);
+      const server = {
+        obsidianClient: {
+          getRecentChanges: mockGetRecentChanges
+        }
+      };
       
+      const handler = new RecentHandler();
+      const result = await handler.execute('vault://recent', server);
+      
+      expect(mockGetRecentChanges).toHaveBeenCalledWith(undefined, 10);
       const data = JSON.parse(result.contents[0].text);
-      expect(data.notes).toHaveLength(10);
-      data.notes.forEach((note: any) => {
-        expect(note).toHaveProperty('path');
-        expect(note).toHaveProperty('modifiedAt');
-      });
+      expect(data.notes).toHaveLength(2);
+      expect(data.notes[0]).toHaveProperty('path', 'recent1.md');
+      expect(data.notes[0]).toHaveProperty('modifiedAt');
     });
   });
   
