@@ -1,39 +1,49 @@
-# Obsidian MCP TypeScript - Development Scratchpad
+# Obsidian MCP TypeScript - MCP Resources Development Scratchpad
 
 ## Current Focus
-Quality improvements based on code review findings.
+Implementing MCP Resources feature to enable persistent knowledge context for LLMs alongside existing tools.
 
 ## Working Notes
 
-### SSL Verification Context
-- Obsidian Local REST API uses self-signed certificates
-- This is expected behavior for local development
-- Not a security vulnerability, but a requirement
-- Updated CLAUDE.md to document this clearly
+### Why Resources?
+- Enable persistent context for project documentation
+- Allow LLMs to maintain reference material without repeated tool calls
+- Support subscription-based updates for real-time changes
+- Complement tools (actions) with resources (data)
 
-### Quality Review Findings Summary
-- Overall Score: 7/10
-- Main issues: DRY violations, complex error handling, magic numbers
-- Critical "issue" (SSL) was actually correct behavior
+### Architectural Orientation (Emergent Design)
+While following incremental development, keep these patterns in mind:
+- Resources are read-only (tools handle mutations)
+- Use existing ObsidianClient for data access
+- Leverage LRUCache for performance
+- URI scheme: `vault://` prefix for all resources
+- Dynamic discovery similar to tools pattern
+- Let abstractions emerge from concrete implementations
 
-### Implementation Order
-Following green-line development:
-1. Start with constants (foundation)
-2. Move to error handling (high impact)
-3. Then architecture improvements
-4. Finally polish and optimization
+### Implementation Approach
+Following emergent architecture and TDD:
+1. Start with simplest working resource (vault://tags)
+2. Extract patterns after 2-3 implementations
+3. Add dynamic URIs when static ones work
+4. Templates emerge from dynamic URI patterns
+5. Performance optimization based on real usage
+6. Subscriptions as advanced feature when needed
 
-### Test-First Reminders
-- Write test before implementation
-- Keep tests green throughout
-- One change at a time
-- Commit frequently
+### Emergent Patterns (Will Discover)
+- BaseResource abstract class (after 2-3 resources)
+- ResourceRegistry (when manual registration gets painful)
+- URI parsing utilities (when patterns repeat)
+- Caching strategy (when performance matters)
+- Template system (when URI patterns stabilize)
 
 ## Quick Commands
 
 ```bash
 # Run tests
 npm test
+
+# Run specific test file
+npm test -- src/resources/base.test.ts
 
 # Type check
 npm run type-check
@@ -43,23 +53,82 @@ npm run build
 
 # Run dev mode
 npm run dev
+
+# Test with MCP Inspector
+npx @modelcontextprotocol/inspector tsx src/index.ts
 ```
 
 ## Progress Tracking
-- [x] Phase 1: Foundation (Partial)
-  - [x] Created constants file
-  - [x] Replaced magic numbers (port, timeout, batch size, context length)
-  - [x] Created ObsidianErrorHandler
-  - [x] Applied to 4 tools (GetFileContents, AppendContent, DeleteFile, SimpleSearch)
-- [ ] Phase 2: Tool Updates (In Progress)
-  - Need to update remaining tools with error handler
-  - Need to complete constant usage in all tools
-- [ ] Phase 3: Architecture
-- [ ] Phase 4: Polish
+- [ ] Phase 1: Foundation (R1.1-R1.10)
+  - [ ] R1.1: Add resources capability
+  - [ ] R1.2: Import resource schemas
+  - [ ] R1.3: Create BaseResource class
+  - [ ] R1.4: Create ResourceResponse type
+  - [ ] R1.5: Add discovery mechanism
+  - [ ] R1.6: Create ResourceRegistry
+  - [ ] R1.7: ListResources handler
+  - [ ] R1.8: ReadResource handler
+  - [ ] R1.9: URI validation
+  - [ ] R1.10: Caching strategy
+- [ ] Phase 2: Static Resources (R2.1-R2.8)
+- [ ] Phase 3: Dynamic Resources (R3.1-R3.14)
+- [ ] Phase 4: Subscriptions (R4.1-R4.11)
+- [ ] Phase 5: Polish (R5.1-R5.8, R6.1-R6.7)
 
-## Summary of Changes So Far
-1. Created `src/constants.ts` with all magic numbers
-2. Created `src/utils/ObsidianErrorHandler.ts` for centralized error handling
-3. Updated ObsidianClient to use constants
-4. Updated 4 tools to use the error handler
-5. All tests passing after each change (green line maintained)
+## Resource Examples
+
+### Static Resources
+```typescript
+// vault://tags
+{
+  uri: "vault://tags",
+  name: "Vault Tags",
+  mimeType: "application/json",
+  text: JSON.stringify({
+    tags: [
+      { name: "#project", count: 42 },
+      { name: "#meeting", count: 15 }
+    ]
+  })
+}
+```
+
+### Dynamic Resources
+```typescript
+// vault://note/Projects/CurrentProject/README.md
+{
+  uri: "vault://note/Projects/CurrentProject/README.md",
+  name: "README.md",
+  mimeType: "text/markdown",
+  text: "# Current Project\n\nProject documentation..."
+}
+```
+
+### Subscription Resources
+```typescript
+// vault://activity/recent
+{
+  uri: "vault://activity/recent",
+  name: "Recent Activity",
+  mimeType: "application/json",
+  text: JSON.stringify({
+    changes: [
+      { path: "Daily/2024-01-15.md", modified: "2024-01-15T10:30:00Z" }
+    ]
+  })
+}
+```
+
+## Testing Notes
+- Test resource discovery independently
+- Mock ObsidianClient for unit tests
+- Use real vault for integration tests
+- Verify subscription updates with file watchers
+- Check cache behavior for performance
+
+## Implementation Reminders
+- Maintain green tests throughout
+- One task at a time
+- Commit frequently with descriptive messages
+- Update backlog after each task
+- Document as you go

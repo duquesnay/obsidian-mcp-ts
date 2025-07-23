@@ -3,8 +3,32 @@
 ## Overview
 This backlog decomposes quality improvement recommendations into fine-grained, incremental tasks following TDD principles and green-line development.
 
-## Task Categories
+## Task Template
 
+For each task:
+1. Write failing test first (Red)
+2. Implement minimal code to pass (Green)
+3. Refactor if needed (Refactor)
+4. Run full test suite
+5. Commit with descriptive message
+6. Update this backlog
+
+## Success Metrics
+- All tests passing after each change
+- No regression in functionality
+- Improved code coverage
+- Reduced code duplication
+- Better type safety
+- Each increment adds user value
+
+## Implementation Principles
+- Each task should produce working software
+- Refactor only when patterns emerge (Rule of Three)
+- Test at every step - no big bang integration
+- Document as you go - not at the end
+- Let architecture emerge from working code
+
+## Task Categories
 ### 1. Constants and Magic Numbers (DRY)
 - [x] T1.1: Create constants file for Obsidian defaults
 - [x] T1.2: Replace hardcoded port 27124 with constant
@@ -91,46 +115,7 @@ This backlog decomposes quality improvement recommendations into fine-grained, i
 - [x] T10.4: Add performance metrics collection (skipped - not needed)
 - [x] T10.5: Document performance best practices
 
-## Implementation Strategy
-
-### Phase 1: Foundation (Critical + High Impact)
-1. T1.1-T1.6: Constants extraction (prevents future magic numbers)
-2. T2.1-T2.6: Core error handler creation
-3. T4.1-T4.4: Simplified error structure
-
-### Phase 2: Tool Updates (High Impact)
-1. T2.7-T2.14: Update tools to use error handler
-2. T4.5-T4.6: Update tools to use simplified errors
-3. T6.1-T6.4: Environment utilities
-
-### Phase 3: Architecture (Medium Impact)
-1. T5.1-T5.8: Split ObsidianClient
-2. T3.1-T3.7: Type safety improvements
-3. T7.1-T7.5: Dynamic tool registration
-
-### Phase 4: Polish (Low Impact)
-1. T8.1-T8.4: Naming consistency
-2. T9.1-T9.7: Tool categorization
-3. T10.1-T10.5: Performance optimization
-
-## Task Template
-
-For each task:
-1. Write failing test first (Red)
-2. Implement minimal code to pass (Green)
-3. Refactor if needed (Refactor)
-4. Run full test suite
-5. Commit with descriptive message
-6. Update this backlog
-
-## Success Metrics
-- All tests passing after each change ✅
-- No regression in functionality ✅
-- Improved code coverage ✅
-- Reduced code duplication ✅
-- Better type safety ✅
-
-## Completion Summary
+## Completion Summary (Tasks 1-10)
 
 **Total Tasks**: 63
 **Completed**: 63 (100%)
@@ -155,3 +140,131 @@ For each task:
 - Fixed missing `ToolResponse` imports across all affected files
 - Maintained backward compatibility while improving type safety
 - Updated documentation to reflect standardization decisions
+
+---
+
+# MCP Resources Implementation Tasks
+
+## Overview
+The following tasks implement MCP Resources feature using an incremental and emergent architecture approach. Each increment delivers immediate value while building toward the complete feature set.
+
+## Resource Task Categories (Incremental Approach)
+
+### 11. Simplest Working Resource (Start Here)
+- [ ] R1.1: Add resources: {} capability to server initialization
+- [ ] R1.2: Import ListResourcesRequestSchema and ReadResourceRequestSchema from MCP SDK
+- [ ] R1.3: Create minimal handler returning empty resources list
+- [ ] R1.4: Create first hardcoded TagsResource (vault://tags)
+- [ ] R1.5: Implement ReadResourceRequestSchema handler for vault://tags only
+- [ ] R1.6: Test with MCP Inspector - verify tags resource works
+- [ ] R1.7: Add integration test for tags resource
+- [ ] R1.8: Document first resource in README
+
+### 12. Resource Abstraction (Emerge from First Resource)
+- [ ] R2.1: Extract common resource behavior from TagsResource
+- [ ] R2.2: Create BaseResource class (test with TagsResource)
+- [ ] R2.3: Add second resource - VaultStatsResource (vault://stats)
+- [ ] R2.4: Test both resources work with shared base class
+- [ ] R2.5: Create simple resource registry Map<string, BaseResource>
+- [ ] R2.6: Update ListResourcesRequestSchema to return registered resources
+- [ ] R2.7: Add VaultStructureResource (vault://structure)
+- [ ] R2.8: Refactor: Extract resource creation to factory pattern
+
+### 13. Dynamic URI Support (Next Value Add)
+- [ ] R3.1: Create NoteResource with hardcoded path first
+- [ ] R3.2: Add simple URI parsing for vault://note/TestNote.md
+- [ ] R3.3: Generalize to support any note path vault://note/{path}
+- [ ] R3.4: Test note resource with various paths
+- [ ] R3.5: Add path validation using existing PathValidationUtil
+- [ ] R3.6: Create FolderResource for vault://folder/{path}
+- [ ] R3.7: Extract URI pattern matching to utility
+- [ ] R3.8: Add resource discovery by URI pattern
+
+### 14. Resource Templates (Natural Evolution)
+- [ ] R4.1: Implement ListResourceTemplatesRequestSchema handler
+- [ ] R4.2: Create template for vault://note/{path}
+- [ ] R4.3: Create template for vault://folder/{path}
+- [ ] R4.4: Add DailyNoteResource template vault://daily/{date}
+- [ ] R4.5: Add date validation for daily notes
+- [ ] R4.6: Create TaggedNotesResource vault://tag/{tagname}
+- [ ] R4.7: Test template matching and parameter extraction
+- [ ] R4.8: Document all URI patterns
+
+### 15. Performance & Caching (When Needed)
+- [ ] R5.1: Measure resource response times
+- [ ] R5.2: Add LRUCache integration for resource content
+- [ ] R5.3: Implement cache keys based on URI
+- [ ] R5.4: Add cache invalidation on resource updates
+- [ ] R5.5: Create ProjectResource with smart caching
+- [ ] R5.6: Add resource pagination for large results
+- [ ] R5.7: Implement resource filtering options
+- [ ] R5.8: Performance test with large vaults
+
+### 16. Subscriptions (Advanced Feature)
+- [ ] R6.1: Add subscribe capability to server
+- [ ] R6.2: Implement SubscribeRequestSchema handler (no-op first)
+- [ ] R6.3: Create RecentActivityResource (static first)
+- [ ] R6.4: Add simple file watcher for vault changes
+- [ ] R6.5: Connect watcher to RecentActivityResource
+- [ ] R6.6: Implement UnsubscribeRequestSchema handler
+- [ ] R6.7: Add subscription cleanup on disconnect
+- [ ] R6.8: Create TodayActivityResource with subscriptions
+- [ ] R6.9: Test subscription lifecycle
+- [ ] R6.10: Add resource update notifications
+
+### 17. Polish & Documentation (Continuous)
+- [ ] R7.1: Create E2E test suite for all resources
+- [ ] R7.2: Document resource vs tool decision guide
+- [ ] R7.3: Update Claude Desktop configuration examples
+- [ ] R7.4: Create resource usage examples
+- [ ] R7.5: Add error handling improvements
+- [ ] R7.6: Create migration guide for users
+- [ ] R7.7: Final integration testing
+
+## Incremental Implementation Strategy
+
+### Start Small, Deliver Value
+1. **First Increment**: Get one resource working end-to-end (vault://tags)
+2. **Second Increment**: Abstract and add more static resources
+3. **Third Increment**: Add dynamic URI support for real utility
+4. **Fourth Increment**: Templates for discoverability
+5. **Fifth Increment**: Performance optimization based on usage
+6. **Sixth Increment**: Subscriptions for advanced use cases
+
+### Key Principles
+- Each task should produce working software
+- Refactor only when patterns emerge (Rule of Three)
+- Test at every step - no big bang integration
+- Document as you go - not at the end
+- Let architecture emerge from working code
+
+## Resource Success Metrics
+- [ ] Each increment adds user value
+- [ ] All tests pass at each step
+- [ ] No regression in existing functionality
+- [ ] Performance acceptable at each stage
+- [ ] Clear migration path between increments
+
+## Resource URI Patterns (Will Emerge)
+
+### Static Resources (Implement First)
+- `vault://tags` - All tags with counts
+- `vault://stats` - Vault statistics  
+- `vault://structure` - Vault folder hierarchy
+
+### Dynamic Resources (Implement Second)
+- `vault://note/{path}` - Individual note content
+- `vault://folder/{path}` - Folder contents
+- `vault://daily/{date}` - Daily notes
+- `vault://tag/{tagname}` - Notes with specific tag
+- `vault://project/{name}` - Project documentation
+
+### Subscription Resources (Implement Last)
+- `vault://activity/recent` - Recent changes feed
+- `vault://activity/today` - Today's modifications
+
+## Total Project Summary
+
+**Original Tasks**: 63 (100% completed)
+**Resource Tasks**: 57 (reorganized from 63)
+**Total Tasks**: 120
