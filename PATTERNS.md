@@ -1,5 +1,38 @@
 # Emerging Patterns in obsidian-mcp-resources
 
+## Refactoring History (R5.1 - Quality Review)
+
+### Pattern: Resource Registry (Implemented)
+
+After implementing 5 resources (3 static, 2 dynamic), we identified and refactored the growing if-else chain in the ReadResource handler.
+
+**Solution: ResourceRegistry class**
+- Centralized resource registration and lookup
+- Supports both static and dynamic resources with pattern matching
+- Eliminates if-else chains in favor of O(n) lookup
+- Clean separation between resource definition and handler logic
+
+**Key benefits:**
+1. Easy to add new resources without modifying core logic
+2. Testable in isolation
+3. Supports dynamic URI patterns like `vault://note/{path}`
+
+### Pattern: BaseResourceHandler (Implemented)
+
+Common functionality was extracted into an abstract base class:
+
+**Shared functionality:**
+- Response formatting (JSON and text)
+- ObsidianClient creation and caching
+- Error handling (404 → "Resource not found" messages)
+- Path extraction from URIs
+
+**Benefits:**
+1. DRY - no duplicate formatting code
+2. Consistent error handling across all resources
+3. Easy to add new resource types by extending base class
+4. Testable common functionality
+
 ## Dynamic Resource URIs
 
 ### Pattern: Path Parameters in Resource URIs
