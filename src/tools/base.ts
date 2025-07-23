@@ -2,6 +2,7 @@ import { ObsidianClient } from '../obsidian/ObsidianClient.js';
 import { ConfigLoader } from '../utils/configLoader.js';
 import { isTestEnvironment } from '../utils/environment.js';
 import { SimplifiedError } from '../types/errors.js';
+import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
 
 // Type helper for defining tool argument types
 export type ToolArgs = Record<string, unknown>;
@@ -56,7 +57,7 @@ export type ToolSchema<T> = {
 // };
 
 // Tool categories for organization
-export type ToolCategory = 
+export type ToolCategory =
   | 'file-operations'
   | 'search'
   | 'editing'
@@ -115,7 +116,7 @@ export abstract class BaseTool<TArgs = Record<string, unknown>> implements ToolI
 
   // Concrete execute method that subclasses implement
   abstract executeTyped(args: TArgs): Promise<ToolResponse>;
-  
+
   // Interface implementation - no more casting needed
   async execute(args: TArgs): Promise<ToolResponse> {
     return this.executeTyped(args);
@@ -130,10 +131,11 @@ export abstract class BaseTool<TArgs = Record<string, unknown>> implements ToolI
 
   protected handleError(error: unknown): ToolResponse {
     // Only log errors in non-test environments to avoid confusing test output
+    // @TODO review and ponder wether that's a good idea to not have the error lgos at the tests... shouln't the error be out there, and no errir during tests... except when testing for errors?
     if (!isTestEnvironment()) {
       console.error(`Error in ${this.name}:`, error);
     }
-    
+
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorResponse: ErrorResponse = {
       success: false,
@@ -148,15 +150,15 @@ export abstract class BaseTool<TArgs = Record<string, unknown>> implements ToolI
    * Handle errors with simplified error structure
    */
   protected handleSimplifiedError(
-    error: unknown, 
-    suggestion?: string, 
+    error: unknown,
+    suggestion?: string,
     example?: Record<string, unknown>
   ): ToolResponse {
     // Only log errors in non-test environments to avoid confusing test output
     if (!isTestEnvironment()) {
       console.error(`Error in ${this.name}:`, error);
     }
-    
+
     const errorMessage = error instanceof Error ? error.message : String(error);
     const simplifiedError: SimplifiedError = {
       success: false,
@@ -173,6 +175,58 @@ export abstract class BaseTool<TArgs = Record<string, unknown>> implements ToolI
     }
 
     return this.formatResponse(simplifiedError);
+  }
+
+  /**
+   * Handle HTTP errors with custom status code handlers
+   * @param error - The error object (must have error.response?.status for HTTP errors)
+   * @param statusHandlers - Optional map of status codes to custom messages or handler objects
+   * @returns ToolResponse with appropriate error message and metadata
+   */
+  protected handleHttpError(
+    error: any,
+    statusHandlers?: Record<number, string | { message: string; suggestion?: string; example?: Record<string, unknown> }>
+  ): ToolResponse {
+    // If no response property, use the general error handler
+    if (!error.response) {
+      return ObsidianErrorHandler.handleHttpError(error, this.name);
+    }
+
+    const status = error.response.status;
+
+    // Check if we have a custom handler for this status code
+    if (statusHandlers && statusHandlers[status]) {
+      const handler = statusHandlers[status];
+
+      if (typeof handler === 'string') {
+        // Simple string message
+        return this.formatResponse({
+          success: false,
+          error: handler,
+          tool: this.name
+        });
+      } else {
+        // Handler object with message, suggestion, and/or example
+        const errorResponse: SimplifiedError = {
+          success: false,
+          error: handler.message,
+          tool: this.name
+        };
+
+        if (handler.suggestion) {
+          errorResponse.suggestion = handler.suggestion;
+        }
+
+        if (handler.example) {
+          errorResponse.example = handler.example;
+        }
+
+        return this.formatResponse(errorResponse);
+      }
+    }
+
+    // Fall back to ObsidianErrorHandler for unhandled status codes
+    return ObsidianErrorHandler.handleHttpError(error, this.name);
   }
 
 }
