@@ -410,6 +410,15 @@ This separation enables clean PRs by cherry-picking only non-claude commits.
 **Technical:**
 - **Interactive Rebase with Selective File Restoration**: During interactive rebase, use `git checkout HEAD~ -- filename` to surgically restore specific files from the parent commit while preserving all other changes. This is more precise than cherry-picking or full commit resets and maintains the integrity of the actual work done.
 
+### 2025-07-23 - Tag Notes Resource Implementation (R6.2)
+
+**Technical insights:**
+- **Consistent Resource Handler Pattern**: Successfully implemented TagNotesHandler following established BaseResourceHandler pattern. The pattern of parameter extraction, validation, client interaction, and response formatting is now well-established across all resource handlers.
+- **URL Parameter Handling**: Tag names may contain special characters or be URL encoded. Proper decoding with `decodeURIComponent()` and normalization (removing # prefix) ensures consistent behavior regardless of how the URI is formatted.
+
+**Methodological insights:**
+- **TDD with Comprehensive Test Coverage**: Created tests covering edge cases (empty tags, special characters, URL encoding, missing parameters) before implementation. This approach caught potential issues early and ensured robust error handling.
+
 ## Insights and Memories
 
 - **Obsidian MCP is only for obsidian notes, not filesystem access**

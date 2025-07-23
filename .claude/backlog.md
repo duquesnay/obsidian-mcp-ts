@@ -173,7 +173,7 @@ For each task:
 
 ### Priority 3: Specialized Resources
 - [x] R6.1: Daily notes - Access periodic notes at vault://daily/{date}
-- [ ] R6.2: Notes by tag - Find tagged notes at vault://tag/{tagname}
+- [x] R6.2: Notes by tag - Find tagged notes at vault://tag/{tagname}
 - [ ] R6.3: Vault structure - Full folder hierarchy at vault://structure
 
 ### Priority 4: Advanced Features
@@ -190,8 +190,8 @@ For each task:
 ## Progress Status
 
 **Last Updated**: 2025-01-23
-**Current Priority**: 2 - Dynamic Resources
-**Next Task**: R5.1 - Quality review and refactoring based on patterns found
+**Current Priority**: 3 - Specialized Resources
+**Next Task**: R6.3 - Vault structure - Full folder hierarchy at vault://structure
 
 ## Total Project Summary
 
