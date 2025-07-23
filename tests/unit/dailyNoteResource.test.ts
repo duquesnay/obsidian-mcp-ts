@@ -68,6 +68,12 @@ describe('Daily Note Resource', () => {
   });
 
   it('should handle missing daily note', async () => {
+    // Clear cache to ensure clean test state
+    const { clearAllCaches } = await import('../../src/resources/index.js');
+    clearAllCaches();
+    
+    // Clear any previous mocks and set up rejection
+    mockClient.getPeriodicNote.mockReset();
     mockClient.getPeriodicNote.mockRejectedValue({
       response: { status: 404 }
     });
