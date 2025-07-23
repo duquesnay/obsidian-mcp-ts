@@ -16,8 +16,8 @@ export class ResourceRegistry {
     };
     
     // If URI contains parameters, create a pattern for matching
-    if (resource.uri.includes('{path}') || resource.uri.includes('{date}')) {
-      // Convert vault://note/{path} or vault://daily/{date} to a regex that matches anything after prefix
+    if (resource.uri.includes('{path}') || resource.uri.includes('{date}') || resource.uri.includes('{tagname}')) {
+      // Convert vault://note/{path} or vault://daily/{date} or vault://tag/{tagname} to a regex that matches anything after prefix
       const paramMatch = resource.uri.match(/\{[^}]+\}/);
       if (paramMatch) {
         const prefix = resource.uri.substring(0, resource.uri.indexOf(paramMatch[0]));
