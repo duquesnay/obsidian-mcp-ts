@@ -2,7 +2,7 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { ListResourcesRequestSchema, ReadResourceRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { ObsidianClient } from '../obsidian/ObsidianClient.js';
 import { ResourceRegistry } from './ResourceRegistry.js';
-import { createTagsHandler, createStatsHandler, createRecentHandler, createNoteHandler, createFolderHandler, createDailyNoteHandler, createTagNotesHandler } from './handlers.js';
+import { createTagsHandler, createStatsHandler, createRecentHandler, createNoteHandler, createFolderHandler, createDailyNoteHandler, createTagNotesHandler, createVaultStructureHandler } from './handlers.js';
 
 // Extend Server type to include obsidianClient for testing
 interface ServerWithClient extends Server {
@@ -35,6 +35,13 @@ export async function registerResources(server: ServerWithClient): Promise<void>
     description: 'Recently modified notes in the vault',
     mimeType: 'application/json'
   }, createRecentHandler());
+  
+  registry.registerResource({
+    uri: 'vault://structure',
+    name: 'Vault Structure',
+    description: 'Complete hierarchical structure of the vault with folders and files',
+    mimeType: 'application/json'
+  }, createVaultStructureHandler());
   
   // Register dynamic resources
   registry.registerResource({
