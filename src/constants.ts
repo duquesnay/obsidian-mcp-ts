@@ -37,6 +37,20 @@ export const OBSIDIAN_DEFAULTS = {
   MAX_CONTEXT_LENGTH: 500,
 } as const;
 
+export const CACHE_DEFAULTS = {
+  /** Default cache size for resources */
+  MAX_SIZE: 100,
+  
+  /** TTL for fast-changing resources (recent files) in milliseconds */
+  FAST_TTL: 30000, // 30 seconds
+  
+  /** TTL for stable resources (tags, structure) in milliseconds */
+  STABLE_TTL: 300000, // 5 minutes
+  
+  /** TTL for individual notes in milliseconds */
+  NOTE_TTL: 120000, // 2 minutes
+} as const;
+
 export const API_ENDPOINTS = {
   BASE: 'https://{host}:{port}',
   VAULT: '/vault',
