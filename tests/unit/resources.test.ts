@@ -19,8 +19,8 @@ describe('MCP Resources', () => {
       
       const result = await listHandler({ method: 'resources/list' });
       
-      // Should return all resources including dynamic note, folder, daily note and tag notes templates
-      expect(result.resources).toHaveLength(7);
+      // Should return all resources including dynamic note, folder, daily note, tag notes, and structure templates
+      expect(result.resources).toHaveLength(8);
       expect(result.resources[0]).toEqual({
         uri: 'vault://tags',
         name: 'Vault Tags',
@@ -40,6 +40,12 @@ describe('MCP Resources', () => {
         mimeType: 'application/json'
       });
       expect(result.resources[3]).toEqual({
+        uri: 'vault://structure',
+        name: 'Vault Structure',
+        description: 'Complete hierarchical structure of the vault with folders and files',
+        mimeType: 'application/json'
+      });
+      expect(result.resources[4]).toEqual({
         uri: 'vault://note/{path}',
         name: 'Note',
         description: 'Individual note by path (e.g., vault://note/Daily/2024-01-01.md)',

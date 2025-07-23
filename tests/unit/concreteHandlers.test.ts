@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { TagsHandler, StatsHandler, RecentHandler, NoteHandler, FolderHandler } from '../../src/resources/concreteHandlers.js';
+import { VaultStructureHandler } from '../../src/resources/VaultStructureHandler.js';
 
 describe('Concrete Resource Handlers', () => {
   describe('TagsHandler', () => {
@@ -136,6 +137,34 @@ describe('Concrete Resource Handlers', () => {
       const handler = new FolderHandler();
       await handler.execute('vault://folder', server);
       expect(mockListFilesInDir).toHaveBeenCalledWith('');
+    });
+  });
+  
+  describe('VaultStructureHandler', () => {
+    it('should fetch vault structure from Obsidian API', async () => {
+      const mockListFilesInVault = vi.fn().mockResolvedValue([
+        'file1.md',
+        'Projects/project1.md',
+        'Archive/old.md'
+      ]);
+      const server = {
+        obsidianClient: {
+          listFilesInVault: mockListFilesInVault
+        }
+      };
+      
+      const handler = new VaultStructureHandler();
+      const result = await handler.execute('vault://structure', server);
+      
+      expect(mockListFilesInVault).toHaveBeenCalled();
+      expect(result.contents[0].mimeType).toBe('application/json');
+      const data = JSON.parse(result.contents[0].text);
+      expect(data).toHaveProperty('structure');
+      expect(data).toHaveProperty('totalFiles', 3);
+      expect(data).toHaveProperty('totalFolders', 2); // Projects, Archive
+      expect(data.structure.files).toContain('file1.md');
+      expect(data.structure.folders).toHaveProperty('Projects');
+      expect(data.structure.folders).toHaveProperty('Archive');
     });
   });
 });
