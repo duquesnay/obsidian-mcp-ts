@@ -7,11 +7,13 @@ import { PeriodicNotesClient } from './services/PeriodicNotesClient.js';
 import { TagManagementClient } from './services/TagManagementClient.js';
 import { FileOperationsClient } from './services/FileOperationsClient.js';
 import { DirectoryOperationsClient } from './services/DirectoryOperationsClient.js';
+import { SearchClient } from './services/SearchClient.js';
 import type { IObsidianClient } from './interfaces/IObsidianClient.js';
 import type { IPeriodicNotesClient } from './interfaces/IPeriodicNotesClient.js';
 import type { ITagManagementClient } from './interfaces/ITagManagementClient.js';
 import type { IFileOperationsClient } from './interfaces/IFileOperationsClient.js';
 import type { IDirectoryOperationsClient } from './interfaces/IDirectoryOperationsClient.js';
+import type { ISearchClient } from './interfaces/ISearchClient.js';
 import type {
   FileContentResponse,
   FileMetadata,
@@ -47,6 +49,7 @@ export class ObsidianClient implements IObsidianClient {
   private tagManagementClient?: ITagManagementClient;
   private fileOperationsClient?: IFileOperationsClient;
   private directoryOperationsClient?: IDirectoryOperationsClient;
+  private searchClient?: ISearchClient;
 
   /**
    * Creates a new ObsidianClient instance for interacting with the Obsidian REST API.
@@ -246,33 +249,7 @@ export class ObsidianClient implements IObsidianClient {
    * const page2 = await client.search('project', 100, 10, 10);
    */
   async search(query: string, contextLength: number = OBSIDIAN_DEFAULTS.CONTEXT_LENGTH, limit?: number, offset?: number): Promise<PaginatedSearchResponse | SimpleSearchResponse> {
-    return this.safeCall(async () => {
-      const response = await this.axiosInstance.post('/search/simple/', null, {
-        params: {
-          query,
-          contextLength
-        }
-      });
-
-      // Handle pagination in-memory since the REST API doesn't support it
-      const allResults = response.data;
-      if (!Array.isArray(allResults)) {
-        return allResults;
-      }
-
-      const totalResults = allResults.length;
-      const startIndex = offset || 0;
-      const endIndex = limit ? startIndex + limit : totalResults;
-      const paginatedResults = allResults.slice(startIndex, endIndex);
-
-      return {
-        results: paginatedResults,
-        totalResults: totalResults,
-        hasMore: endIndex < totalResults,
-        offset: startIndex,
-        limit: limit || totalResults
-      };
-    });
+    return this.getSearchClient().search(query, contextLength, limit, offset);
   }
 
   /**
@@ -297,10 +274,7 @@ export class ObsidianClient implements IObsidianClient {
    * });
    */
   async complexSearch(query: JsonLogicQuery): Promise<ComplexSearchResponse> {
-    return this.safeCall(async () => {
-      const response = await this.axiosInstance.post('/search/', query);
-      return response.data;
-    });
+    return this.getSearchClient().complexSearch(query);
   }
 
   /**
@@ -824,24 +798,7 @@ export class ObsidianClient implements IObsidianClient {
     }>;
     hasMore: boolean;
   }> {
-    return this.safeCall(async () => {
-      const response = await this.axiosInstance.post('/search/advanced', {
-        filters,
-        options
-      }, {
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        timeout: 30000 // 30 second timeout for search operations
-      });
-
-      const result = response.data;
-      return {
-        totalResults: result.totalResults || 0,
-        results: result.results || [],
-        hasMore: result.hasMore || false
-      };
-    });
+    return this.getSearchClient().advancedSearch(filters, options);
   }
 
   /**
@@ -910,5 +867,22 @@ export class ObsidianClient implements IObsidianClient {
       });
     }
     return this.directoryOperationsClient;
+  }
+
+  /**
+   * Get the SearchClient instance for search operations.
+   * Creates the instance lazily on first access.
+   */
+  private getSearchClient(): ISearchClient {
+    if (!this.searchClient) {
+      this.searchClient = new SearchClient({
+        apiKey: this.apiKey,
+        protocol: this.protocol,
+        host: this.host,
+        port: this.port,
+        verifySsl: this.verifySsl
+      });
+    }
+    return this.searchClient;
   }
 }
