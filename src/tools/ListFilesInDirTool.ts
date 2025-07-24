@@ -2,7 +2,7 @@ import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 import { ListFilesInDirArgs } from './types/ListFilesInDirArgs.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
-import { PAGINATION_SCHEMA } from '../utils/validation.js';
+import { PAGINATION_SCHEMA, DIR_PATH_SCHEMA } from '../utils/validation.js';
 
 export class ListFilesInDirTool extends BaseTool<ListFilesInDirArgs> {
   name = 'obsidian_list_files_in_dir';
@@ -18,7 +18,7 @@ export class ListFilesInDirTool extends BaseTool<ListFilesInDirArgs> {
     type: 'object' as const,
     properties: {
       dirpath: {
-        type: 'string',
+        ...DIR_PATH_SCHEMA,
         description: 'Path to list files from (relative to your vault root). Note that empty directories will not be returned.'
       },
       limit: {

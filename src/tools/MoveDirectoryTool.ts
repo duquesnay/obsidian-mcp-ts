@@ -1,5 +1,6 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
+import { DIR_PATH_SCHEMA } from '../utils/validation.js';
 
 export class MoveDirectoryTool extends BaseTool {
   name = 'obsidian_move_directory';
@@ -15,11 +16,11 @@ export class MoveDirectoryTool extends BaseTool {
     type: 'object' as const,
     properties: {
       sourcePath: {
-        type: 'string',
+        ...DIR_PATH_SCHEMA,
         description: 'Current path of the directory to move (relative to vault root).'
       },
       destinationPath: {
-        type: 'string',
+        ...DIR_PATH_SCHEMA,
         description: 'Destination path for the directory (relative to vault root).'
       }
     },

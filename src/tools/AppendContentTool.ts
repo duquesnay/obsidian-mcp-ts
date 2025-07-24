@@ -1,6 +1,7 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 import { AppendContentArgs } from './types/AppendContentArgs.js';
+import { FILE_PATH_SCHEMA, CONTENT_SCHEMA } from '../utils/validation.js';
 
 export class AppendContentTool extends BaseTool<AppendContentArgs> {
   name = 'obsidian_append_content';
@@ -16,11 +17,11 @@ export class AppendContentTool extends BaseTool<AppendContentArgs> {
     type: 'object' as const,
     properties: {
       filepath: {
-        type: 'string',
+        ...FILE_PATH_SCHEMA,
         description: 'Path of the file to append to (relative to vault root). Will be created if it doesn\'t exist.'
       },
       content: {
-        type: 'string',
+        ...CONTENT_SCHEMA,
         description: 'The content to append to the file.'
       },
       createIfNotExists: {

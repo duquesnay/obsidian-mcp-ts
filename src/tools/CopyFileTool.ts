@@ -1,5 +1,6 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
+import { FILE_PATH_SCHEMA, BOOLEAN_FLAG_SCHEMA } from '../utils/validation.js';
 
 export class CopyFileTool extends BaseTool {
   name = 'obsidian_copy_file';
@@ -15,17 +16,16 @@ export class CopyFileTool extends BaseTool {
     type: 'object' as const,
     properties: {
       sourcePath: {
-        type: 'string',
+        ...FILE_PATH_SCHEMA,
         description: 'Path of the file to copy (relative to vault root).'
       },
       destinationPath: {
-        type: 'string',
+        ...FILE_PATH_SCHEMA,
         description: 'Destination path for the copied file (relative to vault root).'
       },
       overwrite: {
-        type: 'boolean',
-        description: 'Whether to overwrite the destination file if it already exists (default: false).',
-        default: false
+        ...BOOLEAN_FLAG_SCHEMA,
+        description: 'Whether to overwrite the destination file if it already exists (default: false).'
       }
     },
     required: ['sourcePath', 'destinationPath']

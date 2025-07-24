@@ -1,5 +1,6 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
+import { FILE_PATH_SCHEMA } from '../utils/validation.js';
 
 export class RenameFileTool extends BaseTool {
   name = 'obsidian_rename_file';
@@ -15,11 +16,11 @@ export class RenameFileTool extends BaseTool {
     type: 'object' as const,
     properties: {
       oldPath: {
-        type: 'string',
+        ...FILE_PATH_SCHEMA,
         description: 'Current path of the file to rename (relative to vault root).'
       },
       newPath: {
-        type: 'string',
+        ...FILE_PATH_SCHEMA,
         description: 'New path for the file (relative to vault root). Must be in the same directory as the old path.'
       }
     },

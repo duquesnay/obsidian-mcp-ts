@@ -1,6 +1,7 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 import { DeleteFileArgs } from './types/DeleteFileArgs.js';
+import { PATH_SCHEMA } from '../utils/validation.js';
 
 export class DeleteFileTool extends BaseTool<DeleteFileArgs> {
   name = 'obsidian_delete_file';
@@ -16,7 +17,7 @@ export class DeleteFileTool extends BaseTool<DeleteFileArgs> {
     type: 'object' as const,
     properties: {
       filepath: {
-        type: 'string',
+        ...PATH_SCHEMA,
         description: 'Path to the file or directory to delete (relative to vault root).'
       }
     },

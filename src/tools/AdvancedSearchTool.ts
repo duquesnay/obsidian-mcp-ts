@@ -1,6 +1,7 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
+import { PAGINATION_SCHEMA, TAGS_ARRAY_SCHEMA, CONTEXT_LENGTH_SCHEMA } from '../utils/validation.js';
 
 interface SearchFilter {
   content?: {
@@ -173,13 +174,11 @@ export class AdvancedSearchTool extends BaseTool {
             description: 'Tag filters',
             properties: {
               include: {
-                type: 'array',
-                items: { type: 'string' },
+                ...TAGS_ARRAY_SCHEMA,
                 description: 'Tags that must be present'
               },
               exclude: {
-                type: 'array',
-                items: { type: 'string' },
+                ...TAGS_ARRAY_SCHEMA,
                 description: 'Tags that must not be present'
               },
               mode: {
@@ -197,18 +196,11 @@ export class AdvancedSearchTool extends BaseTool {
         description: 'Search options',
         properties: {
           limit: {
-            type: 'number',
-            description: 'Maximum number of results to return',
+            ...PAGINATION_SCHEMA.limit,
             default: OBSIDIAN_DEFAULTS.DEFAULT_ADVANCED_SEARCH_LIMIT,
-            minimum: 1,
             maximum: OBSIDIAN_DEFAULTS.MAX_ADVANCED_SEARCH_RESULTS
           },
-          offset: {
-            type: 'number',
-            description: 'Number of results to skip',
-            default: 0,
-            minimum: 0
-          },
+          offset: PAGINATION_SCHEMA.offset,
           sort: {
             type: 'object',
             properties: {
@@ -232,10 +224,8 @@ export class AdvancedSearchTool extends BaseTool {
             default: false
           },
           contextLength: {
-            type: 'number',
-            description: 'Number of characters to include around matches',
+            ...CONTEXT_LENGTH_SCHEMA,
             default: OBSIDIAN_DEFAULTS.CONTEXT_LENGTH,
-            minimum: 0,
             maximum: OBSIDIAN_DEFAULTS.MAX_CONTEXT_LENGTH
           }
         }

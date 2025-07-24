@@ -1,5 +1,6 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType, PathValidationError } from '../utils/PathValidationUtil.js';
+import { DIR_PATH_SCHEMA } from '../utils/validation.js';
 
 export class CreateDirectoryTool extends BaseTool {
   name = 'obsidian_create_directory';
@@ -14,10 +15,7 @@ export class CreateDirectoryTool extends BaseTool {
   inputSchema = {
     type: 'object' as const,
     properties: {
-      directoryPath: {
-        type: 'string',
-        description: 'Path of the directory to create (relative to vault root).'
-      },
+      directoryPath: DIR_PATH_SCHEMA,
       createParents: {
         type: 'boolean',
         description: 'Whether to create parent directories if they do not exist (default: true).',

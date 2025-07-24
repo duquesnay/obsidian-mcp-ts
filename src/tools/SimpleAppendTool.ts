@@ -1,5 +1,6 @@
 import { BaseTool, ToolResponse, ToolMetadata } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
+import { FILE_PATH_SCHEMA } from '../utils/validation.js';
 
 interface SimpleAppendArgs {
   filepath: string;
@@ -20,10 +21,7 @@ export class SimpleAppendTool extends BaseTool<SimpleAppendArgs> {
   inputSchema = {
     type: 'object' as const,
     properties: {
-      filepath: {
-        type: 'string' as const,
-        description: 'Path to the file (relative to vault root)'
-      },
+      filepath: FILE_PATH_SCHEMA,
       content: {
         type: 'string' as const,
         description: 'Text to append to the end of the file'

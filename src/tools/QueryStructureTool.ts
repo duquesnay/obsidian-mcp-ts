@@ -1,6 +1,7 @@
 import { BaseTool, ToolResponse, ToolMetadata } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
+import { FILE_PATH_SCHEMA } from '../utils/validation.js';
 
 interface HeadingInfo {
   text: string;
@@ -52,10 +53,7 @@ export class QueryStructureTool extends BaseTool {
   inputSchema = {
     type: 'object' as const,
     properties: {
-      filepath: {
-        type: 'string',
-        description: 'Path to the file (relative to vault root)'
-      },
+      filepath: FILE_PATH_SCHEMA,
       query: {
         type: 'object',
         properties: {
