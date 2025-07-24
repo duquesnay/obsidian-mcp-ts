@@ -25,7 +25,8 @@ export class GetPeriodicNoteTool extends BaseTool {
       validatePeriod(args.period);
       
       const client = this.getClient();
-      const result = await client.getPeriodicNote(args.period);
+      const periodicNotesClient = client.getPeriodicNotesClient();
+      const result = await periodicNotesClient.getPeriodicNote(args.period);
       
       return this.formatResponse(result);
     } catch (error) {

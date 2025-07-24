@@ -5,8 +5,10 @@ import { validatePath, validatePaths } from '../utils/pathValidator.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
 import { BatchProcessor } from '../utils/BatchProcessor.js';
 import { PeriodicNotesClient } from './services/PeriodicNotesClient.js';
+import { TagManagementClient } from './services/TagManagementClient.js';
 import type { IObsidianClient } from './interfaces/IObsidianClient.js';
 import type { IPeriodicNotesClient } from './interfaces/IPeriodicNotesClient.js';
+import type { ITagManagementClient } from './interfaces/ITagManagementClient.js';
 import type {
   FileContentResponse,
   FileMetadata,
@@ -38,6 +40,8 @@ export class ObsidianClient implements IObsidianClient {
   private port: number;
   private verifySsl: boolean;
   private axiosInstance: AxiosInstance;
+  private periodicNotesClient?: IPeriodicNotesClient;
+  private tagManagementClient?: ITagManagementClient;
 
   /**
    * Creates a new ObsidianClient instance for interacting with the Obsidian REST API.
@@ -1047,10 +1051,7 @@ export class ObsidianClient implements IObsidianClient {
    * });
    */
   async getAllTags(): Promise<Array<{ name: string; count: number }>> {
-    return this.safeCall(async () => {
-      const response = await this.axiosInstance.get('/tags');
-      return response.data.tags || [];
-    });
+    return this.getTagManagementClient().getAllTags();
   }
 
   /**
@@ -1068,12 +1069,7 @@ export class ObsidianClient implements IObsidianClient {
    * const todoFiles = await client.getFilesByTag('#todo');
    */
   async getFilesByTag(tagName: string): Promise<string[]> {
-    const encodedTag = encodeURIComponent(tagName);
-
-    return this.safeCall(async () => {
-      const response = await this.axiosInstance.get(`/tags/${encodedTag}`);
-      return response.data.files || [];
-    });
+    return this.getTagManagementClient().getFilesByTag(tagName);
   }
 
   /**
@@ -1093,22 +1089,7 @@ export class ObsidianClient implements IObsidianClient {
     filesUpdated: number;
     message?: string;
   }> {
-    const encodedOldTag = encodeURIComponent(oldTagName);
-
-    return this.safeCall(async () => {
-      const response = await this.axiosInstance.patch(`/tags/${encodedOldTag}`, newTagName, {
-        headers: {
-          'Content-Type': 'text/plain',
-          'Operation': 'rename'
-        }
-      });
-
-      const result = response.data;
-      return {
-        filesUpdated: result.filesUpdated || 0,
-        message: result.message
-      };
-    });
+    return this.getTagManagementClient().renameTag(oldTagName, newTagName);
   }
 
   /**
@@ -1140,25 +1121,7 @@ export class ObsidianClient implements IObsidianClient {
     tagsModified: number;
     message?: string;
   }> {
-    validatePath(filePath, 'filePath');
-    const encodedPath = encodeURIComponent(filePath);
-
-    return this.safeCall(async () => {
-      const response = await this.axiosInstance.patch(`/vault/${encodedPath}`, tags, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Target-Type': 'tag',
-          'Operation': operation,
-          'Tag-Location': location
-        }
-      });
-
-      const result = response.data;
-      return {
-        tagsModified: result.tagsModified || tags.length,
-        message: result.message
-      };
-    });
+    return this.getTagManagementClient().manageFileTags(filePath, operation, tags, location);
   }
 
   /**
@@ -1236,5 +1199,39 @@ export class ObsidianClient implements IObsidianClient {
         hasMore: result.hasMore || false
       };
     });
+  }
+
+  /**
+   * Get the PeriodicNotesClient instance for periodic note operations.
+   * Creates the instance lazily on first access.
+   */
+  getPeriodicNotesClient(): IPeriodicNotesClient {
+    if (!this.periodicNotesClient) {
+      this.periodicNotesClient = new PeriodicNotesClient({
+        apiKey: this.apiKey,
+        protocol: this.protocol,
+        host: this.host,
+        port: this.port,
+        verifySsl: this.verifySsl
+      });
+    }
+    return this.periodicNotesClient;
+  }
+
+  /**
+   * Get the TagManagementClient instance for tag operations.
+   * Creates the instance lazily on first access.
+   */
+  private getTagManagementClient(): ITagManagementClient {
+    if (!this.tagManagementClient) {
+      this.tagManagementClient = new TagManagementClient({
+        apiKey: this.apiKey,
+        protocol: this.protocol,
+        host: this.host,
+        port: this.port,
+        verifySsl: this.verifySsl
+      });
+    }
+    return this.tagManagementClient;
   }
 }
