@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { GetPeriodicNoteTool } from './GetPeriodicNoteTool.js';
-import { ValidationError } from '../utils/validation.js';
+import { GetPeriodicNoteTool } from '../../src/tools/GetPeriodicNoteTool.js';
+import { ValidationError } from '../../src/utils/validation.js';
 
 describe('GetPeriodicNoteTool', () => {
   let tool: GetPeriodicNoteTool;
@@ -8,8 +8,11 @@ describe('GetPeriodicNoteTool', () => {
 
   beforeEach(() => {
     tool = new GetPeriodicNoteTool();
-    mockClient = {
+    const mockPeriodicNotesClient = {
       getPeriodicNote: vi.fn()
+    };
+    mockClient = {
+      getPeriodicNotesClient: vi.fn().mockReturnValue(mockPeriodicNotesClient)
     };
     // @ts-ignore - accessing protected method for testing
     tool.getClient = () => mockClient;
@@ -40,11 +43,11 @@ describe('GetPeriodicNoteTool', () => {
         content: 'Daily note content',
         path: 'Daily/2025-01-24.md'
       };
-      mockClient.getPeriodicNote.mockResolvedValue(mockResult);
+      mockClient.getPeriodicNotesClient().getPeriodicNote.mockResolvedValue(mockResult);
 
       const result = await tool.executeTyped({ period: 'daily' });
       
-      expect(mockClient.getPeriodicNote).toHaveBeenCalledWith('daily');
+      expect(mockClient.getPeriodicNotesClient().getPeriodicNote).toHaveBeenCalledWith('daily');
       expect(result.type).toBe('text');
       
       const response = JSON.parse(result.text);
@@ -55,7 +58,7 @@ describe('GetPeriodicNoteTool', () => {
       const periods = ['daily', 'weekly', 'monthly', 'quarterly', 'yearly'] as const;
       
       for (const period of periods) {
-        mockClient.getPeriodicNote.mockResolvedValue({ path: `${period}.md` });
+        mockClient.getPeriodicNotesClient().getPeriodicNote.mockResolvedValue({ path: `${period}.md` });
         
         const result = await tool.executeTyped({ period });
         const response = JSON.parse(result.text);
