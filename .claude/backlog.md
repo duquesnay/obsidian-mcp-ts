@@ -257,7 +257,7 @@ After each sub-agent completes:
 
 - [x] CQ5.1: Create EditStrategy interface and base class
 - [x] CQ5.2: Extract AND integrate AppendStrategy (must be used immediately)
-- [ ] CQ5.3: Extract AND integrate FindReplaceStrategy (must be used immediately)
+- [x] CQ5.3: Extract AND integrate FindReplaceStrategy (must be used immediately)
 - [ ] CQ5.4: Extract AND integrate HeadingInsertStrategy (must be used immediately)
 - [ ] CQ5.5: Extract AND integrate BatchEditStrategy (must be used immediately)
 - [ ] CQ5.6: Extract AND integrate SectionEditStrategy (must be used immediately)
@@ -265,7 +265,7 @@ After each sub-agent completes:
 - [ ] CQ5.8: Clean up and optimize UnifiedEditTool
 
 - [x] CQ6.1: ~~Create central schema fragments file~~ (already done in validation.ts with schema fragments)
-- [x] CQ6.2: ~~Extract common property schemas~~ (already done: PATH_SCHEMA, CONTENT_SCHEMA, etc.)
+- [x] CQ6.2: ~~Extract common propertchemas~~ (already done: PATH_SCHEMA, CONTENT_SCHEMA, etc.)
 - [ ] CQ6.3: ~~Create schema builder utility~~ (may not be needed with current approach)
 - [ ] CQ6.4: Migrate remaining tools to use schema fragments from validation.ts
 - [ ] CQ6.5: ~~Remove duplicate schema definitions~~ (happens as part of CQ6.4)

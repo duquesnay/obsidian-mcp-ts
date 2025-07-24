@@ -1,7 +1,8 @@
 import { BaseTool, ToolResponse, ToolMetadata } from './base.js';
 import { AppendStrategy } from './strategies/AppendStrategy.js';
 import { FindReplaceStrategy } from './strategies/FindReplaceStrategy.js';
-import { IEditStrategy, EditContext, AppendOperation, ReplaceOperation } from './strategies/IEditStrategy.js';
+import { HeadingInsertStrategy } from './strategies/HeadingInsertStrategy.js';
+import { IEditStrategy, EditContext, AppendOperation, ReplaceOperation, HeadingInsertOperation } from './strategies/IEditStrategy.js';
 
 interface SimpleEdit {
   append?: string;
@@ -48,6 +49,7 @@ export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
   
   private appendStrategy: IEditStrategy = new AppendStrategy();
   private findReplaceStrategy: IEditStrategy = new FindReplaceStrategy();
+  private headingInsertStrategy: IEditStrategy = new HeadingInsertStrategy();
 
   metadata: ToolMetadata = {
     category: 'editing',
@@ -183,67 +185,27 @@ export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
   }
 
   private async handleHeadingInsert(filepath: string, args: StructureEdit): Promise<ToolResponse> {
-    try {
-      const client = this.getClient();
-      
-      if (args.after && args.add) {
-        // Insert after heading
-        await client.patchContent(filepath, args.add, {
-          targetType: 'heading',
-          target: args.after,
-          insertAfter: true,
-          createIfNotExists: false
-        });
-        
-        return this.formatResponse({
-          success: true,
-          message: `Successfully inserted content after heading "${args.after}" in ${filepath}`,
-          operation: 'insert_after_heading',
-          filepath,
-          heading: args.after
-        });
-      }
-      
-      if (args.before && args.add) {
-        // Insert before heading
-        await client.patchContent(filepath, args.add, {
-          targetType: 'heading',
-          target: args.before,
-          insertBefore: true,
-          createIfNotExists: false
-        });
-        
-        return this.formatResponse({
-          success: true,
-          message: `Successfully inserted content before heading "${args.before}" in ${filepath}`,
-          operation: 'insert_before_heading',
-          filepath,
-          heading: args.before
-        });
-      }
-      
-    } catch (error: unknown) {
-      // Smart error recovery with working alternatives
-      const heading = args.after || args.before;
+    if (!args.add || (!args.after && !args.before)) {
       return this.formatResponse({
-        error: `Heading insertion failed: ${error instanceof Error ? error.message : String(error)}`,
-        possible_causes: [
-          `Heading "${heading}" not found in document`,
-          "File doesn't exist",
-          "Permission or API issues"
-        ],
-        working_alternatives: [
-          {
-            description: "Append to end instead",
-            example: { file: filepath, append: args.add }
-          },
-          {
-            description: "Use simple text replacement",
-            example: { file: filepath, find: "TBD", replace: args.add }
-          }
-        ]
+        error: "Heading insert requires 'add' content and either 'after' or 'before' heading",
+        example: { file: filepath, after: "Heading Name", add: "Your content" }
       });
     }
+
+    const operation: HeadingInsertOperation = {
+      type: 'heading-insert',
+      position: args.after ? 'after' : 'before',
+      heading: (args.after || args.before)!,
+      content: args.add
+    };
+
+    const context: EditContext = {
+      filepath,
+      client: this.getClient()
+    };
+
+    const result = await this.headingInsertStrategy.execute(operation, context);
+    return this.formatResponse(result);
   }
 
   private async handleReplace(filepath: string, find: string, replace: string): Promise<ToolResponse> {
@@ -330,10 +292,12 @@ export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
       try {
         let result;
         
-        if (op.after && op.add) {
-          result = await this.handleHeadingInsert(filepath, { after: op.after, add: op.add });
-        } else if (op.before && op.add) {
-          result = await this.handleHeadingInsert(filepath, { before: op.before, add: op.add });
+        if ((op.after || op.before) && op.add) {
+          result = await this.handleHeadingInsert(filepath, { 
+            after: op.after, 
+            before: op.before, 
+            add: op.add 
+          });
         } else if (op.find && op.replace) {
           result = await this.handleReplace(filepath, op.find, op.replace);
         } else if (op.append) {
