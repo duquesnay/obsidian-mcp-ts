@@ -246,25 +246,29 @@ After each sub-agent completes:
   - Clean dist/ folder of compiled test files
 
 ### Medium Priority (Architectural Improvements - Do Early)
-- [ ] CQ4: Split ObsidianClient into focused services (SRP)
-  - Extract IObsidianClient interface from ObsidianClient class
-  - Create FileOperationsClient for file CRUD
-  - Create DirectoryOperationsClient for directory operations
-  - Create SearchClient for all search functionality
-  - Create TagManagementClient for tag operations
-  - Create PeriodicNotesClient for periodic notes
-  - Keep ObsidianClient as facade/coordinator
-  - Update BaseTool to depend on interface instead of concrete class
+- [x] CQ4.1: Extract IObsidianClient interface from ObsidianClient class
+- [x] CQ4.2: Create FileOperationsClient for file CRUD operations
+- [x] CQ4.3: Create DirectoryOperationsClient for directory operations
+- [x] CQ4.4: Create SearchClient for all search functionality
+- [x] CQ4.5: Create TagManagementClient for tag operations
+- [ ] CQ4.6: Create PeriodicNotesClient for periodic notes
+- [ ] CQ4.7: Refactor ObsidianClient as facade/coordinator
+- [ ] CQ4.8: Update BaseTool to depend on interface instead of concrete class
 
-- [ ] CQ5: Refactor UnifiedEditTool using strategy pattern
-  - Extract each edit operation into separate strategy
-  - Reduce complexity from 401 lines
-  - Improve maintainability and testability
+- [ ] CQ5.1: Create EditStrategy interface and base class
+- [ ] CQ5.2: Extract AppendStrategy from UnifiedEditTool
+- [ ] CQ5.3: Extract FindReplaceStrategy from UnifiedEditTool
+- [ ] CQ5.4: Extract HeadingInsertStrategy from UnifiedEditTool
+- [ ] CQ5.5: Extract BatchEditStrategy from UnifiedEditTool
+- [ ] CQ5.6: Extract SectionEditStrategy from UnifiedEditTool
+- [ ] CQ5.7: Refactor UnifiedEditTool to use strategy pattern
+- [ ] CQ5.8: Clean up and optimize UnifiedEditTool
 
-- [ ] CQ6: Consolidate schema definitions
-  - Create central schema fragments file
-  - Define reusable property schemas
-  - Implement schema builder pattern
+- [ ] CQ6.1: Create central schema fragments file
+- [ ] CQ6.2: Extract common property schemas (path, content, etc.)
+- [ ] CQ6.3: Create schema builder utility
+- [ ] CQ6.4: Migrate tools to use schema fragments
+- [ ] CQ6.5: Remove duplicate schema definitions
 
 - [ ] CQ7: Address TODO comments
   - ObsidianClient.ts line 31: "break apart, file is too long"

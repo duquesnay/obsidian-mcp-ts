@@ -4,12 +4,14 @@ import { ObsidianError } from '../types/errors.js';
 import { validatePath, validatePaths } from '../utils/pathValidator.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
 import { BatchProcessor } from '../utils/BatchProcessor.js';
+import { PeriodicNotesClient } from './services/PeriodicNotesClient.js';
+import type { IObsidianClient } from './interfaces/IObsidianClient.js';
+import type { IPeriodicNotesClient } from './interfaces/IPeriodicNotesClient.js';
 import type {
   FileContentResponse,
   FileMetadata,
   SimpleSearchResponse,
   ComplexSearchResponse,
-  PeriodicNoteData,
   RecentChange,
   AdvancedSearchFilters,
   AdvancedSearchOptions,
@@ -29,7 +31,7 @@ export interface ObsidianClientConfig {
 }
 
 // @Todo break apart, file is too long according to conventions?
-export class ObsidianClient {
+export class ObsidianClient implements IObsidianClient {
   private apiKey: string;
   private protocol: string;
   private host: string;
@@ -620,35 +622,7 @@ export class ObsidianClient {
    * // Get this week's weekly note
    * const weeklyNote = await client.getPeriodicNote('weekly');
    */
-  async getPeriodicNote(period: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'): Promise<PeriodicNoteData> {
-    return this.safeCall(async () => {
-      const response = await this.axiosInstance.get(`/periodic/${period}/`);
-      return response.data;
-    });
-  }
 
-  /**
-   * Retrieves recent periodic notes for the specified period type.
-   * Note: Current API limitation - only returns the current periodic note.
-   *
-   * @param period - The type of periodic notes to retrieve
-   * @param days - Number of days to look back (currently not used due to API limitations)
-   * @returns Array of periodic note data (currently only contains the current note)
-   * @throws {ObsidianError} If the API request fails
-   * @example
-   * const recentDailies = await client.getRecentPeriodicNotes('daily', 7);
-   */
-  async getRecentPeriodicNotes(
-    period: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly',
-    days?: number
-  ): Promise<PeriodicNoteData[]> {
-    // The API doesn't have a direct "recent periodic notes" endpoint
-    // For now, just return the current periodic note
-    return this.safeCall(async () => {
-      const currentNote = await this.getPeriodicNote(period);
-      return [currentNote];
-    });
-  }
 
   /**
    * Retrieves recently changed files in the vault.
