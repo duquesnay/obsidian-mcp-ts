@@ -1,7 +1,3 @@
-import axios, { AxiosInstance, AxiosError } from 'axios';
-import https from 'https';
-import { ObsidianError } from '../types/errors.js';
-import { validatePath } from '../utils/pathValidator.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
 import { PeriodicNotesClient } from './services/PeriodicNotesClient.js';
 import { TagManagementClient } from './services/TagManagementClient.js';
@@ -37,14 +33,24 @@ export interface ObsidianClientConfig {
   verifySsl?: boolean;
 }
 
-// @Todo break apart, file is too long according to conventions?
+/**
+ * Main facade client for interacting with the Obsidian REST API.
+ * Delegates to specialized clients for different operation types:
+ * - FileOperationsClient: File CRUD and metadata operations
+ * - DirectoryOperationsClient: Directory management
+ * - SearchClient: Search functionality
+ * - TagManagementClient: Tag operations
+ * - PeriodicNotesClient: Periodic notes handling
+ * 
+ * This facade pattern provides a unified interface while maintaining
+ * separation of concerns through specialized clients.
+ */
 export class ObsidianClient implements IObsidianClient {
   private apiKey: string;
   private protocol: string;
   private host: string;
   private port: number;
   private verifySsl: boolean;
-  private axiosInstance: AxiosInstance;
   private periodicNotesClient?: IPeriodicNotesClient;
   private tagManagementClient?: ITagManagementClient;
   private fileOperationsClient?: IFileOperationsClient;
@@ -73,79 +79,6 @@ export class ObsidianClient implements IObsidianClient {
     this.host = config.host || OBSIDIAN_DEFAULTS.HOST;
     this.port = config.port || OBSIDIAN_DEFAULTS.PORT;
     this.verifySsl = config.verifySsl ?? true;
-
-    // Create axios instance with custom config
-    this.axiosInstance = axios.create({
-      baseURL: this.getBaseUrl(),
-      timeout: OBSIDIAN_DEFAULTS.TIMEOUT_MS,
-      headers: {
-        'Authorization': `Bearer ${this.apiKey}`
-      },
-      httpsAgent: new https.Agent({
-        rejectUnauthorized: this.verifySsl
-      })
-    });
-
-    // Set connect timeout
-    this.axiosInstance.defaults.timeout = OBSIDIAN_DEFAULTS.TIMEOUT_MS;
-  }
-
-  private getBaseUrl(): string {
-    return `${this.protocol}://${this.host}:${this.port}`;
-  }
-
-  private async safeCall<T>(fn: () => Promise<T>): Promise<T> {
-    try {
-      return await fn();
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        const axiosError = error as AxiosError<{ errorCode?: number; message?: string }>;
-
-        // Preserve detailed error information for better debugging
-        if (axiosError.response?.data) {
-          const errorData = axiosError.response.data;
-          const code = errorData.errorCode || axiosError.response.status || -1;
-          const message = errorData.message || axiosError.message || '<unknown>';
-          const contextInfo = this.getErrorContext(axiosError);
-          throw new ObsidianError(`${contextInfo}Error ${code}: ${message}`, code);
-        }
-
-        // Network-level errors (no response received)
-        if (axiosError.code) {
-          const contextInfo = this.getErrorContext(axiosError);
-          throw new ObsidianError(`${contextInfo}Network error (${axiosError.code}): ${axiosError.message}`);
-        }
-
-        // Generic axios error
-        const contextInfo = this.getErrorContext(axiosError);
-        throw new ObsidianError(`${contextInfo}Request failed: ${axiosError.message}`);
-      }
-      throw error;
-    }
-  }
-
-  private getErrorContext(axiosError: AxiosError): string {
-    const method = axiosError.config?.method?.toUpperCase() || 'REQUEST';
-    const url = axiosError.config?.url || 'unknown endpoint';
-    const status = axiosError.response?.status;
-
-    let context = `${method} ${url} - `;
-
-    if (status) {
-      if (status === 401) {
-        context += 'Authentication failed (check API key) - ';
-      } else if (status === 403) {
-        context += 'Access forbidden (check permissions) - ';
-      } else if (status === 404) {
-        context += 'Resource not found - ';
-      } else if (status >= 500) {
-        context += 'Server error (Obsidian plugin may be unavailable) - ';
-      } else if (status >= 400) {
-        context += 'Client error - ';
-      }
-    }
-
-    return context;
   }
 
   /**
@@ -494,20 +427,7 @@ export class ObsidianClient implements IObsidianClient {
     offset?: number,
     contentLength?: number
   ): Promise<RecentChange[]> {
-    // The Obsidian REST API doesn't have a direct "recent changes" endpoint
-    // Instead, we'll get all files and sort them by modification time
-    return this.safeCall(async () => {
-      const files = await this.listFilesInVault();
-      // For now, just return the file list as we can't get modification times without individual requests
-      // This is a limitation of the current API
-      const limitedFiles = limit ? files.slice(0, limit) : files;
-      return limitedFiles.map((file: string) => ({
-        path: file,
-        mtime: Date.now(), // Placeholder since API doesn't provide modification times
-        content: undefined // No content preview available without additional API calls
-        // TODO: When the Obsidian API supports it, use contentLength to fetch preview content
-      }));
-    });
+    return this.getFileOperationsClient().getRecentChanges(directory, limit, offset, contentLength);
   }
 
   /**

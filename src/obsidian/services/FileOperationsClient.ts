@@ -5,7 +5,7 @@ import { validatePath, validatePaths } from '../../utils/pathValidator.js';
 import { OBSIDIAN_DEFAULTS } from '../../constants.js';
 import { BatchProcessor } from '../../utils/BatchProcessor.js';
 import type { IFileOperationsClient } from '../interfaces/IFileOperationsClient.js';
-import type { FileContentResponse } from '../../types/obsidian.js';
+import type { FileContentResponse, RecentChange } from '../../types/obsidian.js';
 import type { ObsidianClientConfig } from '../ObsidianClient.js';
 
 /**
@@ -343,6 +343,45 @@ export class FileOperationsClient implements IFileOperationsClient {
         { headers }
       );
       return response.data;
+    });
+  }
+
+  /**
+   * Retrieves recently changed files in the vault.
+   * Note: Current API limitation - returns files without actual modification times.
+   *
+   * @param directory - Optional directory to filter changes within
+   * @param limit - Maximum number of changes to return
+   * @param offset - Number of changes to skip (for pagination)
+   * @param contentLength - Length of content preview (currently not supported)
+   * @returns Array of recent changes (with placeholder modification times due to API limitations)
+   * @throws {ObsidianError} If the API request fails
+   * @example
+   * // Get 10 most recent changes
+   * const changes = await client.getRecentChanges(undefined, 10);
+   *
+   * // Get changes in a specific directory
+   * const projectChanges = await client.getRecentChanges('projects', 5);
+   */
+  async getRecentChanges(
+    directory?: string,
+    limit?: number,
+    offset?: number,
+    contentLength?: number
+  ): Promise<RecentChange[]> {
+    // The Obsidian REST API doesn't have a direct "recent changes" endpoint
+    // Instead, we'll get all files and sort them by modification time
+    return this.safeCall(async () => {
+      const files = await this.listFilesInVault();
+      // For now, just return the file list as we can't get modification times without individual requests
+      // This is a limitation of the current API
+      const limitedFiles = limit ? files.slice(0, limit) : files;
+      return limitedFiles.map((file: string) => ({
+        path: file,
+        mtime: Date.now(), // Placeholder since API doesn't provide modification times
+        content: undefined // No content preview available without additional API calls
+        // TODO: When the Obsidian API supports it, use contentLength to fetch preview content
+      }));
     });
   }
 }

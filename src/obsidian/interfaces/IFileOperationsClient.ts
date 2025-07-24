@@ -1,4 +1,4 @@
-import type { FileContentResponse } from '../../types/obsidian.js';
+import type { FileContentResponse, RecentChange } from '../../types/obsidian.js';
 
 /**
  * Interface for file CRUD operations in Obsidian vault.
@@ -48,4 +48,12 @@ export interface IFileOperationsClient {
       target: string;
     }
   ): Promise<void>;
+
+  // Recent changes operations
+  getRecentChanges(
+    directory?: string,
+    limit?: number,
+    offset?: number,
+    contentLength?: number
+  ): Promise<RecentChange[]>;
 }
