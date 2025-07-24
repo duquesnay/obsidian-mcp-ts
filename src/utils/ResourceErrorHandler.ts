@@ -1,4 +1,4 @@
-import { HttpError } from '../types/common.js';
+import { HttpError, JsonObject } from '../types/common.js';
 
 /**
  * Standardized error handling for resource handlers
@@ -91,10 +91,12 @@ export class ResourceErrorHandler {
    * Type guard to check if error has HTTP response
    */
   static isHttpError(error: unknown): error is HttpError {
-    return error && 
+    return !!(error && 
            typeof error === 'object' && 
            'response' in error &&
-           error.response &&
-           typeof error.response.status === 'number';
+           (error as any).response &&
+           typeof (error as any).response === 'object' &&
+           'status' in (error as any).response &&
+           typeof (error as any).response.status === 'number');
   }
 }

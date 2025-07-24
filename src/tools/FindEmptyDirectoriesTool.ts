@@ -1,6 +1,7 @@
+import { FindEmptyDirectoriesArgs } from './types/FindEmptyDirectoriesArgs.js';
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 
-export class FindEmptyDirectoriesTool extends BaseTool {
+export class FindEmptyDirectoriesTool extends BaseTool<FindEmptyDirectoriesArgs> {
   name = 'obsidian_find_empty_directories';
   description = 'Find empty folders in Obsidian vault (vault-only - NOT filesystem scanning). Lists folders without notes.';
   
@@ -26,7 +27,7 @@ export class FindEmptyDirectoriesTool extends BaseTool {
     required: []
   };
 
-  async executeTyped(args: { searchPath?: string; includeHiddenFiles?: boolean }): Promise<ToolResponse> {
+  async executeTyped(args: FindEmptyDirectoriesArgs): Promise<ToolResponse> {
     try {
       const client = this.getClient();
       const searchPath = args.searchPath || '';

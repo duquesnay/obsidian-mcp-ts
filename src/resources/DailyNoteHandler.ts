@@ -21,7 +21,9 @@ export class DailyNoteHandler extends BaseResourceHandler {
       return noteData.content || '';
     } catch (error: unknown) {
       // Handle 404 errors with special format for compatibility
-      if (error?.response?.status === 404) {
+      if (error && typeof error === 'object' && 'response' in error && 
+          (error as any).response && typeof (error as any).response === 'object' &&
+          'status' in (error as any).response && (error as any).response.status === 404) {
         throw new Error(`Resource not found: Daily note at ${date}`);
       }
       throw error;

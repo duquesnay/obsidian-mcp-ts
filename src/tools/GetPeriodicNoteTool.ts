@@ -1,7 +1,8 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
-import { validateRequiredArgs, validatePeriod, PERIOD_SCHEMA, PeriodType } from '../utils/validation.js';
+import { validateRequiredArgs, validatePeriod, PERIOD_SCHEMA } from '../utils/validation.js';
+import { GetPeriodicNoteArgs } from './types/GetPeriodicNoteArgs.js';
 
-export class GetPeriodicNoteTool extends BaseTool {
+export class GetPeriodicNoteTool extends BaseTool<GetPeriodicNoteArgs> {
   name = 'obsidian_get_periodic_note';
   description = 'Get current periodic note for the specified period (daily, weekly, monthly, quarterly, yearly).';
   
@@ -19,7 +20,7 @@ export class GetPeriodicNoteTool extends BaseTool {
     required: ['period']
   };
 
-  async executeTyped(args: { period: PeriodType }): Promise<ToolResponse> {
+  async executeTyped(args: GetPeriodicNoteArgs): Promise<ToolResponse> {
     try {
       validateRequiredArgs(args, ['period']);
       validatePeriod(args.period);

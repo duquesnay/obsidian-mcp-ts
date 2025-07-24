@@ -1,7 +1,8 @@
+import { GetFileMetadataArgs } from './types/GetFileMetadataArgs.js';
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 
-export class GetFileMetadataTool extends BaseTool {
+export class GetFileMetadataTool extends BaseTool<GetFileMetadataArgs> {
   name = 'obsidian_get_file_metadata';
   description = 'Get Obsidian note metadata without content (vault-only - NOT filesystem metadata). Efficient for large notes.';
   
@@ -22,7 +23,7 @@ export class GetFileMetadataTool extends BaseTool {
     required: ['filepath']
   };
 
-  async executeTyped(args: { filepath: string }): Promise<ToolResponse> {
+  async executeTyped(args: GetFileMetadataArgs): Promise<ToolResponse> {
     try {
       PathValidationUtil.validate(args.filepath, 'filepath', { type: PathValidationType.FILE });
       

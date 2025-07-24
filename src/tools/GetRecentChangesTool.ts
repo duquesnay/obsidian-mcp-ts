@@ -1,8 +1,9 @@
+import { GetRecentChangesArgs } from './types/GetRecentChangesArgs.js';
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
 import { PAGINATION_SCHEMA } from '../utils/validation.js';
 
-export class GetRecentChangesTool extends BaseTool {
+export class GetRecentChangesTool extends BaseTool<GetRecentChangesArgs> {
   name = 'obsidian_get_recent_changes';
   description = 'Get recently modified files in the vault.';
   
@@ -33,12 +34,7 @@ export class GetRecentChangesTool extends BaseTool {
     required: []
   };
 
-  async executeTyped(args: {
-    directory?: string;
-    limit?: number;
-    offset?: number;
-    contentLength?: number;
-  }): Promise<ToolResponse> {
+  async executeTyped(args: GetRecentChangesArgs): Promise<ToolResponse> {
     try {
       const client = this.getClient();
       const result = await client.getRecentChanges(

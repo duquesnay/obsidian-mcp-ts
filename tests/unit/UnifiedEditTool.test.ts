@@ -12,7 +12,7 @@ describe('UnifiedEditTool Bug Fixes', () => {
     // Mock the ObsidianClient
     mockClient = {
       patchContent: vi.fn().mockResolvedValue({ success: true }),
-      getFileContents: vi.fn(),
+      getFileContents: vi.fn().mockResolvedValue('# Test\n## Section 1\nContent'),
       appendContent: vi.fn().mockResolvedValue({ success: true }),
       updateFile: vi.fn().mockResolvedValue({ success: true }),
     };

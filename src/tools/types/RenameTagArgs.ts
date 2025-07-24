@@ -1,0 +1,13 @@
+/**
+ * Arguments for the RenameTag tool
+ */
+export interface RenameTagArgs {
+  /**
+   * The current tag name to rename (with or without # prefix)
+   */
+  oldTagName: string;
+  /**
+   * The new tag name (with or without # prefix)
+   */
+  newTagName: string;
+}

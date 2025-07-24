@@ -1,58 +1,10 @@
+import { AdvancedSearchArgs, SearchFilter, SearchOptions } from './types/AdvancedSearchArgs.js';
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
 import { PAGINATION_SCHEMA, TAGS_ARRAY_SCHEMA, CONTEXT_LENGTH_SCHEMA } from '../utils/validation.js';
 
-interface SearchFilter {
-  content?: {
-    query?: string;
-    regex?: string;
-    caseSensitive?: boolean;
-  };
-  frontmatter?: {
-    [key: string]: {
-      operator: 'equals' | 'contains' | 'gt' | 'lt' | 'gte' | 'lte' | 'exists' | 'not_exists';
-      value?: any;
-    };
-  };
-  file?: {
-    path?: {
-      pattern?: string;
-      regex?: string;
-    };
-    extension?: string[];
-    size?: {
-      min?: number;
-      max?: number;
-    };
-    created?: {
-      after?: string;
-      before?: string;
-    };
-    modified?: {
-      after?: string;
-      before?: string;
-    };
-  };
-  tags?: {
-    include?: string[];
-    exclude?: string[];
-    mode?: 'all' | 'any';
-  };
-}
-
-interface SearchOptions {
-  limit?: number;
-  offset?: number;
-  sort?: {
-    field: 'name' | 'modified' | 'created' | 'size' | 'relevance';
-    direction: 'asc' | 'desc';
-  };
-  includeContent?: boolean;
-  contextLength?: number;
-}
-
-export class AdvancedSearchTool extends BaseTool {
+export class AdvancedSearchTool extends BaseTool<AdvancedSearchArgs> {
   name = 'obsidian_advanced_search';
   description = 'Advanced search in Obsidian vault notes (vault-only - NOT filesystem). Filter by content, metadata, tags.';
   
@@ -234,10 +186,7 @@ export class AdvancedSearchTool extends BaseTool {
     required: ['filters']
   };
 
-  async executeTyped(args: {
-    filters: SearchFilter;
-    options?: SearchOptions;
-  }): Promise<ToolResponse> {
+  async executeTyped(args: AdvancedSearchArgs): Promise<ToolResponse> {
     try {
       if (!args.filters) {
         throw new McpError(ErrorCode.InvalidParams, 'filters are required');

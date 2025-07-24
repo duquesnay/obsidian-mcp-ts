@@ -1,8 +1,9 @@
+import { CopyDirectoryArgs } from './types/CopyDirectoryArgs.js';
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 import { validateRequiredArgs, DIR_PATH_SCHEMA, BOOLEAN_FLAG_SCHEMA } from '../utils/validation.js';
 
-export class CopyDirectoryTool extends BaseTool {
+export class CopyDirectoryTool extends BaseTool<CopyDirectoryArgs> {
   name = 'obsidian_copy_directory';
   description = 'Copy folders within Obsidian vault (vault-only - NOT filesystem operations). Preserves folder structure.';
   
@@ -31,7 +32,7 @@ export class CopyDirectoryTool extends BaseTool {
     required: ['sourcePath', 'destinationPath']
   };
 
-  async executeTyped(args: { sourcePath: string; destinationPath: string; overwrite?: boolean }): Promise<ToolResponse> {
+  async executeTyped(args: CopyDirectoryArgs): Promise<ToolResponse> {
     try {
       // Validate required arguments
       validateRequiredArgs(args, ['sourcePath', 'destinationPath']);

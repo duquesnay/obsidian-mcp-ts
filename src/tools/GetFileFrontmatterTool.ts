@@ -1,7 +1,8 @@
+import { GetFileFrontmatterArgs } from './types/GetFileFrontmatterArgs.js';
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 
-export class GetFileFrontmatterTool extends BaseTool {
+export class GetFileFrontmatterTool extends BaseTool<GetFileFrontmatterArgs> {
   name = 'obsidian_get_file_frontmatter';
   description = 'Get frontmatter from Obsidian notes (vault-only - NOT filesystem files). Returns YAML metadata only.';
   
@@ -22,7 +23,7 @@ export class GetFileFrontmatterTool extends BaseTool {
     required: ['filepath']
   };
 
-  async executeTyped(args: { filepath: string }): Promise<ToolResponse> {
+  async executeTyped(args: GetFileFrontmatterArgs): Promise<ToolResponse> {
     try {
       PathValidationUtil.validate(args.filepath, 'filepath', { type: PathValidationType.FILE });
       

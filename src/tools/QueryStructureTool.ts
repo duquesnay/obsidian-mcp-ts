@@ -1,3 +1,4 @@
+import { QueryStructureArgs } from './types/QueryStructureArgs.js';
 import { BaseTool, ToolResponse, ToolMetadata } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
@@ -40,7 +41,7 @@ interface StructureQueryResult {
   };
 }
 
-export class QueryStructureTool extends BaseTool {
+export class QueryStructureTool extends BaseTool<QueryStructureArgs> {
   name = 'obsidian_query_structure';
   description = 'Query structure of Obsidian notes (vault-only - NOT filesystem files). Get headings and blocks for editing.';
   
@@ -100,20 +101,7 @@ export class QueryStructureTool extends BaseTool {
     required: ['filepath', 'query']
   };
 
-  async executeTyped(args: {
-    filepath: string;
-    query: {
-      type: 'headings' | 'blocks' | 'all';
-      filter?: {
-        text?: string;
-        level?: number;
-        min_level?: number;
-        max_level?: number;
-        path_contains?: string[];
-      };
-      include_content_preview?: boolean;
-    };
-  }): Promise<ToolResponse> {
+  async executeTyped(args: QueryStructureArgs): Promise<ToolResponse> {
     try {
       PathValidationUtil.validate(args.filepath, 'filepath', { type: PathValidationType.FILE });
       

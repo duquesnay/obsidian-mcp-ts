@@ -1,7 +1,8 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { validateRequiredArgs, TAG_SCHEMA, normalizeTagName } from '../utils/validation.js';
+import { GetFilesByTagArgs } from './types/GetFilesByTagArgs.js';
 
-export class GetFilesByTagTool extends BaseTool {
+export class GetFilesByTagTool extends BaseTool<GetFilesByTagArgs> {
   name = 'obsidian_get_files_by_tag';
   description = 'Get all files that contain a specific tag. Searches both inline tags (#tag) and frontmatter tags.';
 
@@ -19,7 +20,7 @@ export class GetFilesByTagTool extends BaseTool {
     required: ['tagName']
   };
 
-  async executeTyped(args: { tagName: string }): Promise<ToolResponse> {
+  async executeTyped(args: GetFilesByTagArgs): Promise<ToolResponse> {
     try {
       // Validate required arguments
       validateRequiredArgs(args, ['tagName']);

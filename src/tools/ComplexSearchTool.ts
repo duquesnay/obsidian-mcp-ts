@@ -1,3 +1,4 @@
+import { ComplexSearchArgs } from './types/ComplexSearchArgs.js';
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 import type { JsonLogicQuery } from '../types/jsonlogic.js';
@@ -47,7 +48,7 @@ function isValidJsonLogic(query: unknown): boolean {
   return hasOperator;
 }
 
-export class ComplexSearchTool extends BaseTool {
+export class ComplexSearchTool extends BaseTool<ComplexSearchArgs> {
   name = 'obsidian_complex_search';
   description = 'Complex search in Obsidian vault using JsonLogic (vault-only - NOT filesystem search).';
   
@@ -68,7 +69,7 @@ export class ComplexSearchTool extends BaseTool {
     required: ['query']
   };
 
-  async executeTyped(args: { query: JsonLogicQuery }): Promise<ToolResponse> {
+  async executeTyped(args: ComplexSearchArgs): Promise<ToolResponse> {
     try {
       if (!args.query) {
         throw new McpError(ErrorCode.InvalidParams, 'query argument is required');

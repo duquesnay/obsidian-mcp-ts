@@ -1,12 +1,7 @@
 import { BaseTool, ToolResponse, ToolMetadata } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 import { FILE_PATH_SCHEMA } from '../utils/validation.js';
-
-interface SimpleAppendArgs {
-  filepath: string;
-  content: string;
-  create_file_if_missing?: boolean;
-}
+import { SimpleAppendArgs } from './types/SimpleAppendArgs.js';
 
 export class SimpleAppendTool extends BaseTool<SimpleAppendArgs> {
   name = 'obsidian_simple_append';

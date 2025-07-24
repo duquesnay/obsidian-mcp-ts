@@ -1,8 +1,9 @@
+import { MoveDirectoryArgs } from './types/MoveDirectoryArgs.js';
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 import { DIR_PATH_SCHEMA } from '../utils/validation.js';
 
-export class MoveDirectoryTool extends BaseTool {
+export class MoveDirectoryTool extends BaseTool<MoveDirectoryArgs> {
   name = 'obsidian_move_directory';
   description = 'Move folders within Obsidian vault (vault-only - NOT filesystem operations). Preserves structure and updates links.';
   
@@ -27,7 +28,7 @@ export class MoveDirectoryTool extends BaseTool {
     required: ['sourcePath', 'destinationPath']
   };
 
-  async executeTyped(args: { sourcePath: string; destinationPath: string }): Promise<ToolResponse> {
+  async executeTyped(args: MoveDirectoryArgs): Promise<ToolResponse> {
     try {
       if (!args.sourcePath) {
         throw new Error('sourcePath argument missing in arguments');

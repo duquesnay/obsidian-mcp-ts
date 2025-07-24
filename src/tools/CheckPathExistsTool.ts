@@ -1,8 +1,9 @@
+import { CheckPathExistsArgs } from './types/CheckPathExistsArgs.js';
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 import { validateRequiredArgs, PATH_SCHEMA } from '../utils/validation.js';
 
-export class CheckPathExistsTool extends BaseTool {
+export class CheckPathExistsTool extends BaseTool<CheckPathExistsArgs> {
   name = 'obsidian_check_path_exists';
   description = 'Check if note or folder exists in Obsidian vault (vault-only - NOT filesystem paths). Returns type info.';
   
@@ -20,7 +21,7 @@ export class CheckPathExistsTool extends BaseTool {
     required: ['path']
   };
 
-  async executeTyped(args: { path: string }): Promise<ToolResponse> {
+  async executeTyped(args: CheckPathExistsArgs): Promise<ToolResponse> {
     try {
       // Validate required arguments
       validateRequiredArgs(args, ['path']);

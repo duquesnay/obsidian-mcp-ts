@@ -12,6 +12,7 @@ import type {
   SearchResult
 } from '../../types/obsidian.js';
 import type { JsonLogicQuery } from '../../types/jsonlogic.js';
+import type { IPeriodicNotesClient } from './IPeriodicNotesClient.js';
 
 /**
  * Interface for Obsidian client operations.
@@ -127,4 +128,7 @@ export interface IObsidianClient {
     }
   ): Promise<void>;
   appendContent(filepath: string, content: string, createIfNotExists?: boolean): Promise<void>;
+  
+  // Method to get PeriodicNotesClient
+  getPeriodicNotesClient(): IPeriodicNotesClient;
 }

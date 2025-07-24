@@ -1,8 +1,9 @@
+import { DeleteDirectoryArgs } from './types/DeleteDirectoryArgs.js';
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 import { validateRequiredArgs, DIR_PATH_SCHEMA, BOOLEAN_FLAG_SCHEMA } from '../utils/validation.js';
 
-export class DeleteDirectoryTool extends BaseTool {
+export class DeleteDirectoryTool extends BaseTool<DeleteDirectoryArgs> {
   name = 'obsidian_delete_directory';
   description = 'Delete folders from Obsidian vault (vault-only - NOT filesystem deletion). Supports recursive deletion.';
   
@@ -31,7 +32,7 @@ export class DeleteDirectoryTool extends BaseTool {
     required: ['directoryPath']
   };
 
-  async executeTyped(args: { directoryPath: string; recursive?: boolean; permanent?: boolean }): Promise<ToolResponse> {
+  async executeTyped(args: DeleteDirectoryArgs): Promise<ToolResponse> {
     try {
       // Validate required arguments
       validateRequiredArgs(args, ['directoryPath']);

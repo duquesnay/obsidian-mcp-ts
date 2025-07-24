@@ -1,7 +1,8 @@
+import { RenameTagArgs } from './types/RenameTagArgs.js';
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { validateRequiredArgs, TAG_SCHEMA, normalizeTagName } from '../utils/validation.js';
 
-export class RenameTagTool extends BaseTool {
+export class RenameTagTool extends BaseTool<RenameTagArgs> {
   name = 'obsidian_rename_tag';
   description = 'Rename a tag across the entire vault. Updates both inline tags (#tag) and frontmatter tags.';
   
@@ -20,7 +21,7 @@ export class RenameTagTool extends BaseTool {
     required: ['oldTagName', 'newTagName']
   };
 
-  async executeTyped(args: { oldTagName: string; newTagName: string }): Promise<ToolResponse> {
+  async executeTyped(args: RenameTagArgs): Promise<ToolResponse> {
     try {
       // Validate required arguments
       validateRequiredArgs(args, ['oldTagName', 'newTagName']);

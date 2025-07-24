@@ -1,8 +1,9 @@
+import { CreateDirectoryArgs } from './types/CreateDirectoryArgs.js';
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType, PathValidationError } from '../utils/PathValidationUtil.js';
 import { DIR_PATH_SCHEMA } from '../utils/validation.js';
 
-export class CreateDirectoryTool extends BaseTool {
+export class CreateDirectoryTool extends BaseTool<CreateDirectoryArgs> {
   name = 'obsidian_create_directory';
   description = 'Create folders in Obsidian vault (vault-only - NOT filesystem directories). Supports nested creation.';
   
@@ -25,7 +26,7 @@ export class CreateDirectoryTool extends BaseTool {
     required: ['directoryPath']
   };
 
-  async executeTyped(args: { directoryPath: string; createParents?: boolean }): Promise<ToolResponse> {
+  async executeTyped(args: CreateDirectoryArgs): Promise<ToolResponse> {
     try {
       // Validate and normalize the directory path
       try {

@@ -1,8 +1,9 @@
+import { MoveFileArgs } from './types/MoveFileArgs.js';
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 import { validateRequiredArgs, FILE_PATH_SCHEMA } from '../utils/validation.js';
 
-export class MoveFileTool extends BaseTool {
+export class MoveFileTool extends BaseTool<MoveFileArgs> {
   name = 'obsidian_move_file';
   description = 'Move Obsidian vault notes between folders (vault-only - NOT filesystem moves). Updates all internal links.';
   
@@ -27,7 +28,7 @@ export class MoveFileTool extends BaseTool {
     required: ['sourcePath', 'destinationPath']
   };
 
-  async executeTyped(args: { sourcePath: string; destinationPath: string }): Promise<ToolResponse> {
+  async executeTyped(args: MoveFileArgs): Promise<ToolResponse> {
     try {
       // Validate required arguments
       validateRequiredArgs(args, ['sourcePath', 'destinationPath']);

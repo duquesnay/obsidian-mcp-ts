@@ -1,8 +1,9 @@
+import { RenameFileArgs } from './types/RenameFileArgs.js';
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 import { FILE_PATH_SCHEMA } from '../utils/validation.js';
 
-export class RenameFileTool extends BaseTool {
+export class RenameFileTool extends BaseTool<RenameFileArgs> {
   name = 'obsidian_rename_file';
   description = 'Rename an Obsidian vault note within same directory (vault-only - NOT filesystem). Updates all links automatically.';
   
@@ -27,7 +28,7 @@ export class RenameFileTool extends BaseTool {
     required: ['oldPath', 'newPath']
   };
 
-  async executeTyped(args: { oldPath: string; newPath: string }): Promise<ToolResponse> {
+  async executeTyped(args: RenameFileArgs): Promise<ToolResponse> {
     try {
       if (!args.oldPath) {
         throw new Error('oldPath argument missing in arguments');

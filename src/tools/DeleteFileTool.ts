@@ -2,6 +2,7 @@ import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 import { DeleteFileArgs } from './types/DeleteFileArgs.js';
 import { PATH_SCHEMA } from '../utils/validation.js';
+import { hasHttpResponse, getHttpStatus, getErrorMessage } from '../utils/errorTypeGuards.js';
 
 export class DeleteFileTool extends BaseTool<DeleteFileArgs> {
   name = 'obsidian_delete_file';
@@ -46,7 +47,7 @@ export class DeleteFileTool extends BaseTool<DeleteFileArgs> {
       return this.formatResponse({ success: true, message: 'File deleted successfully' });
     } catch (error: unknown) {
       // Use the new handleHttpError method with custom handlers
-      if (error.response?.status) {
+      if (hasHttpResponse(error)) {
         return this.handleHttpError(error, {
           404: {
             message: 'File not found',
@@ -57,7 +58,8 @@ export class DeleteFileTool extends BaseTool<DeleteFileArgs> {
       }
       
       // Handle file lock errors
-      if (error.message?.includes('in use') || error.message?.includes('locked')) {
+      const errorMessage = hasHttpResponse(error) ? error.message : (error instanceof Error ? error.message : String(error));
+      if (errorMessage?.includes('in use') || errorMessage?.includes('locked')) {
         return this.handleSimplifiedError(
           error,
           'File is currently in use or locked. Close the file in Obsidian and try again. Wait for the file to be released and retry the operation',

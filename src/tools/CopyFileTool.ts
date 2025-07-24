@@ -1,8 +1,9 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 import { FILE_PATH_SCHEMA, BOOLEAN_FLAG_SCHEMA } from '../utils/validation.js';
+import { CopyFileArgs } from './types/CopyFileArgs.js';
 
-export class CopyFileTool extends BaseTool {
+export class CopyFileTool extends BaseTool<CopyFileArgs> {
   name = 'obsidian_copy_file';
   description = 'Copy Obsidian vault notes to new location (vault-only - NOT filesystem copying). Creates duplicate with content.';
   
@@ -31,7 +32,7 @@ export class CopyFileTool extends BaseTool {
     required: ['sourcePath', 'destinationPath']
   };
 
-  async executeTyped(args: { sourcePath: string; destinationPath: string; overwrite?: boolean }): Promise<ToolResponse> {
+  async executeTyped(args: CopyFileArgs): Promise<ToolResponse> {
     try {
       if (!args.sourcePath) {
         throw new Error('sourcePath argument missing in arguments');

@@ -13,45 +13,8 @@ import {
   NewSectionOperation,
   BatchOperation
 } from './strategies/IEditStrategy.js';
+import { UnifiedEditArgs, BatchOperationInput } from './types/UnifiedEditArgs.js';
 
-interface SimpleEdit {
-  append?: string;
-}
-
-interface StructureEdit {
-  after?: string;
-  before?: string;
-  add?: string;
-}
-
-interface TextEdit {
-  find?: string;
-  replace?: string;
-}
-
-type BatchOperationInput = {
-  after?: string;
-  before?: string;
-  add?: string;
-  find?: string;
-  replace?: string;
-  at?: 'start' | 'end';
-  append?: string;
-};
-
-interface BatchEdit {
-  batch?: BatchOperationInput[];
-}
-
-interface NewSectionEdit {
-  new_section?: string;
-  at?: 'start' | 'end' | string;
-  content?: string;
-}
-
-type UnifiedEditArgs = {
-  file: string;
-} & (SimpleEdit | StructureEdit | TextEdit | BatchEdit | NewSectionEdit);
 
 export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
   name = 'obsidian_edit';

@@ -1,8 +1,9 @@
+import { ManageFileTagsArgs } from './types/ManageFileTagsArgs.js';
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 import { validateRequiredArgs, FILE_PATH_SCHEMA, TAGS_ARRAY_SCHEMA, normalizeTagName } from '../utils/validation.js';
 
-export class ManageFileTagsTool extends BaseTool {
+export class ManageFileTagsTool extends BaseTool<ManageFileTagsArgs> {
   name = 'obsidian_manage_file_tags';
   description = 'Add or remove tags from a specific file. Can modify both inline tags and frontmatter tags.';
   
@@ -35,12 +36,7 @@ export class ManageFileTagsTool extends BaseTool {
     required: ['filePath', 'operation', 'tags']
   };
 
-  async executeTyped(args: { 
-    filePath: string; 
-    operation: 'add' | 'remove'; 
-    tags: string[];
-    location?: 'frontmatter' | 'inline' | 'both'
-  }): Promise<ToolResponse> {
+  async executeTyped(args: ManageFileTagsArgs): Promise<ToolResponse> {
     try {
       // Validate required arguments with tags as non-empty array
       validateRequiredArgs(args, ['filePath', 'operation', 'tags'], {

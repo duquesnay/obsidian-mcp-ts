@@ -220,7 +220,7 @@ After each sub-agent completes:
 
 **Quality Improvement Tasks**: 63 (100% completed) ✅
 **Resource Tasks**: 18 (100% completed) ✅
-**Quality Check Tasks**: 7/10 completed (70%)
+**Quality Check Tasks**: 11/14 completed (78%)
 
 ---
 
@@ -262,18 +262,18 @@ After each sub-agent completes:
 - [x] CQ5.5: Extract AND integrate BatchEditStrategy (must be used immediately)
 - [x] CQ5.6: Extract AND integrate SectionEditStrategy ✅ (must be used immediately)
 - [ ] CQ5.7: ~~Refactor UnifiedEditTool to use strategy pattern~~ (happens incrementally with each strategy)
-- [ ] CQ5.8: Clean up and optimize UnifiedEditTool
+- [x] CQ5.8: Clean up and optimize UnifiedEditTool ✅
 
 - [x] CQ6.1: ~~Create central schema fragments file~~ (already done in validation.ts with schema fragments)
 - [x] CQ6.2: ~~Extract common propertchemas~~ (already done: PATH_SCHEMA, CONTENT_SCHEMA, etc.)
 - [ ] CQ6.3: ~~Create schema builder utility~~ (may not be needed with current approach)
-- [ ] CQ6.4: Migrate remaining tools to use schema fragments from validation.ts
+- [x] CQ6.4: Migrate remaining tools to use schema fragments from validation.ts ✅
 - [ ] CQ6.5: ~~Remove duplicate schema definitions~~ (happens as part of CQ6.4)
 
-- [ ] CQ7: Address TODO comments
-  - ObsidianClient.ts line 31: "break apart, file is too long"
-  - Remove or address test file TODOs
-  - Clean up technical debt markers
+- [x] CQ7: Address TODO comments ✅
+  - ObsidianClient.ts line 31: "break apart, file is too long" ✅ (moved getRecentChanges to FileOperationsClient)
+  - Remove or address test file TODOs ✅
+  - Clean up technical debt markers ✅
 
 ### High Priority (Continued)
 - [x] CQ3: Create validation utilities for DRY
@@ -283,45 +283,98 @@ After each sub-agent completes:
   - Reduce validation code duplication across 20+ tools
 
 ### Low Priority (Type Safety & Documentation)
-- [ ] CQ8: Complete argument type extraction
-  - Extract remaining ~23 tool argument types to src/tools/types/
-  - Maintain consistency across all tools
+- [x] CQ8: Complete argument type extraction (COMPLETED - UnifiedEditArgs extracted)
 
 - [ ] CQ9: Extract remaining magic numbers to constants
-  - Path length limit (1000) in pathValidator.ts
-  - Various retry delays and timeouts
-  - Any other hardcoded numeric values
+  - [ ] CQ9.1: Extract PATH_LENGTH_LIMIT (1000) from pathValidator.ts to constants.ts
+  - [ ] CQ9.2: Search for numeric literals in BatchProcessor.ts and extract to named constants
+  - [ ] CQ9.3: Search for numeric literals in OptimizedBatchProcessor.ts and extract to named constants
+  - [ ] CQ9.4: Search for numeric literals in LRUCache.ts and extract to named constants
+  - [ ] CQ9.5: Search for numeric literals in RequestDeduplicator.ts and extract to named constants
+  - [ ] CQ9.6: Search for timeout values across all tool files and centralize in constants.ts
+  - [ ] CQ9.7: Search for retry count values across utilities and centralize in constants.ts
+  - [ ] CQ9.8: Create validation to ensure no hardcoded numbers remain in utility files
 
 - [ ] CQ10: Replace any types with proper type guards
-  - Create hasResponse() type guard for error handling
-  - Fix all (err as any).response patterns
-  - Improve type safety throughout
+  - [ ] CQ10.1: Create hasResponse() type guard function in src/utils/typeGuards.ts
+  - [ ] CQ10.2: Create isToolResponse() type guard for MCP tool response validation
+  - [ ] CQ10.3: Create isObsidianError() type guard for API error responses
+  - [ ] CQ10.4: Replace any type usage in ObsidianErrorHandler with proper type guards
+  - [ ] CQ10.5: Replace any type usage in error catch blocks across all tools
+  - [ ] CQ10.6: Update BaseTool error handling to use new type guards
+  - [ ] CQ10.7: Add unit tests for each type guard function
+  - [ ] CQ10.8: Remove remaining any types from utility function parameters
 
 - [ ] CQ11: Document complex regex patterns
-  - Extract regex patterns to named constants
-  - Add explanatory comments for complex patterns
-  - Improve code readability
+  - [ ] CQ11.1: Extract URL validation regex from ObsidianClient to named constant with comment
+  - [ ] CQ11.2: Extract path validation regex patterns to constants with explanatory comments
+  - [ ] CQ11.3: Extract markdown heading regex patterns from editing tools to constants
+  - [ ] CQ11.4: Extract tag validation regex patterns to constants with documentation
+  - [ ] CQ11.5: Extract file extension patterns to constants with use case comments
+  - [ ] CQ11.6: Create REGEX_PATTERNS object in constants.ts to group all patterns
+  - [ ] CQ11.7: Add JSDoc comments explaining each regex pattern's purpose and examples
+  - [ ] CQ11.8: Update all regex usage to reference the named constants
 
 ### Performance Features Integration (Lower Priority)
 - [ ] CQ12: Complete subscription system integration
-  - Connect cache invalidation to notification triggers
-  - Implement file watching or change detection
-  - Wire up cacheNotifications hooks
-  - Enable live updates for subscribed resources
+  - [ ] CQ12.1: Define subscription event types enum in constants.ts
+  - [ ] CQ12.2: Create NotificationManager class skeleton in src/utils/
+  - [ ] CQ12.3: Add subscription hooks to LRUCache invalidation methods
+  - [ ] CQ12.4: Create subscription interface for cache change events
+  - [ ] CQ12.5: Implement event emitter pattern in NotificationManager
+  - [ ] CQ12.6: Connect file write operations to trigger cache invalidation events
+  - [ ] CQ12.7: Connect file delete operations to trigger cache invalidation events
+  - [ ] CQ12.8: Add subscription configuration to server initialization
+  - [ ] CQ12.9: Create unit tests for notification trigger scenarios
 
 - [ ] CQ13: Integrate RequestDeduplicator
-  - Add to ObsidianClient methods to prevent duplicate concurrent API calls
-  - Configure appropriate TTL for different operation types
-  - Add performance metrics to measure effectiveness
+  - [ ] CQ13.1: Add RequestDeduplicator instance to ObsidianClient constructor
+  - [ ] CQ13.2: Wrap getVault() method with deduplication logic
+  - [ ] CQ13.3: Wrap getFileContent() method with deduplication logic
+  - [ ] CQ13.4: Wrap searchVault() method with deduplication logic
+  - [ ] CQ13.5: Create deduplication key generator for different request types
+  - [ ] CQ13.6: Add deduplication to batch read operations
+  - [ ] CQ13.7: Add metrics logging for deduplication hit rate
+  - [ ] CQ13.8: Create integration tests for concurrent duplicate requests
 
 - [ ] CQ14: Migrate to OptimizedBatchProcessor
-  - Replace BatchProcessor usage in ObsidianClient
-  - Configure retry logic for network operations
-  - Add progress callbacks for long-running operations
-  - Gain reliability benefits from retry mechanism
+  - [ ] CQ14.1: Replace BatchProcessor import with OptimizedBatchProcessor in ObsidianClient
+  - [ ] CQ14.2: Update batchGetFileContents to use OptimizedBatchProcessor
+  - [ ] CQ14.3: Update batch write operations to use OptimizedBatchProcessor
+  - [ ] CQ14.4: Configure retry logic for batch operations in OptimizedBatchProcessor
+  - [ ] CQ14.5: Add progress callback handling for large batch operations
+  - [ ] CQ14.6: Update error aggregation to use OptimizedBatchProcessor's error handling
+  - [ ] CQ14.7: Add performance comparison tests between old and new processors
+  - [ ] CQ14.8: Remove deprecated BatchProcessor once migration is complete
 
 ### Low Priority (From Previous Quality Check)
 - [ ] Q3.1: Add performance benchmarks for optimization utilities
+  - [ ] Q3.1.1: Create benchmark directory structure (src/benchmarks/)
+  - [ ] Q3.1.2: Create LRUCache benchmark suite measuring hit/miss rates
+  - [ ] Q3.1.3: Create RequestDeduplicator benchmark for concurrent request handling
+  - [ ] Q3.1.4: Create OptimizedBatchProcessor benchmark for various batch sizes
+  - [ ] Q3.1.5: Add memory usage tracking to benchmark utilities
+  - [ ] Q3.1.6: Create comparison benchmark between cached vs non-cached operations
+  - [ ] Q3.1.7: Add benchmark npm script to package.json
+  - [ ] Q3.1.8: Document benchmark results in performance.md
+
 - [ ] Q3.2: Create troubleshooting guide for common issues
+  - [ ] Q3.2.1: Create TROUBLESHOOTING.md file structure with sections
+  - [ ] Q3.2.2: Document "API key not set" error with resolution steps
+  - [ ] Q3.2.3: Document "Connection refused" error with Obsidian plugin checks
+  - [ ] Q3.2.4: Document "Path not found" errors with encoding solutions
+  - [ ] Q3.2.5: Document "Permission denied" errors with vault access checks
+  - [ ] Q3.2.6: Add SSL certificate error section with explanation
+  - [ ] Q3.2.7: Create diagnostic checklist for connection issues
+  - [ ] Q3.2.8: Add examples of common misconfigurations with fixes
+
 - [ ] Q3.3: Document SSL verification rationale (disabled for local Obsidian access)
+  - [ ] Q3.3.1: Create SECURITY.md file for security-related documentation
+  - [ ] Q3.3.2: Document why SSL verification is disabled for local connections
+  - [ ] Q3.3.3: Explain self-signed certificate challenges with Obsidian
+  - [ ] Q3.3.4: Add security implications of disabled SSL verification
+  - [ ] Q3.3.5: Document recommended security practices for API keys
+  - [ ] Q3.3.6: Create section on secure local development setup
+  - [ ] Q3.3.7: Add references to Obsidian Local REST API security model
+  - [ ] Q3.3.8: Include alternative security measures for production use
 

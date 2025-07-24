@@ -2,6 +2,7 @@ import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 import { AppendContentArgs } from './types/AppendContentArgs.js';
 import { FILE_PATH_SCHEMA, CONTENT_SCHEMA } from '../utils/validation.js';
+import { hasHttpResponse, hasMessage, getHttpStatus, getErrorMessage } from '../utils/errorTypeGuards.js';
 
 export class AppendContentTool extends BaseTool<AppendContentArgs> {
   name = 'obsidian_append_content';
@@ -61,7 +62,7 @@ export class AppendContentTool extends BaseTool<AppendContentArgs> {
       return this.formatResponse({ success: true, message: 'Content appended successfully' });
     } catch (error: unknown) {
       // Special case: 404 with createIfNotExists false
-      if (error.response?.status === 404 && args.createIfNotExists === false) {
+      if (getHttpStatus(error) === 404 && args.createIfNotExists === false) {
         return this.handleSimplifiedError(
           error,
           'File does not exist and createIfNotExists is set to false. Either set createIfNotExists to true or use an existing file. Use obsidian_list_files_in_vault to find existing files',
@@ -75,7 +76,8 @@ export class AppendContentTool extends BaseTool<AppendContentArgs> {
       
       
       // Handle disk space errors
-      if (error.message?.includes('disk space') || error.message?.includes('space')) {
+      const errorMessage = getErrorMessage(error);
+      if (errorMessage.includes('disk space') || errorMessage.includes('space')) {
         return this.handleSimplifiedError(
           error,
           'Insufficient disk space. Free up space on your system and try again. Try appending smaller content or delete unused files first',
@@ -88,7 +90,7 @@ export class AppendContentTool extends BaseTool<AppendContentArgs> {
       
       // Use the new handleHttpError method to handle HTTP errors
       // For non-HTTP errors, provide fallback suggestions
-      if (error.response?.status) {
+      if (hasHttpResponse(error)) {
         return this.handleHttpError(error);
       }
       

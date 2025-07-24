@@ -1,12 +1,7 @@
 import { BaseTool, ToolResponse, ToolMetadata } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 import { FILE_PATH_SCHEMA } from '../utils/validation.js';
-
-interface SimpleReplaceArgs {
-  filepath: string;
-  find: string;
-  replace: string;
-}
+import { SimpleReplaceArgs } from './types/SimpleReplaceArgs.js';
 
 export class SimpleReplaceTool extends BaseTool<SimpleReplaceArgs> {
   name = 'obsidian_simple_replace';

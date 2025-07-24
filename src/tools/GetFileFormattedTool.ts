@@ -1,7 +1,8 @@
+import { GetFileFormattedArgs } from './types/GetFileFormattedArgs.js';
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 
-export class GetFileFormattedTool extends BaseTool {
+export class GetFileFormattedTool extends BaseTool<GetFileFormattedArgs> {
   name = 'obsidian_get_file_formatted';
   description = 'Get Obsidian notes in different formats (vault-only - NOT filesystem files). Plain text, HTML, or markdown.';
   
@@ -27,7 +28,7 @@ export class GetFileFormattedTool extends BaseTool {
     required: ['filepath', 'format']
   };
 
-  async executeTyped(args: { filepath: string; format: 'plain' | 'html' | 'content' }): Promise<ToolResponse> {
+  async executeTyped(args: GetFileFormattedArgs): Promise<ToolResponse> {
     try {
       PathValidationUtil.validate(args.filepath, 'filepath', { type: PathValidationType.FILE });
       
