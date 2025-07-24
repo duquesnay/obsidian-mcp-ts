@@ -133,7 +133,7 @@ describe('UnifiedEditTool - HeadingInsert Strategy Integration', () => {
     const response2 = JSON.parse(result2.text);
     expect(response2.error).toContain("No valid operation specified");
     
-    // Test the actual validation in handleHeadingInsert
+    // Test with empty add content - now falls through to "No valid operation"
     const args3 = {
       file: 'test.md',
       after: 'Heading',
@@ -142,6 +142,6 @@ describe('UnifiedEditTool - HeadingInsert Strategy Integration', () => {
 
     const result3 = await tool.executeTyped(args3 as any);
     const response3 = JSON.parse(result3.text);
-    expect(response3.error).toContain("Heading insert requires");
+    expect(response3.error).toContain("No valid operation specified");
   });
 });

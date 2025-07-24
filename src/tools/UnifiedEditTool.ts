@@ -3,7 +3,16 @@ import { AppendStrategy } from './strategies/AppendStrategy.js';
 import { FindReplaceStrategy } from './strategies/FindReplaceStrategy.js';
 import { HeadingInsertStrategy } from './strategies/HeadingInsertStrategy.js';
 import { SectionEditStrategy } from './strategies/SectionEditStrategy.js';
-import { IEditStrategy, EditContext, AppendOperation, ReplaceOperation, HeadingInsertOperation, NewSectionOperation } from './strategies/IEditStrategy.js';
+import { BatchEditStrategy } from './strategies/BatchEditStrategy.js';
+import { 
+  IEditStrategy, 
+  EditContext, 
+  AppendOperation, 
+  ReplaceOperation, 
+  HeadingInsertOperation, 
+  NewSectionOperation,
+  BatchOperation
+} from './strategies/IEditStrategy.js';
 
 interface SimpleEdit {
   append?: string;
@@ -20,7 +29,7 @@ interface TextEdit {
   replace?: string;
 }
 
-type BatchOperation = {
+type BatchOperationInput = {
   after?: string;
   before?: string;
   add?: string;
@@ -31,7 +40,7 @@ type BatchOperation = {
 };
 
 interface BatchEdit {
-  batch?: BatchOperation[];
+  batch?: BatchOperationInput[];
 }
 
 interface NewSectionEdit {
@@ -48,10 +57,33 @@ export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
   name = 'obsidian_edit';
   description = 'Edit Obsidian vault notes with smart operations (vault-only - NOT filesystem files). Supports append, find/replace, and heading-based insertions.';
   
-  private appendStrategy: IEditStrategy = new AppendStrategy();
-  private findReplaceStrategy: IEditStrategy = new FindReplaceStrategy();
-  private headingInsertStrategy: IEditStrategy = new HeadingInsertStrategy();
-  private sectionEditStrategy: IEditStrategy = new SectionEditStrategy();
+  private strategies: Map<string, IEditStrategy>;
+
+  constructor() {
+    super();
+    
+    // Initialize strategies
+    const appendStrategy = new AppendStrategy();
+    const findReplaceStrategy = new FindReplaceStrategy();
+    const headingInsertStrategy = new HeadingInsertStrategy();
+    const sectionEditStrategy = new SectionEditStrategy();
+    
+    // Create batch strategy with dependencies
+    const batchStrategy = new BatchEditStrategy(
+      appendStrategy,
+      findReplaceStrategy,
+      headingInsertStrategy
+    );
+    
+    // Store strategies by operation type
+    this.strategies = new Map([
+      ['append', appendStrategy],
+      ['replace', findReplaceStrategy],
+      ['heading-insert', headingInsertStrategy],
+      ['new-section', sectionEditStrategy],
+      ['batch', batchStrategy]
+    ]);
+  }
 
   metadata: ToolMetadata = {
     category: 'editing',
@@ -118,7 +150,8 @@ export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
             add: { type: 'string' as const },
             find: { type: 'string' as const },
             replace: { type: 'string' as const },
-            at: { type: 'string' as const }
+            at: { type: 'string' as const },
+            append: { type: 'string' as const }
           }
         }
       }
@@ -128,181 +161,131 @@ export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
 
   async executeTyped(args: UnifiedEditArgs): Promise<ToolResponse> {
     try {
-      const client = this.getClient();
-      
-      // Stage 1: Dead simple operations (must work 100%)
-      if ('append' in args && args.append !== undefined) {
-        return await this.handleAppend(args.file, args.append);
+      const context: EditContext = {
+        filepath: args.file,
+        client: this.getClient()
+      };
+
+      // Determine operation and execute with appropriate strategy
+      const operation = this.parseOperation(args);
+      if (!operation) {
+        return this.formatResponse({
+          error: "No valid operation specified",
+          examples: {
+            simple_append: { file: args.file, append: "your text here" },
+            after_heading: { file: args.file, after: "Heading Name", add: "your content" },
+            replace_text: { file: args.file, find: "old text", replace: "new text" }
+          },
+          help: "Use one of the patterns above. For questions, check the tool description."
+        });
       }
-      
-      // Stage 2: Structure-aware operations (90%+ reliability)
-      if (('after' in args || 'before' in args) && 'add' in args) {
-        return await this.handleHeadingInsert(args.file, args);
+
+      const strategy = this.strategies.get(operation.type);
+      if (!strategy) {
+        return this.formatResponse({
+          error: `No strategy available for operation type: ${operation.type}`
+        });
       }
-      
-      // Text replacement operations
-      if ('find' in args && 'replace' in args) {
-        return await this.handleReplace(args.file, args.find!, args.replace!);
-      }
-      
-      // New section operations
-      if ('new_section' in args) {
-        return await this.handleNewSection(args.file, args);
-      }
-      
-      // Stage 3: Complex operations (80%+ reliability acceptable)
-      if ('batch' in args && args.batch) {
-        return await this.handleBatch(args.file, args.batch);
-      }
-      
-      // If no recognized pattern, provide helpful guidance
-      return this.formatResponse({
-        error: "No valid operation specified",
-        examples: {
-          simple_append: { file: args.file, append: "your text here" },
-          after_heading: { file: args.file, after: "Heading Name", add: "your content" },
-          replace_text: { file: args.file, find: "old text", replace: "new text" }
-        },
-        help: "Use one of the patterns above. For questions, check the tool description."
-      });
+
+      const result = await strategy.execute(operation, context);
+      return this.formatResponse(result);
       
     } catch (error: unknown) {
       return this.handleError(error);
     }
   }
 
-  private async handleAppend(filepath: string, content: string): Promise<ToolResponse> {
-    const operation: AppendOperation = {
-      type: 'append',
-      content
-    };
-    
-    const context: EditContext = {
-      filepath,
-      client: this.getClient()
-    };
-    
-    const result = await this.appendStrategy.execute(operation, context);
-    return this.formatResponse(result);
-  }
-
-  private async handleHeadingInsert(filepath: string, args: StructureEdit): Promise<ToolResponse> {
-    if (!args.add || (!args.after && !args.before)) {
-      return this.formatResponse({
-        error: "Heading insert requires 'add' content and either 'after' or 'before' heading",
-        example: { file: filepath, after: "Heading Name", add: "Your content" }
-      });
-    }
-
-    const operation: HeadingInsertOperation = {
-      type: 'heading-insert',
-      position: args.after ? 'after' : 'before',
-      heading: (args.after || args.before)!,
-      content: args.add
-    };
-
-    const context: EditContext = {
-      filepath,
-      client: this.getClient()
-    };
-
-    const result = await this.headingInsertStrategy.execute(operation, context);
-    return this.formatResponse(result);
-  }
-
-  private async handleReplace(filepath: string, find: string, replace: string): Promise<ToolResponse> {
-    const operation: ReplaceOperation = {
-      type: 'replace',
-      find,
-      replace
-    };
-    
-    const context: EditContext = {
-      filepath,
-      client: this.getClient()
-    };
-    
-    const result = await this.findReplaceStrategy.execute(operation, context);
-    return this.formatResponse(result);
-  }
-
-  private async handleNewSection(filepath: string, args: NewSectionEdit): Promise<ToolResponse> {
-    if (!args.new_section) {
-      return this.formatResponse({
-        error: "New section requires 'new_section' title",
-        example: { file: filepath, new_section: "Section Title", content: "Optional content" }
-      });
-    }
-
-    const operation: NewSectionOperation = {
-      type: 'new-section',
-      title: args.new_section,
-      at: args.at || 'end',
-      content: args.content
-    };
-
-    const context: EditContext = {
-      filepath,
-      client: this.getClient()
-    };
-
-    const result = await this.sectionEditStrategy.execute(operation, context);
-    return this.formatResponse(result);
-  }
-
-  private async handleBatch(filepath: string, operations: BatchOperation[]): Promise<ToolResponse> {
-    interface BatchResult {
-      operation: number;
-      result: ToolResponse | { error: string };
+  private parseOperation(args: UnifiedEditArgs): AppendOperation | ReplaceOperation | HeadingInsertOperation | NewSectionOperation | BatchOperation | null {
+    // Simple append
+    if ('append' in args && args.append !== undefined) {
+      return {
+        type: 'append',
+        content: args.append
+      };
     }
     
-    interface BatchError {
-      operation: number;
-      error: string;
-      attempted: BatchOperation;
+    // Structure-aware operations
+    if (('after' in args || 'before' in args) && 'add' in args && args.add) {
+      return {
+        type: 'heading-insert',
+        position: args.after ? 'after' : 'before',
+        heading: (args.after || args.before)!,
+        content: args.add
+      };
     }
     
-    const results: BatchResult[] = [];
-    const errors: BatchError[] = [];
+    // Text replacement
+    if ('find' in args && 'replace' in args && args.find && args.replace) {
+      return {
+        type: 'replace',
+        find: args.find,
+        replace: args.replace
+      };
+    }
     
-    for (let i = 0; i < operations.length; i++) {
-      const op = operations[i];
-      try {
-        let result;
-        
-        if ((op.after || op.before) && op.add) {
-          result = await this.handleHeadingInsert(filepath, { 
-            after: op.after, 
-            before: op.before, 
-            add: op.add 
-          });
-        } else if (op.find && op.replace) {
-          result = await this.handleReplace(filepath, op.find, op.replace);
-        } else if (op.append) {
-          result = await this.handleAppend(filepath, op.append);
-        } else if (op.at === 'end' && op.add) {
-          result = await this.handleAppend(filepath, op.add);
-        } else {
-          result = { error: `Unknown operation pattern in batch item ${i}` };
-        }
-        
-        results.push({ operation: i, result });
-        
-      } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        errors.push({ operation: i, error: errorMessage, attempted: op });
+    // New section
+    if ('new_section' in args && args.new_section) {
+      return {
+        type: 'new-section',
+        title: args.new_section,
+        at: args.at || 'end',
+        content: args.content
+      };
+    }
+    
+    // Batch operations
+    if ('batch' in args && args.batch && args.batch.length > 0) {
+      const operations = args.batch.map(op => this.parseBatchOperation(op)).filter(op => op !== null);
+      
+      if (operations.length === 0) {
+        return null;
       }
+      
+      return {
+        type: 'batch',
+        operations: operations as (AppendOperation | ReplaceOperation | HeadingInsertOperation)[]
+      };
     }
     
-    return this.formatResponse({
-      batch_results: {
-        total_operations: operations.length,
-        successful: results.length,
-        failed: errors.length,
-        results,
-        errors: errors.length > 0 ? errors : undefined
-      },
-      message: `Batch operation completed: ${results.length}/${operations.length} successful`
-    });
+    return null;
+  }
+
+  private parseBatchOperation(op: BatchOperationInput): AppendOperation | ReplaceOperation | HeadingInsertOperation | null {
+    // Heading insert
+    if ((op.after || op.before) && op.add) {
+      return {
+        type: 'heading-insert',
+        position: op.after ? 'after' : 'before',
+        heading: (op.after || op.before)!,
+        content: op.add
+      };
+    }
+    
+    // Find/replace
+    if (op.find && op.replace) {
+      return {
+        type: 'replace',
+        find: op.find,
+        replace: op.replace
+      };
+    }
+    
+    // Append
+    if (op.append) {
+      return {
+        type: 'append',
+        content: op.append
+      };
+    }
+    
+    // Special case: at='end' with add content
+    if (op.at === 'end' && op.add) {
+      return {
+        type: 'append',
+        content: op.add
+      };
+    }
+    
+    return null;
   }
 }

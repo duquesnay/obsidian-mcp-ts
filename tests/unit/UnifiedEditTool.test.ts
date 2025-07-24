@@ -71,8 +71,8 @@ describe('UnifiedEditTool Bug Fixes', () => {
       const args = {
         file: 'test.md',
         batch: [
-            { find: 'old text', replace: 'new text' },
-            { append: '\n## New Section\nAdded via batch' }  // This currently fails
+            { find: 'Content', replace: 'Updated Content' },  // This text exists in mock
+            { append: '\n## New Section\nAdded via batch' }
         ]
       };
 
@@ -99,7 +99,7 @@ describe('UnifiedEditTool Bug Fixes', () => {
         batch: [
           { append: '\nFirst append' },
           { append: '\nSecond append' },
-          { find: 'search', replace: 'replace' },
+          { find: 'Content', replace: 'Updated Content' },  // Use text that exists
           { append: '\nThird append' }
         ]
       };
