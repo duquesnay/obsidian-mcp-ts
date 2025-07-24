@@ -258,7 +258,7 @@ After each sub-agent completes:
 - [x] CQ5.1: Create EditStrategy interface and base class
 - [x] CQ5.2: Extract AND integrate AppendStrategy (must be used immediately)
 - [x] CQ5.3: Extract AND integrate FindReplaceStrategy (must be used immediately)
-- [ ] CQ5.4: Extract AND integrate HeadingInsertStrategy (must be used immediately)
+- [x] CQ5.4: Extract AND integrate HeadingInsertStrategy (must be used immediately)
 - [ ] CQ5.5: Extract AND integrate BatchEditStrategy (must be used immediately)
 - [ ] CQ5.6: Extract AND integrate SectionEditStrategy (must be used immediately)
 - [ ] CQ5.7: ~~Refactor UnifiedEditTool to use strategy pattern~~ (happens incrementally with each strategy)
