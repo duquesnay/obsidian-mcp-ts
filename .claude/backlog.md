@@ -253,7 +253,7 @@ After each sub-agent completes:
 - [x] CQ4.5: Create AND integrate TagManagementClient (created and integrated)
 - [x] CQ4.6: Create AND integrate PeriodicNotesClient (created and integrated correctly)
 - [ ] CQ4.7: ~~Refactor ObsidianClient as facade/coordinator~~ (not needed if services are integrated incrementally)
-- [ ] CQ4.8: Update BaseTool to depend on interface instead of concrete class
+- [x] CQ4.8: Update BaseTool to depend on interface instead of concrete class
 
 - [ ] CQ5.1: Create EditStrategy interface and base class
 - [ ] CQ5.2: Extract AND integrate AppendStrategy (must be used immediately)
