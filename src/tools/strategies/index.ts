@@ -23,3 +23,9 @@ export type {
 } from './IEditStrategy.js';
 
 export { BaseEditStrategy } from './BaseEditStrategy.js';
+
+// Concrete strategy implementations
+export { AppendStrategy } from './AppendStrategy.js';
+export { FindReplaceStrategy } from './FindReplaceStrategy.js';
+export { HeadingInsertStrategy } from './HeadingInsertStrategy.js';
+export { SectionEditStrategy } from './SectionEditStrategy.js';

@@ -2,7 +2,8 @@ import { BaseTool, ToolResponse, ToolMetadata } from './base.js';
 import { AppendStrategy } from './strategies/AppendStrategy.js';
 import { FindReplaceStrategy } from './strategies/FindReplaceStrategy.js';
 import { HeadingInsertStrategy } from './strategies/HeadingInsertStrategy.js';
-import { IEditStrategy, EditContext, AppendOperation, ReplaceOperation, HeadingInsertOperation } from './strategies/IEditStrategy.js';
+import { SectionEditStrategy } from './strategies/SectionEditStrategy.js';
+import { IEditStrategy, EditContext, AppendOperation, ReplaceOperation, HeadingInsertOperation, NewSectionOperation } from './strategies/IEditStrategy.js';
 
 interface SimpleEdit {
   append?: string;
@@ -50,6 +51,7 @@ export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
   private appendStrategy: IEditStrategy = new AppendStrategy();
   private findReplaceStrategy: IEditStrategy = new FindReplaceStrategy();
   private headingInsertStrategy: IEditStrategy = new HeadingInsertStrategy();
+  private sectionEditStrategy: IEditStrategy = new SectionEditStrategy();
 
   metadata: ToolMetadata = {
     category: 'editing',
@@ -225,51 +227,27 @@ export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
   }
 
   private async handleNewSection(filepath: string, args: NewSectionEdit): Promise<ToolResponse> {
-    try {
-      const client = this.getClient();
-      const sectionTitle = args.new_section!;
-      const sectionContent = args.content || "";
-      const position = args.at || "end";
-      
-      // Build the new section
-      const newSection = `\n## ${sectionTitle}\n${sectionContent}`;
-      
-      if (position === "end") {
-        // Simple append for end position
-        await client.appendContent(filepath, newSection, false);
-      } else if (position === "start") {
-        // Prepend to start
-        const currentContent = await client.getFileContents(filepath);
-        const newContent = newSection + "\n\n" + currentContent;
-        await client.updateFile(filepath, newContent);
-      } else {
-        // Insert after specified heading
-        await client.patchContent(filepath, newSection, {
-          targetType: 'heading',
-          target: position,
-          insertAfter: true,
-          createIfNotExists: false
-        });
-      }
-      
+    if (!args.new_section) {
       return this.formatResponse({
-        success: true,
-        message: `Successfully created section "${sectionTitle}" in ${filepath}`,
-        operation: 'new_section',
-        filepath,
-        section: sectionTitle,
-        position
-      });
-      
-    } catch (error: unknown) {
-      return this.formatResponse({
-        error: `New section creation failed: ${error instanceof Error ? error.message : String(error)}`,
-        working_alternative: {
-          description: "Try appending the section to the end",
-          example: { file: filepath, append: `\n## ${args.new_section}\n${args.content || ""}` }
-        }
+        error: "New section requires 'new_section' title",
+        example: { file: filepath, new_section: "Section Title", content: "Optional content" }
       });
     }
+
+    const operation: NewSectionOperation = {
+      type: 'new-section',
+      title: args.new_section,
+      at: args.at || 'end',
+      content: args.content
+    };
+
+    const context: EditContext = {
+      filepath,
+      client: this.getClient()
+    };
+
+    const result = await this.sectionEditStrategy.execute(operation, context);
+    return this.formatResponse(result);
   }
 
   private async handleBatch(filepath: string, operations: BatchOperation[]): Promise<ToolResponse> {
