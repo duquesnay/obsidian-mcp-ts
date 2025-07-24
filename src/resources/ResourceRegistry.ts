@@ -33,9 +33,12 @@ export class ResourceRegistry {
   }
   
   getHandler(uri: string): ResourceHandler | null {
+    // Strip query parameters for matching
+    const uriWithoutQuery = uri.split('?')[0];
+    
     // First check for exact matches
     for (const entry of this.resources) {
-      if (!entry.pattern && entry.resource.uri === uri) {
+      if (!entry.pattern && entry.resource.uri === uriWithoutQuery) {
         return entry.handler;
       }
     }

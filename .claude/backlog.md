@@ -193,12 +193,12 @@ After each sub-agent completes:
 ### Priority 3: Specialized Resources
 - [x] R6.1: Daily notes - Access periodic notes at vault://daily/{date}
 - [x] R6.2: Notes by tag - Find tagged notes at vault://tag/{tagname}
-- [x] R6.3: Vault structure - Full folder hierarchy at vault://structure
+- [x] R6.3: Vault structure - Full folder hierarchy at vault://structure ✅ **INTEGRATION TEST ADDED**
 
 ### Priority 4: Advanced Features
-- [x] R7.1: Resource caching for performance
+- [x] R7.1: Resource caching for performance ✅ **INTEGRATION TEST ADDED**
 - [x] R7.2: Resource templates for discovery
-- [x] R8.1: Live updates - Subscribe to resource changes
+- [x] R8.1: Live updates - Subscribe to resource changes ✅ **INTEGRATION TEST ADDED**
 - [x] R8.2: Search results as resources - vault://search/{query}
 
 ### Priority 5: Polish
@@ -240,7 +240,7 @@ After each sub-agent completes:
 ## Code Quality Improvements from Quality Review (2025-01-24)
 
 ### High Priority (Code Organization & Maintainability)
-- [ ] CQ1: Move test files from src/ to tests/
+- [x] CQ1: Move test files from src/ to tests/
   - Move 8 test files: base.test.ts, discovery.test.ts, GetAllTagsTool.test.ts, ListFilesInVaultTool.test.ts, Cache.test.ts, OptimizedBatchProcessor.test.ts, PathValidationUtil.test.ts, RequestDeduplicator.test.ts
   - Update tsconfig to exclude test files from compilation
   - Clean dist/ folder of compiled test files
@@ -259,7 +259,7 @@ After each sub-agent completes:
 - [x] CQ5.2: Extract AND integrate AppendStrategy (must be used immediately)
 - [x] CQ5.3: Extract AND integrate FindReplaceStrategy (must be used immediately)
 - [x] CQ5.4: Extract AND integrate HeadingInsertStrategy (must be used immediately)
-- [ ] CQ5.5: Extract AND integrate BatchEditStrategy (must be used immediately)
+- [x] CQ5.5: Extract AND integrate BatchEditStrategy (must be used immediately)
 - [ ] CQ5.6: Extract AND integrate SectionEditStrategy (must be used immediately)
 - [ ] CQ5.7: ~~Refactor UnifiedEditTool to use strategy pattern~~ (happens incrementally with each strategy)
 - [ ] CQ5.8: Clean up and optimize UnifiedEditTool
@@ -276,7 +276,7 @@ After each sub-agent completes:
   - Clean up technical debt markers
 
 ### High Priority (Continued)
-- [ ] CQ3: Create validation utilities for DRY
+- [x] CQ3: Create validation utilities for DRY
   - Implement validateRequiredArgs() helper function
   - Create reusable schema fragments (PATH_SCHEMA, PAGINATION_SCHEMA, etc.)
   - Extract period validation to shared constant/function
