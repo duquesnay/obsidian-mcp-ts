@@ -1,6 +1,7 @@
 import { BaseTool, ToolResponse, ToolMetadata } from './base.js';
 import { AppendStrategy } from './strategies/AppendStrategy.js';
-import { IEditStrategy, EditContext, AppendOperation } from './strategies/IEditStrategy.js';
+import { FindReplaceStrategy } from './strategies/FindReplaceStrategy.js';
+import { IEditStrategy, EditContext, AppendOperation, ReplaceOperation } from './strategies/IEditStrategy.js';
 
 interface SimpleEdit {
   append?: string;
@@ -46,6 +47,7 @@ export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
   description = 'Edit Obsidian vault notes with smart operations (vault-only - NOT filesystem files). Supports append, find/replace, and heading-based insertions.';
   
   private appendStrategy: IEditStrategy = new AppendStrategy();
+  private findReplaceStrategy: IEditStrategy = new FindReplaceStrategy();
 
   metadata: ToolMetadata = {
     category: 'editing',
@@ -245,53 +247,19 @@ export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
   }
 
   private async handleReplace(filepath: string, find: string, replace: string): Promise<ToolResponse> {
-    try {
-      const client = this.getClient();
-      
-      // Get current content
-      const currentContent = await client.getFileContents(filepath);
-      
-      // Type assertion is safe here because we're not passing a format parameter
-      const contentString = currentContent as string;
-      
-      // Perform replacement
-      const newContent = contentString.replace(find, replace);
-      
-      // Check if replacement actually happened
-      if (contentString === newContent) {
-        return this.formatResponse({
-          warning: `Text "${find}" not found in ${filepath}`,
-          suggestion: "Check the exact text to replace. Text search is case-sensitive.",
-          alternatives: [
-            {
-              description: "Append instead",
-              example: { file: filepath, append: replace }
-            }
-          ]
-        });
-      }
-      
-      // Update file
-      await client.updateFile(filepath, newContent);
-      
-      return this.formatResponse({
-        success: true,
-        message: `Successfully replaced "${find}" with "${replace}" in ${filepath}`,
-        operation: 'replace',
-        filepath,
-        find,
-        replace
-      });
-      
-    } catch (error: unknown) {
-      return this.formatResponse({
-        error: `Replace failed: ${error.message}`,
-        working_alternative: {
-          description: "Try obsidian_simple_replace for basic text replacement",
-          example: { filepath, find, replace }
-        }
-      });
-    }
+    const operation: ReplaceOperation = {
+      type: 'replace',
+      find,
+      replace
+    };
+    
+    const context: EditContext = {
+      filepath,
+      client: this.getClient()
+    };
+    
+    const result = await this.findReplaceStrategy.execute(operation, context);
+    return this.formatResponse(result);
   }
 
   private async handleNewSection(filepath: string, args: NewSectionEdit): Promise<ToolResponse> {
