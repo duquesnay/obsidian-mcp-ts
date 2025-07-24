@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { CachedResourceHandler, ResourceCacheConfig } from '../../src/resources/CachedResourceHandler.js';
-import { TagsHandler, StatsHandler, RecentHandler, NoteHandler } from '../../src/resources/concreteHandlers.js';
+import { CachedResourceHandler, ResourceCacheConfig } from '../../../src/resources/CachedResourceHandler.js';
+import { TagsHandler, StatsHandler, RecentHandler, NoteHandler } from '../../../src/resources/concreteHandlers.js';
 
 describe('Cache Performance Demo', () => {
   it('should demonstrate significant performance improvement with caching', async () => {

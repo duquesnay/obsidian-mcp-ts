@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
-import { ResourceRegistry } from '../../src/resources/ResourceRegistry.js';
-import { createVaultStructureHandler } from '../../src/resources/handlers.js';
+import { ResourceRegistry } from '../../../src/resources/ResourceRegistry.js';
+import { createVaultStructureHandler } from '../../../src/resources/handlers.js';
 
-describe('Vault Structure Resource Integration', () => {
+describe('Vault Structure Resource', () => {
   it('should be registered and accessible through ResourceRegistry', async () => {
     const registry = new ResourceRegistry();
     

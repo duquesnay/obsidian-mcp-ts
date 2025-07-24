@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { registerResources } from '../../src/resources/index.js';
-import { registerSubscriptions, notifyResourceUpdate } from '../../src/subscriptions/index.js';
-import { SubscriptionManager } from '../../src/subscriptions/SubscriptionManager.js';
+import { registerResources } from '../../../src/resources/index.js';
+import { registerSubscriptions, notifyResourceUpdate } from '../../../src/subscriptions/index.js';
+import { SubscriptionManager } from '../../../src/subscriptions/SubscriptionManager.js';
 
-describe('Subscription Integration', () => {
+describe('Subscription Manager', () => {
   let server: any;
   let subscriptionManager: SubscriptionManager;
   let notificationSpy: any;
