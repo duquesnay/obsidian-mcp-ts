@@ -1,17 +1,21 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import 'dotenv/config';
 import { TagManagementClient } from '../../src/obsidian/services/TagManagementClient';
 import type { ObsidianClientConfig } from '../../src/obsidian/ObsidianClient';
 
-// Skip if no API key is provided
-const apiKey = process.env.OBSIDIAN_API_KEY;
-const skipTests = !apiKey;
-
-describe.skipIf(skipTests)('TagManagementClient Integration Tests', () => {
+describe('TagManagementClient Integration Tests', () => {
   let client: TagManagementClient;
 
   beforeAll(() => {
+    if (!process.env.OBSIDIAN_API_KEY) {
+      throw new Error(
+        'Integration tests require OBSIDIAN_API_KEY environment variable\n' +
+        'Set it in .env file or skip integration tests'
+      );
+    }
+
     const config: ObsidianClientConfig = {
-      apiKey: apiKey!,
+      apiKey: process.env.OBSIDIAN_API_KEY,
       host: process.env.OBSIDIAN_HOST || '127.0.0.1',
       port: parseInt(process.env.OBSIDIAN_PORT || '27124'),
       protocol: 'https',

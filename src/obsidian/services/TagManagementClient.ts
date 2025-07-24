@@ -88,15 +88,30 @@ export class TagManagementClient implements ITagManagementClient {
   async getAllTags(): Promise<Array<{ name: string; count: number }>> {
     return this.safeCall(async () => {
       const response = await this.axiosInstance.get('/tags');
-      return response.data.tags || [];
+      // API returns tags with 'tag' property, but we need 'name' for consistency
+      const tags = response.data.tags || [];
+      return tags.map((t: any) => ({
+        name: t.tag || t.name,
+        count: t.count
+      }));
     });
   }
 
   async getFilesByTag(tagName: string): Promise<string[]> {
     const encodedTag = encodeURIComponent(tagName);
     return this.safeCall(async () => {
-      const response = await this.axiosInstance.get(`/tags/${encodedTag}`);
-      return response.data.files || [];
+      try {
+        const response = await this.axiosInstance.get(`/tags/${encodedTag}`);
+        const files = response.data.files || [];
+        // If files are objects with path property, extract the paths
+        return files.map((f: any) => typeof f === 'string' ? f : f.path || f.name || f);
+      } catch (error: any) {
+        // API returns 404 for non-existent tags, return empty array instead
+        if (error.response?.status === 404) {
+          return [];
+        }
+        throw error;
+      }
     });
   }
 
