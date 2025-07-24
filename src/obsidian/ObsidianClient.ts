@@ -1,14 +1,17 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import https from 'https';
 import { ObsidianError } from '../types/errors.js';
-import { validatePath, validatePaths } from '../utils/pathValidator.js';
+import { validatePath } from '../utils/pathValidator.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
-import { BatchProcessor } from '../utils/BatchProcessor.js';
 import { PeriodicNotesClient } from './services/PeriodicNotesClient.js';
 import { TagManagementClient } from './services/TagManagementClient.js';
+import { FileOperationsClient } from './services/FileOperationsClient.js';
+import { DirectoryOperationsClient } from './services/DirectoryOperationsClient.js';
 import type { IObsidianClient } from './interfaces/IObsidianClient.js';
 import type { IPeriodicNotesClient } from './interfaces/IPeriodicNotesClient.js';
 import type { ITagManagementClient } from './interfaces/ITagManagementClient.js';
+import type { IFileOperationsClient } from './interfaces/IFileOperationsClient.js';
+import type { IDirectoryOperationsClient } from './interfaces/IDirectoryOperationsClient.js';
 import type {
   FileContentResponse,
   FileMetadata,
@@ -42,6 +45,8 @@ export class ObsidianClient implements IObsidianClient {
   private axiosInstance: AxiosInstance;
   private periodicNotesClient?: IPeriodicNotesClient;
   private tagManagementClient?: ITagManagementClient;
+  private fileOperationsClient?: IFileOperationsClient;
+  private directoryOperationsClient?: IDirectoryOperationsClient;
 
   /**
    * Creates a new ObsidianClient instance for interacting with the Obsidian REST API.
@@ -150,10 +155,7 @@ export class ObsidianClient implements IObsidianClient {
    * // Returns: ['notes/daily/2024-01-01.md', 'projects/todo.md', ...]
    */
   async listFilesInVault(): Promise<string[]> {
-    return this.safeCall(async () => {
-      const response = await this.axiosInstance.get('/vault/');
-      return response.data.files;
-    });
+    return this.getFileOperationsClient().listFilesInVault();
   }
 
   /**
@@ -167,11 +169,7 @@ export class ObsidianClient implements IObsidianClient {
    * // Returns: ['projects/work/meeting-notes.md', 'projects/work/tasks.md', ...]
    */
   async listFilesInDir(dirpath: string): Promise<string[]> {
-    validatePath(dirpath, 'dirpath');
-    return this.safeCall(async () => {
-      const response = await this.axiosInstance.get(`/vault/${dirpath}/`);
-      return response.data.files;
-    });
+    return this.getFileOperationsClient().listFilesInDir(dirpath);
   }
 
   /**
@@ -197,12 +195,7 @@ export class ObsidianClient implements IObsidianClient {
    * const html = await client.getFileContents('notes/example.md', 'html');
    */
   async getFileContents(filepath: string, format?: 'content' | 'metadata' | 'frontmatter' | 'plain' | 'html'): Promise<FileContentResponse> {
-    validatePath(filepath, 'filepath');
-    return this.safeCall(async () => {
-      const url = format ? `/vault/${filepath}?format=${format}` : `/vault/${filepath}`;
-      const response = await this.axiosInstance.get(url);
-      return response.data;
-    });
+    return this.getFileOperationsClient().getFileContents(filepath, format);
   }
 
   /**
@@ -231,20 +224,7 @@ export class ObsidianClient implements IObsidianClient {
    * // ---
    */
   async getBatchFileContents(filepaths: string[]): Promise<string> {
-    validatePaths(filepaths, 'filepaths');
-
-    // Use BatchProcessor to handle concurrent file reading
-    return BatchProcessor.processBatchWithFormat(
-      filepaths,
-      async (filepath) => await this.getFileContents(filepath),
-      (filepath, content) => {
-        if (content instanceof Error) {
-          return `# ${filepath}\n\nError reading file: ${content.message}\n\n---\n\n`;
-        }
-        // Content is always a string when no format is specified
-        return `# ${filepath}\n\n${content}\n\n---\n\n`;
-      }
-    );
+    return this.getFileOperationsClient().getBatchFileContents(filepaths);
   }
 
   /**
@@ -376,53 +356,7 @@ export class ObsidianClient implements IObsidianClient {
       target: string;
     }
   ): Promise<void> {
-    validatePath(filepath, 'filepath');
-    const encodedPath = encodeURIComponent(filepath);
-
-    // Required headers for PATCH operation
-    const headers: Partial<PatchContentHeaders> = {
-      'Target-Type': options.targetType,
-      'Target': options.target
-    };
-
-    // Determine operation based on parameters
-    if (options.oldText !== undefined && options.newText !== undefined) {
-      headers['Operation'] = 'replace';
-    } else if (options.insertBefore) {
-      headers['Operation'] = 'prepend';
-    } else if (options.insertAfter || (!options.insertBefore && !options.oldText)) {
-      headers['Operation'] = 'append';
-    } else {
-      headers['Operation'] = 'append';
-    }
-
-    // Content is passed in the body
-    // For find/replace operations, the API will replace oldText with newText within the target
-    let body = content;
-
-    // For frontmatter operations, the content might need to be JSON
-    if (options.targetType === 'frontmatter') {
-      headers['Content-Type'] = 'application/json';
-      // If the content is not already JSON, try to parse it
-      try {
-        JSON.parse(content);
-        body = content; // Already valid JSON
-      } catch {
-        // If not JSON, wrap as a string value
-        body = JSON.stringify(content);
-      }
-    } else {
-      headers['Content-Type'] = 'text/markdown';
-    }
-
-    return this.safeCall(async () => {
-      const response = await this.axiosInstance.patch(
-        `/vault/${encodedPath}`,
-        body,
-        { headers }
-      );
-      return response.data;
-    });
+    return this.getFileOperationsClient().patchContent(filepath, content, options);
   }
 
   /**
@@ -442,25 +376,7 @@ export class ObsidianClient implements IObsidianClient {
    * await client.appendContent('notes/new-file.md', '# My New File\nContent...', true);
    */
   async appendContent(filepath: string, content: string, createIfNotExists: boolean = true): Promise<void> {
-    validatePath(filepath, 'filepath');
-    const encodedPath = encodeURIComponent(filepath);
-
-    return this.safeCall(async () => {
-      if (createIfNotExists) {
-        await this.axiosInstance.post(`/vault/${encodedPath}`, content, {
-          headers: {
-            'Content-Type': 'text/markdown',
-            'If-None-Match': '*'
-          }
-        });
-      } else {
-        const currentContent = await this.getFileContents(filepath);
-        const newContent = currentContent ? `${currentContent}\n${content}` : content;
-        await this.axiosInstance.put(`/vault/${encodedPath}`, newContent, {
-          headers: { 'Content-Type': 'text/markdown' }
-        });
-      }
-    });
+    return this.getFileOperationsClient().appendContent(filepath, content, createIfNotExists);
   }
 
   /**
@@ -475,14 +391,7 @@ export class ObsidianClient implements IObsidianClient {
    * await client.createFile('notes/meeting-2024-01-01.md', '# Meeting Notes\n\n- Topic 1\n- Topic 2');
    */
   async createFile(filepath: string, content: string): Promise<void> {
-    validatePath(filepath, 'filepath');
-    const encodedPath = encodeURIComponent(filepath);
-
-    return this.safeCall(async () => {
-      await this.axiosInstance.put(`/vault/${encodedPath}`, content, {
-        headers: { 'Content-Type': 'text/markdown' }
-      });
-    });
+    return this.getFileOperationsClient().createFile(filepath, content);
   }
 
   /**
@@ -497,7 +406,7 @@ export class ObsidianClient implements IObsidianClient {
    * await client.updateFile('notes/todo.md', '# Updated Todo List\n\n- [ ] New task');
    */
   async updateFile(filepath: string, content: string): Promise<void> {
-    return this.createFile(filepath, content);
+    return this.getFileOperationsClient().updateFile(filepath, content);
   }
 
   /**
@@ -511,12 +420,7 @@ export class ObsidianClient implements IObsidianClient {
    * await client.deleteFile('notes/old-note.md');
    */
   async deleteFile(filepath: string): Promise<void> {
-    validatePath(filepath, 'filepath');
-    const encodedPath = encodeURIComponent(filepath);
-
-    return this.safeCall(async () => {
-      await this.axiosInstance.delete(`/vault/${encodedPath}`);
-    });
+    return this.getFileOperationsClient().deleteFile(filepath);
   }
 
   /**
@@ -535,36 +439,7 @@ export class ObsidianClient implements IObsidianClient {
    * await client.renameFile('notes/old-name.md', 'new-name.md');
    */
   async renameFile(oldPath: string, newPath: string): Promise<void> {
-    validatePath(oldPath, 'oldPath');
-    validatePath(newPath, 'newPath');
-    const encodedPath = encodeURIComponent(oldPath);
-
-    // Extract just the filename from newPath if it's a full path
-    const newFilename = newPath.includes('/') ? newPath.split('/').pop()! : newPath;
-
-    return this.safeCall(async () => {
-      try {
-        // Try using the enhanced API with PATCH
-        await this.axiosInstance.patch(`/vault/${encodedPath}`, newFilename, {
-          headers: {
-            'Content-Type': 'text/plain',
-            'Operation': 'rename',
-            'Target-Type': 'file',
-            'Target': 'name'
-          }
-        });
-      } catch (error) {
-        // NEVER fall back to delete operations - this would break backlinks
-        if (axios.isAxiosError(error) && error.response?.status === 400) {
-          throw new ObsidianError(
-            'Rename operation requires the enhanced Obsidian REST API. The standard API does not support preserving backlinks during rename operations.',
-            400
-          );
-        } else {
-          throw error;
-        }
-      }
-    });
+    return this.getFileOperationsClient().renameFile(oldPath, newPath);
   }
 
   /**
@@ -583,33 +458,7 @@ export class ObsidianClient implements IObsidianClient {
    * await client.moveFile('drafts/temp.md', 'notes/final-version.md');
    */
   async moveFile(sourcePath: string, destinationPath: string): Promise<void> {
-    validatePath(sourcePath, 'sourcePath');
-    validatePath(destinationPath, 'destinationPath');
-    const encodedPath = encodeURIComponent(sourcePath);
-
-    return this.safeCall(async () => {
-      try {
-        // Try using the enhanced API with PATCH
-        await this.axiosInstance.patch(`/vault/${encodedPath}`, destinationPath, {
-          headers: {
-            'Content-Type': 'text/plain',
-            'Operation': 'move',
-            'Target-Type': 'file',
-            'Target': 'path'
-          }
-        });
-      } catch (error) {
-        // NEVER fall back to delete operations - this would break backlinks
-        if (axios.isAxiosError(error) && error.response?.status === 400) {
-          throw new ObsidianError(
-            'Move operation requires the enhanced Obsidian REST API. The standard API does not support preserving backlinks during move operations.',
-            400
-          );
-        } else {
-          throw error;
-        }
-      }
-    });
+    return this.getFileOperationsClient().moveFile(sourcePath, destinationPath);
   }
 
   /**
@@ -626,7 +475,27 @@ export class ObsidianClient implements IObsidianClient {
    * // Get this week's weekly note
    * const weeklyNote = await client.getPeriodicNote('weekly');
    */
+  async getPeriodicNote(period: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'): Promise<any> {
+    return this.getPeriodicNotesClient().getPeriodicNote(period);
+  }
 
+  /**
+   * Retrieves recently modified periodic notes for the specified period type.
+   *
+   * @param period - The type of periodic notes to retrieve
+   * @param days - Number of days to look back for notes (optional)
+   * @returns Array of periodic note paths
+   * @throws {ObsidianError} If the API request fails
+   * @example
+   * // Get last 7 daily notes
+   * const recentDailies = await client.getRecentPeriodicNotes('daily', 7);
+   *
+   * // Get last 4 weekly notes
+   * const recentWeeklies = await client.getRecentPeriodicNotes('weekly', 28);
+   */
+  async getRecentPeriodicNotes(period: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly', days?: number): Promise<string[]> {
+    return this.getPeriodicNotesClient().getRecentPeriodicNotes(period, days);
+  }
 
   /**
    * Retrieves recently changed files in the vault.
@@ -689,57 +558,7 @@ export class ObsidianClient implements IObsidianClient {
     newPath?: string,
     filesMovedCount?: number
   }> {
-    validatePath(sourcePath, 'sourcePath');
-    validatePath(destinationPath, 'destinationPath');
-    // Encode each path segment separately to preserve directory structure
-    const encodedPath = sourcePath.split('/').map(segment => encodeURIComponent(segment)).join('/');
-
-    return this.safeCall(async () => {
-      try {
-        // Use the new directory move API endpoint with extended timeout for large directories
-        const response = await this.axiosInstance.patch(`/vault/${encodedPath}`, destinationPath, {
-          headers: {
-            'Content-Type': 'text/plain',
-            'Operation': 'move',
-            'Target-Type': 'directory',
-            'Target': 'path'
-          },
-          timeout: 120000 // 2 minutes for directory operations
-        });
-
-        // Return the response in the expected format
-        const result = response.data;
-        return {
-          movedFiles: [], // API handles this internally
-          failedFiles: [], // API handles this internally
-          success: true,
-          message: result.message || `Directory moved from ${sourcePath} to ${destinationPath}`,
-          oldPath: result.oldPath || sourcePath,
-          newPath: result.newPath || destinationPath,
-          filesMovedCount: result.filesMovedCount || 0
-        };
-      } catch (error) {
-        if (axios.isAxiosError(error) && error.response?.status === 404) {
-          throw new ObsidianError(
-            `Directory not found: ${sourcePath}`,
-            404
-          );
-        } else if (axios.isAxiosError(error) && error.response?.status === 409) {
-          throw new ObsidianError(
-            `Directory already exists: ${destinationPath}`,
-            409
-          );
-        } else if (axios.isAxiosError(error) && error.response?.status === 400) {
-          throw new ObsidianError(
-            'Invalid directory move operation. Check that both paths are valid.',
-            400
-          );
-        } else {
-          throw error;
-        }
-      }
-    });
-
+    return this.getDirectoryOperationsClient().moveDirectory(sourcePath, destinationPath);
   }
 
   /**
@@ -759,40 +578,7 @@ export class ObsidianClient implements IObsidianClient {
    * await client.copyFile('templates/daily.md', 'notes/today.md', true);
    */
   async copyFile(sourcePath: string, destinationPath: string, overwrite: boolean = false): Promise<void> {
-    validatePath(sourcePath, 'sourcePath');
-    validatePath(destinationPath, 'destinationPath');
-
-    return this.safeCall(async () => {
-      // First, verify source file exists and read its content
-      let content: string;
-      try {
-        // getFileContents without format parameter returns string
-        const fileContent = await this.getFileContents(sourcePath);
-        // Type assertion is safe here because we're not passing a format parameter
-        content = fileContent as string;
-      } catch (error) {
-        if (error instanceof ObsidianError && error.code === 404) {
-          throw new ObsidianError(`Source file not found: ${sourcePath}`, 404);
-        }
-        throw error;
-      }
-
-      // Check if destination exists and handle overwrite logic
-      if (!overwrite) {
-        try {
-          await this.getFileContents(destinationPath);
-          throw new ObsidianError(`Destination file already exists: ${destinationPath}. Use overwrite=true to replace it.`, 409);
-        } catch (error) {
-          // If file doesn't exist (404), that's what we want for non-overwrite
-          if (!(error instanceof ObsidianError && error.code === 404)) {
-            throw error;
-          }
-        }
-      }
-
-      // Create the new file at destination
-      await this.createFile(destinationPath, content);
-    });
+    return this.getFileOperationsClient().copyFile(sourcePath, destinationPath, overwrite);
   }
 
   /**
@@ -811,24 +597,7 @@ export class ObsidianClient implements IObsidianClient {
    * }
    */
   async checkPathExists(path: string): Promise<{ exists: boolean; type: 'file' | 'directory' | null }> {
-    validatePath(path, 'path');
-
-    return this.safeCall(async () => {
-      try {
-        // First try to read as a file
-        await this.getFileContents(path);
-        return { exists: true, type: 'file' as const };
-      } catch (fileError) {
-        try {
-          // If file read fails, try to list as directory
-          await this.listFilesInDir(path);
-          return { exists: true, type: 'directory' as const };
-        } catch (dirError) {
-          // Neither file nor directory exists
-          return { exists: false, type: null };
-        }
-      }
-    });
+    return this.getFileOperationsClient().checkPathExists(path);
   }
 
   /**
@@ -854,44 +623,7 @@ export class ObsidianClient implements IObsidianClient {
     message?: string,
     parentsCreated?: boolean
   }> {
-    validatePath(directoryPath, 'directoryPath');
-    const encodedPath = encodeURIComponent(directoryPath);
-
-    return this.safeCall(async () => {
-      try {
-        // Use the new directory create API endpoint
-        const response = await this.axiosInstance.post(`/vault/${encodedPath}`, '', {
-          headers: {
-            'Content-Type': 'text/plain',
-            'Operation': 'create',
-            'Target-Type': 'directory',
-            'Create-Parents': createParents.toString()
-          }
-        });
-
-        // Return the response in the expected format
-        const result = response.data;
-        return {
-          created: true,
-          message: result.message || `Directory created: ${directoryPath}`,
-          parentsCreated: result.parentsCreated || false
-        };
-      } catch (error) {
-        if (axios.isAxiosError(error) && error.response?.status === 400) {
-          throw new ObsidianError(
-            'Directory creation requires an updated Obsidian REST API plugin that supports directory operations.',
-            400
-          );
-        } else if (axios.isAxiosError(error) && error.response?.status === 409) {
-          throw new ObsidianError(
-            `Directory already exists: ${directoryPath}`,
-            409
-          );
-        } else {
-          throw error;
-        }
-      }
-    });
+    return this.getDirectoryOperationsClient().createDirectory(directoryPath, createParents);
   }
 
   /**
@@ -919,52 +651,7 @@ export class ObsidianClient implements IObsidianClient {
     message?: string,
     filesDeleted?: number
   }> {
-    validatePath(directoryPath, 'directoryPath');
-    const encodedPath = encodeURIComponent(directoryPath);
-
-    return this.safeCall(async () => {
-      try {
-        // Use the new directory delete API endpoint
-        const headers: Record<string, string> = {
-          'Target-Type': 'directory',
-          'Recursive': recursive.toString()
-        };
-
-        // Add Permanent header only if permanent deletion is requested
-        if (permanent) {
-          headers['Permanent'] = 'true';
-        }
-
-        const response = await this.axiosInstance.delete(`/vault/${encodedPath}`, { headers });
-
-        // Return the response in the expected format
-        const result = response.data;
-        return {
-          deleted: true,
-          message: result.message || `Directory deleted: ${directoryPath}`,
-          filesDeleted: result.filesDeleted || 0
-        };
-      } catch (error) {
-        if (axios.isAxiosError(error) && error.response?.status === 400) {
-          throw new ObsidianError(
-            'Directory deletion requires an updated Obsidian REST API plugin that supports directory operations.',
-            400
-          );
-        } else if (axios.isAxiosError(error) && error.response?.status === 404) {
-          throw new ObsidianError(
-            `Directory not found: ${directoryPath}`,
-            404
-          );
-        } else if (axios.isAxiosError(error) && error.response?.status === 409) {
-          throw new ObsidianError(
-            `Directory not empty: ${directoryPath}. Use recursive=true to delete non-empty directories.`,
-            409
-          );
-        } else {
-          throw error;
-        }
-      }
-    });
+    return this.getDirectoryOperationsClient().deleteDirectory(directoryPath, recursive, permanent);
   }
 
   /**
@@ -989,51 +676,7 @@ export class ObsidianClient implements IObsidianClient {
     failedFiles: string[],
     message?: string
   }> {
-    validatePath(sourcePath, 'sourcePath');
-    validatePath(destinationPath, 'destinationPath');
-    const encodedDestPath = encodeURIComponent(destinationPath);
-
-    return this.safeCall(async () => {
-      try {
-        // Use the new directory copy API endpoint
-        const response = await this.axiosInstance.post(`/vault/${encodedDestPath}`, sourcePath, {
-          headers: {
-            'Content-Type': 'text/plain',
-            'Operation': 'copy',
-            'Target-Type': 'directory',
-            'Overwrite': overwrite.toString()
-          },
-          timeout: 120000 // 2 minutes for directory operations
-        });
-
-        // Return the response in the expected format
-        const result = response.data;
-        return {
-          filesCopied: result.filesCopied || 0,
-          failedFiles: result.failedFiles || [],
-          message: result.message || `Directory copied from ${sourcePath} to ${destinationPath}`
-        };
-      } catch (error) {
-        if (axios.isAxiosError(error) && error.response?.status === 400) {
-          throw new ObsidianError(
-            'Directory copy operation requires an updated Obsidian REST API plugin that supports directory operations.',
-            400
-          );
-        } else if (axios.isAxiosError(error) && error.response?.status === 404) {
-          throw new ObsidianError(
-            `Source directory not found: ${sourcePath}`,
-            404
-          );
-        } else if (axios.isAxiosError(error) && error.response?.status === 409) {
-          throw new ObsidianError(
-            `Destination already exists: ${destinationPath}. Use overwrite=true to replace existing files.`,
-            409
-          );
-        } else {
-          throw error;
-        }
-      }
-    });
+    return this.getDirectoryOperationsClient().copyDirectory(sourcePath, destinationPath, overwrite);
   }
 
   // Tag Management Methods
@@ -1233,5 +876,39 @@ export class ObsidianClient implements IObsidianClient {
       });
     }
     return this.tagManagementClient;
+  }
+
+  /**
+   * Get the FileOperationsClient instance for file operations.
+   * Creates the instance lazily on first access.
+   */
+  private getFileOperationsClient(): IFileOperationsClient {
+    if (!this.fileOperationsClient) {
+      this.fileOperationsClient = new FileOperationsClient({
+        apiKey: this.apiKey,
+        protocol: this.protocol,
+        host: this.host,
+        port: this.port,
+        verifySsl: this.verifySsl
+      });
+    }
+    return this.fileOperationsClient;
+  }
+
+  /**
+   * Get the DirectoryOperationsClient instance for directory operations.
+   * Creates the instance lazily on first access.
+   */
+  private getDirectoryOperationsClient(): IDirectoryOperationsClient {
+    if (!this.directoryOperationsClient) {
+      this.directoryOperationsClient = new DirectoryOperationsClient({
+        apiKey: this.apiKey,
+        protocol: this.protocol,
+        host: this.host,
+        port: this.port,
+        verifySsl: this.verifySsl
+      });
+    }
+    return this.directoryOperationsClient;
   }
 }

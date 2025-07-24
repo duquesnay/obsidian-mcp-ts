@@ -247,28 +247,28 @@ After each sub-agent completes:
 
 ### Medium Priority (Architectural Improvements - Do Early)
 - [x] CQ4.1: Extract IObsidianClient interface from ObsidianClient class
-- [x] CQ4.2: Create FileOperationsClient for file CRUD operations
-- [x] CQ4.3: Create DirectoryOperationsClient for directory operations
-- [x] CQ4.4: Create SearchClient for all search functionality
-- [x] CQ4.5: Create TagManagementClient for tag operations
-- [ ] CQ4.6: Create PeriodicNotesClient for periodic notes
-- [ ] CQ4.7: Refactor ObsidianClient as facade/coordinator
+- [x] CQ4.2: Create AND integrate FileOperationsClient (created and integrated)
+- [ ] CQ4.3: Create AND integrate DirectoryOperationsClient (created but NOT integrated - dead code)
+- [ ] CQ4.4: Create AND integrate SearchClient (created but NOT integrated - dead code)
+- [x] CQ4.5: Create AND integrate TagManagementClient (created and integrated)
+- [x] CQ4.6: Create AND integrate PeriodicNotesClient (created and integrated correctly)
+- [ ] CQ4.7: ~~Refactor ObsidianClient as facade/coordinator~~ (not needed if services are integrated incrementally)
 - [ ] CQ4.8: Update BaseTool to depend on interface instead of concrete class
 
 - [ ] CQ5.1: Create EditStrategy interface and base class
-- [ ] CQ5.2: Extract AppendStrategy from UnifiedEditTool
-- [ ] CQ5.3: Extract FindReplaceStrategy from UnifiedEditTool
-- [ ] CQ5.4: Extract HeadingInsertStrategy from UnifiedEditTool
-- [ ] CQ5.5: Extract BatchEditStrategy from UnifiedEditTool
-- [ ] CQ5.6: Extract SectionEditStrategy from UnifiedEditTool
-- [ ] CQ5.7: Refactor UnifiedEditTool to use strategy pattern
+- [ ] CQ5.2: Extract AND integrate AppendStrategy (must be used immediately)
+- [ ] CQ5.3: Extract AND integrate FindReplaceStrategy (must be used immediately)
+- [ ] CQ5.4: Extract AND integrate HeadingInsertStrategy (must be used immediately)
+- [ ] CQ5.5: Extract AND integrate BatchEditStrategy (must be used immediately)
+- [ ] CQ5.6: Extract AND integrate SectionEditStrategy (must be used immediately)
+- [ ] CQ5.7: ~~Refactor UnifiedEditTool to use strategy pattern~~ (happens incrementally with each strategy)
 - [ ] CQ5.8: Clean up and optimize UnifiedEditTool
 
-- [ ] CQ6.1: Create central schema fragments file
-- [ ] CQ6.2: Extract common property schemas (path, content, etc.)
-- [ ] CQ6.3: Create schema builder utility
-- [ ] CQ6.4: Migrate tools to use schema fragments
-- [ ] CQ6.5: Remove duplicate schema definitions
+- [x] CQ6.1: ~~Create central schema fragments file~~ (already done in validation.ts with schema fragments)
+- [x] CQ6.2: ~~Extract common property schemas~~ (already done: PATH_SCHEMA, CONTENT_SCHEMA, etc.)
+- [ ] CQ6.3: ~~Create schema builder utility~~ (may not be needed with current approach)
+- [ ] CQ6.4: Migrate remaining tools to use schema fragments from validation.ts
+- [ ] CQ6.5: ~~Remove duplicate schema definitions~~ (happens as part of CQ6.4)
 
 - [ ] CQ7: Address TODO comments
   - ObsidianClient.ts line 31: "break apart, file is too long"

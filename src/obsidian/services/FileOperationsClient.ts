@@ -260,4 +260,89 @@ export class FileOperationsClient implements IFileOperationsClient {
       }
     });
   }
+
+  async appendContent(filepath: string, content: string, createIfNotExists: boolean = true): Promise<void> {
+    validatePath(filepath, 'filepath');
+    const encodedPath = encodeURIComponent(filepath);
+
+    return this.safeCall(async () => {
+      if (createIfNotExists) {
+        await this.axiosInstance.post(`/vault/${encodedPath}`, content, {
+          headers: {
+            'Content-Type': 'text/markdown',
+            'If-None-Match': '*'
+          }
+        });
+      } else {
+        const currentContent = await this.getFileContents(filepath);
+        const newContent = currentContent ? `${currentContent}\n${content}` : content;
+        await this.axiosInstance.put(`/vault/${encodedPath}`, newContent, {
+          headers: { 'Content-Type': 'text/markdown' }
+        });
+      }
+    });
+  }
+
+  async patchContent(
+    filepath: string,
+    content: string,
+    options: {
+      heading?: string;
+      insertAfter?: boolean;
+      insertBefore?: boolean;
+      createIfNotExists?: boolean;
+      blockRef?: string;
+      oldText?: string;
+      newText?: string;
+      targetType: 'heading' | 'block' | 'frontmatter';
+      target: string;
+    }
+  ): Promise<void> {
+    validatePath(filepath, 'filepath');
+    const encodedPath = encodeURIComponent(filepath);
+
+    // Required headers for PATCH operation
+    const headers: Record<string, string> = {
+      'Target-Type': options.targetType,
+      'Target': options.target
+    };
+
+    // Determine operation based on parameters
+    if (options.oldText !== undefined && options.newText !== undefined) {
+      headers['Operation'] = 'replace';
+    } else if (options.insertBefore) {
+      headers['Operation'] = 'prepend';
+    } else if (options.insertAfter || (!options.insertBefore && !options.oldText)) {
+      headers['Operation'] = 'append';
+    } else {
+      headers['Operation'] = 'append';
+    }
+
+    // Content is passed in the body
+    let body = content;
+
+    // For frontmatter operations, the content might need to be JSON
+    if (options.targetType === 'frontmatter') {
+      headers['Content-Type'] = 'application/json';
+      // If the content is not already JSON, try to parse it
+      try {
+        JSON.parse(content);
+        body = content; // Already valid JSON
+      } catch {
+        // If not JSON, wrap as a string value
+        body = JSON.stringify(content);
+      }
+    } else {
+      headers['Content-Type'] = 'text/markdown';
+    }
+
+    return this.safeCall(async () => {
+      const response = await this.axiosInstance.patch(
+        `/vault/${encodedPath}`,
+        body,
+        { headers }
+      );
+      return response.data;
+    });
+  }
 }
