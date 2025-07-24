@@ -249,7 +249,7 @@ After each sub-agent completes:
 - [x] CQ4.1: Extract IObsidianClient interface from ObsidianClient class
 - [x] CQ4.2: Create AND integrate FileOperationsClient (created and integrated)
 - [x] CQ4.3: Create AND integrate DirectoryOperationsClient (created and integrated)
-- [ ] CQ4.4: Create AND integrate SearchClient (created but NOT integrated - dead code)
+- [x] CQ4.4: Create AND integrate SearchClient (created and integrated)
 - [x] CQ4.5: Create AND integrate TagManagementClient (created and integrated)
 - [x] CQ4.6: Create AND integrate PeriodicNotesClient (created and integrated correctly)
 - [ ] CQ4.7: ~~Refactor ObsidianClient as facade/coordinator~~ (not needed if services are integrated incrementally)

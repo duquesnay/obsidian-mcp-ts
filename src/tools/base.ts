@@ -1,4 +1,5 @@
 import { ObsidianClient } from '../obsidian/ObsidianClient.js';
+import type { IObsidianClient } from '../obsidian/interfaces/IObsidianClient.js';
 import { ConfigLoader } from '../utils/configLoader.js';
 import { isTestEnvironment } from '../utils/environment.js';
 import { SimplifiedError } from '../types/errors.js';
@@ -84,7 +85,7 @@ export interface ToolInterface<TArgs = Record<string, unknown>> {
 }
 
 export abstract class BaseTool<TArgs = Record<string, unknown>> implements ToolInterface<TArgs> {
-  protected obsidianClient: ObsidianClient | null = null;
+  protected obsidianClient: IObsidianClient | null = null;
   protected configLoader: ConfigLoader;
 
   constructor() {
@@ -104,7 +105,7 @@ export abstract class BaseTool<TArgs = Record<string, unknown>> implements ToolI
     return this.configLoader.getHost();
   }
 
-  protected getClient(): ObsidianClient {
+  protected getClient(): IObsidianClient {
     if (!this.obsidianClient) {
       this.obsidianClient = new ObsidianClient({
         apiKey: this.getApiKey(),
