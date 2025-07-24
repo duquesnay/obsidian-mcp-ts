@@ -255,7 +255,7 @@ After each sub-agent completes:
 - [ ] CQ4.7: ~~Refactor ObsidianClient as facade/coordinator~~ (not needed if services are integrated incrementally)
 - [x] CQ4.8: Update BaseTool to depend on interface instead of concrete class
 
-- [ ] CQ5.1: Create EditStrategy interface and base class
+- [x] CQ5.1: Create EditStrategy interface and base class
 - [ ] CQ5.2: Extract AND integrate AppendStrategy (must be used immediately)
 - [ ] CQ5.3: Extract AND integrate FindReplaceStrategy (must be used immediately)
 - [ ] CQ5.4: Extract AND integrate HeadingInsertStrategy (must be used immediately)

@@ -1,4 +1,6 @@
 import { BaseTool, ToolResponse, ToolMetadata } from './base.js';
+import { AppendStrategy } from './strategies/AppendStrategy.js';
+import { IEditStrategy, EditContext, AppendOperation } from './strategies/IEditStrategy.js';
 
 interface SimpleEdit {
   append?: string;
@@ -42,6 +44,8 @@ type UnifiedEditArgs = {
 export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
   name = 'obsidian_edit';
   description = 'Edit Obsidian vault notes with smart operations (vault-only - NOT filesystem files). Supports append, find/replace, and heading-based insertions.';
+  
+  private appendStrategy: IEditStrategy = new AppendStrategy();
 
   metadata: ToolMetadata = {
     category: 'editing',
@@ -162,26 +166,18 @@ export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
   }
 
   private async handleAppend(filepath: string, content: string): Promise<ToolResponse> {
-    try {
-      const client = this.getClient();
-      await client.appendContent(filepath, content, false);
-      
-      return this.formatResponse({
-        success: true,
-        message: `Successfully appended content to ${filepath}`,
-        operation: 'append',
-        filepath
-      });
-    } catch (error: unknown) {
-      // Provide working alternative on failure
-      return this.formatResponse({
-        error: `Append failed: ${error.message}`,
-        working_alternative: {
-          description: "Try using obsidian_simple_append instead",
-          example: { filepath, content, create_file_if_missing: true }
-        }
-      });
-    }
+    const operation: AppendOperation = {
+      type: 'append',
+      content
+    };
+    
+    const context: EditContext = {
+      filepath,
+      client: this.getClient()
+    };
+    
+    const result = await this.appendStrategy.execute(operation, context);
+    return this.formatResponse(result);
   }
 
   private async handleHeadingInsert(filepath: string, args: StructureEdit): Promise<ToolResponse> {
