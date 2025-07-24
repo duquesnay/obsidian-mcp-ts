@@ -87,7 +87,7 @@ describe('ListFilesInVaultTool', () => {
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('Unauthorized');
+      expect(response.error).toBe('Authentication failed');
     });
 
     it('should handle timeout errors', async () => {

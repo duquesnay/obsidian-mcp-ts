@@ -34,6 +34,16 @@ export class ObsidianErrorHandler {
 
     if (!isHttpError(error)) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      
+      // Check for specific network errors
+      if (errorMessage.includes('ECONNREFUSED')) {
+        return this.handleConnectionRefused(toolName);
+      } else if (errorMessage.includes('ETIMEDOUT') || errorMessage.includes('ESOCKETTIMEDOUT')) {
+        return this.handleTimeout(toolName);
+      } else if (errorMessage.includes('ENOTFOUND')) {
+        return this.handleHostNotFound(toolName);
+      }
+      
       return this.formatResponse({
         success: false,
         error: errorMessage,
@@ -52,19 +62,76 @@ export class ObsidianErrorHandler {
         return this.handle404(error, toolName);
       case 500:
         return this.handle500(error, toolName);
+      case 502:
+      case 503:
+      case 504:
+        return this.handleServiceUnavailable(error, toolName, status);
       default:
         return this.formatResponse({
           success: false,
-          error: `HTTP ${status}: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          tool: toolName
+          error: `HTTP ${status}: ${error.message || 'Unknown error'}`,
+          tool: toolName,
+          suggestion: 'Check the Obsidian REST API plugin status and logs'
         });
     }
   }
 
-  private static handle401(error: unknown, toolName: string): ToolResponse {
+  private static handleConnectionRefused(toolName: string): ToolResponse {
     return this.formatResponse({
       success: false,
-      error: error.message || 'Authentication failed',
+      error: 'Connection refused - Cannot connect to Obsidian REST API',
+      tool: toolName,
+      suggestion: 'Ensure the Obsidian Local REST API plugin is enabled and running',
+      working_alternative: 'Open Obsidian → Settings → Community plugins → Enable "Local REST API"',
+      example: {
+        troubleshooting: 'Check that Obsidian is running and the REST API is listening on port 27124'
+      }
+    });
+  }
+
+  private static handleTimeout(toolName: string): ToolResponse {
+    return this.formatResponse({
+      success: false,
+      error: 'Request timeout - Obsidian REST API is not responding',
+      tool: toolName,
+      suggestion: 'The request took too long. Obsidian might be busy or the REST API plugin might be unresponsive',
+      working_alternative: 'Try restarting the Local REST API plugin or Obsidian itself',
+      example: {
+        troubleshooting: 'Disable and re-enable the Local REST API plugin in Obsidian settings'
+      }
+    });
+  }
+
+  private static handleHostNotFound(toolName: string): ToolResponse {
+    return this.formatResponse({
+      success: false,
+      error: 'Host not found - Cannot resolve Obsidian REST API address',
+      tool: toolName,
+      suggestion: 'Check your OBSIDIAN_HOST environment variable',
+      working_alternative: 'Use the default host: 127.0.0.1 or localhost',
+      example: {
+        setup: 'export OBSIDIAN_HOST=127.0.0.1'
+      }
+    });
+  }
+
+  private static handleServiceUnavailable(error: HttpError, toolName: string, status: number): ToolResponse {
+    return this.formatResponse({
+      success: false,
+      error: `Service unavailable (HTTP ${status}) - Obsidian REST API is experiencing issues`,
+      tool: toolName,
+      suggestion: 'The Obsidian REST API service is temporarily unavailable',
+      working_alternative: 'Wait a moment and try again, or restart the Local REST API plugin',
+      example: {
+        troubleshooting: 'Check Obsidian console logs for any plugin errors'
+      }
+    });
+  }
+
+  private static handle401(error: HttpError, toolName: string): ToolResponse {
+    return this.formatResponse({
+      success: false,
+      error: 'Authentication failed',
       tool: toolName,
       suggestion: 'Check your OBSIDIAN_API_KEY environment variable',
       working_alternative: 'Ensure the Obsidian Local REST API plugin is running and you have the correct API key',
@@ -74,10 +141,10 @@ export class ObsidianErrorHandler {
     });
   }
 
-  private static handle403(error: unknown, toolName: string): ToolResponse {
+  private static handle403(error: HttpError, toolName: string): ToolResponse {
     return this.formatResponse({
       success: false,
-      error: error.message || 'Permission denied',
+      error: 'Permission denied',
       tool: toolName,
       suggestion: 'Verify your OBSIDIAN_API_KEY is correct and has the necessary permissions',
       working_alternative: 'Check the Local REST API plugin settings in Obsidian',
@@ -87,7 +154,7 @@ export class ObsidianErrorHandler {
     });
   }
 
-  private static handle404(error: unknown, toolName: string): ToolResponse {
+  private static handle404(error: HttpError, toolName: string): ToolResponse {
     const isDirectory = toolName.includes('Dir') || toolName.includes('Directory');
     const resourceType = isDirectory ? 'Directory' : 'File';
     
@@ -104,7 +171,7 @@ export class ObsidianErrorHandler {
     });
   }
 
-  private static handle500(error: unknown, toolName: string): ToolResponse {
+  private static handle500(error: HttpError, toolName: string): ToolResponse {
     return this.formatResponse({
       success: false,
       error: 'Internal server error',

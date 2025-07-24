@@ -31,11 +31,13 @@ export interface PathValidationOptions {
  */
 export class PathValidationError extends ObsidianError {
   public readonly fieldName?: string;
+  public readonly paramName?: string;
 
   constructor(message: string, fieldName?: string) {
     super(message, 400); // Use 400 (Bad Request) as the error code
     this.name = 'PathValidationError';
     this.fieldName = fieldName;
+    this.paramName = fieldName; // For compatibility with tests expecting paramName
   }
 }
 

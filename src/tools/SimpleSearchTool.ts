@@ -64,14 +64,15 @@ export class SimpleSearchTool extends BaseTool<SimpleSearchArgs> {
       return this.formatResponse(results);
     } catch (error: unknown) {
       // Use the new handleHttpError method with custom handlers
-      if (error.response?.status) {
+      if (error && typeof error === 'object' && 'response' in error && (error as any).response?.status) {
         return this.handleHttpError(error, {
           500: 'Search service error. The Obsidian REST API may be experiencing issues'
         });
       }
       
       // Handle search-specific errors
-      if (error.message?.includes('index') || error.message?.includes('search')) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes('index') || errorMessage.includes('search')) {
         return this.handleSimplifiedError(
           error,
           'Search service may be unavailable. Try browsing files directly or check Obsidian plugin status'

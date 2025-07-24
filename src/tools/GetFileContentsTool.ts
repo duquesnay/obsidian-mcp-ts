@@ -52,7 +52,7 @@ export class GetFileContentsTool extends BaseTool<GetFileContentsArgs> {
       return this.formatResponse(result);
     } catch (error: unknown) {
       // Use the new handleHttpError method with custom handlers for specific status codes
-      if (error.response?.status) {
+      if (error && typeof error === 'object' && 'response' in error && (error as any).response?.status) {
         return this.handleHttpError(error, {
           404: {
             message: 'File not found',

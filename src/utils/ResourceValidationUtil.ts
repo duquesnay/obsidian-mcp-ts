@@ -7,24 +7,32 @@ export class ResourceValidationUtil {
    * Handles edge cases like trailing slashes and URL encoding
    */
   static extractUriParameter(uri: string, prefix: string, paramName: string): string {
-    // Handle edge cases where URI equals prefix with or without trailing slash
-    if (uri === prefix || uri === prefix.slice(0, -1)) {
+    // Normalize the prefix to handle trailing slash variations
+    const normalizedPrefix = prefix.endsWith('/') ? prefix.slice(0, -1) : prefix;
+    const normalizedUri = uri.endsWith('/') && uri.length > normalizedPrefix.length + 1 ? uri.slice(0, -1) : uri;
+    
+    // Validate that URI starts with the expected prefix
+    if (!normalizedUri.startsWith(normalizedPrefix)) {
+      throw new Error(`URI does not start with expected prefix '${prefix}'`);
+    }
+    
+    // Handle edge cases where URI equals prefix
+    if (normalizedUri === normalizedPrefix) {
       return '';
     }
     
-    // Extract the parameter
-    let param = uri.substring(prefix.length);
-    
-    // Remove trailing slash if present
-    if (param.endsWith('/')) {
-      param = param.slice(0, -1);
+    // Extract the parameter - handle both with and without separator
+    let param = normalizedUri.substring(normalizedPrefix.length);
+    if (param.startsWith('/')) {
+      param = param.substring(1);
     }
     
     // URL decode the parameter
     try {
       param = decodeURIComponent(param);
     } catch (e) {
-      // If decoding fails, return the original parameter
+      // Log warning but continue with original parameter
+      console.warn(`Failed to decode URI parameter: ${param}`, e);
     }
     
     return param;
