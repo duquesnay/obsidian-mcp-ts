@@ -1,4 +1,6 @@
 import { BaseResourceHandler } from './BaseResourceHandler.js';
+import { ResourceErrorHandler } from '../utils/ResourceErrorHandler.js';
+import { ResourceValidationUtil } from '../utils/ResourceValidationUtil.js';
 
 export class DailyNoteHandler extends BaseResourceHandler {
   async handleRequest(uri: string, server?: any): Promise<any> {
@@ -18,9 +20,9 @@ export class DailyNoteHandler extends BaseResourceHandler {
       // Return the content directly
       return noteData.content || '';
     } catch (error: any) {
-      // Handle specific error for missing daily note
+      // Handle 404 errors with special format for compatibility
       if (error?.response?.status === 404) {
-        throw new Error(`Daily note not found: ${date}`);
+        throw new Error(`Resource not found: Daily note at ${date}`);
       }
       throw error;
     }
@@ -28,18 +30,7 @@ export class DailyNoteHandler extends BaseResourceHandler {
   
   private extractDateParameter(uri: string): string {
     const prefix = 'vault://daily/';
-    
-    // Handle edge cases
-    if (uri === prefix.slice(0, -1) || uri === prefix) {
-      return 'today';
-    }
-    
-    // Extract date parameter and remove trailing slash if present
-    let dateParam = uri.substring(prefix.length);
-    if (dateParam.endsWith('/')) {
-      dateParam = dateParam.slice(0, -1);
-    }
-    
+    const dateParam = ResourceValidationUtil.extractUriParameter(uri, prefix, 'date');
     return dateParam || 'today';
   }
   
@@ -49,16 +40,9 @@ export class DailyNoteHandler extends BaseResourceHandler {
       return new Date().toISOString().split('T')[0];
     }
     
-    // Validate date format (YYYY-MM-DD)
-    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-    if (!dateRegex.test(dateParam)) {
-      throw new Error('Invalid date format. Expected YYYY-MM-DD or "today"');
-    }
-    
-    // Validate that it's a real date
-    const date = new Date(dateParam + 'T00:00:00');
-    if (isNaN(date.getTime())) {
-      throw new Error('Invalid date format. Expected YYYY-MM-DD or "today"');
+    // Validate date format
+    if (!ResourceValidationUtil.validateDateFormat(dateParam)) {
+      throw new Error('Invalid date format: Expected YYYY-MM-DD or "today"');
     }
     
     return dateParam;

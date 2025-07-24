@@ -2,6 +2,7 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { ListResourcesRequestSchema, ReadResourceRequestSchema, ListResourceTemplatesRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { ObsidianClient } from '../obsidian/ObsidianClient.js';
 import { ResourceRegistry } from './ResourceRegistry.js';
+import { ResourceErrorHandler } from '../utils/ResourceErrorHandler.js';
 import { 
   createCachedTagsHandler, 
   createCachedStatsHandler, 
@@ -145,7 +146,7 @@ export async function registerResources(server: ServerWithClient): Promise<void>
     // Look up handler in registry
     const handler = registry.getHandler(uri);
     if (!handler) {
-      throw new Error(`Resource not found: ${uri}`);
+      ResourceErrorHandler.handleNotFound('Resource', uri);
     }
     
     // Call the handler with the URI and server context
@@ -235,7 +236,7 @@ export async function registerUncachedResources(server: ServerWithClient): Promi
     // Look up handler in registry
     const handler = registry.getHandler(uri);
     if (!handler) {
-      throw new Error(`Resource not found: ${uri}`);
+      ResourceErrorHandler.handleNotFound('Resource', uri);
     }
     
     // Call the handler with the URI and server context

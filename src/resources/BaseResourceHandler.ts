@@ -2,6 +2,8 @@ import { ReadResourceResult } from '@modelcontextprotocol/sdk/types.js';
 import { ObsidianClient } from '../obsidian/ObsidianClient.js';
 import { ConfigLoader } from '../utils/configLoader.js';
 import { ResourceHandler } from './types.js';
+import { ResourceErrorHandler } from '../utils/ResourceErrorHandler.js';
+import { ResourceValidationUtil } from '../utils/ResourceValidationUtil.js';
 
 // Extend Server type to include obsidianClient for testing
 interface ServerWithClient {
@@ -58,11 +60,7 @@ export abstract class BaseResourceHandler {
    * Extract path from a URI given a prefix
    */
   protected extractPath(uri: string, prefix: string): string {
-    // Handle edge cases for folders
-    if (uri === prefix.slice(0, -1) || uri === prefix) {
-      return '';
-    }
-    return uri.substring(prefix.length);
+    return ResourceValidationUtil.extractUriParameter(uri, prefix, 'path');
   }
   
   /**
@@ -85,12 +83,9 @@ export abstract class BaseResourceHandler {
   
   /**
    * Handle common error cases
+   * @deprecated Use ResourceErrorHandler.handle() instead
    */
   protected handleError(error: any, resourceType: string, path: string): never {
-    // Handle 404 specifically
-    if (error?.response?.status === 404) {
-      throw new Error(`${resourceType} not found: ${path}`);
-    }
-    throw error;
+    ResourceErrorHandler.handleApiError(error, resourceType, path);
   }
 }

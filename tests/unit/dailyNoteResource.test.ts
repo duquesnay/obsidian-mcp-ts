@@ -80,13 +80,13 @@ describe('Daily Note Resource', () => {
 
     await expect(readResourceHandler({
       params: { uri: 'vault://daily/2024-01-15' }
-    })).rejects.toThrow('Daily note not found: 2024-01-15');
+    })).rejects.toThrow('Resource not found: Daily note at 2024-01-15');
   });
 
   it('should validate date format', async () => {
     await expect(readResourceHandler({
       params: { uri: 'vault://daily/not-a-date' }
-    })).rejects.toThrow('Invalid date format');
+    })).rejects.toThrow('Invalid date format: Expected YYYY-MM-DD or "today"');
   });
 
   it('should be listed in available resources', async () => {

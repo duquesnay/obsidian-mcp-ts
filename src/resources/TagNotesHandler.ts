@@ -1,4 +1,6 @@
 import { BaseResourceHandler } from './BaseResourceHandler.js';
+import { ResourceErrorHandler } from '../utils/ResourceErrorHandler.js';
+import { ResourceValidationUtil } from '../utils/ResourceValidationUtil.js';
 
 export class TagNotesHandler extends BaseResourceHandler {
   async handleRequest(uri: string, server?: any): Promise<any> {
@@ -21,33 +23,13 @@ export class TagNotesHandler extends BaseResourceHandler {
         files: files
       };
     } catch (error: any) {
-      // Re-throw the error as-is for now
-      throw error;
+      ResourceErrorHandler.handle(error, 'Tag notes', tagName);
     }
   }
   
   private extractTagParameter(uri: string): string {
     const prefix = 'vault://tag/';
-    
-    // Handle edge cases
-    if (uri === prefix || uri === prefix.slice(0, -1)) {
-      return '';
-    }
-    
-    // Extract tag parameter and remove trailing slash if present
-    let tagParam = uri.substring(prefix.length);
-    if (tagParam.endsWith('/')) {
-      tagParam = tagParam.slice(0, -1);
-    }
-    
-    // Handle URL decoding
-    tagParam = decodeURIComponent(tagParam);
-    
-    // Remove # prefix if present (normalize the tag)
-    if (tagParam.startsWith('#')) {
-      tagParam = tagParam.substring(1);
-    }
-    
-    return tagParam;
+    const tagParam = ResourceValidationUtil.extractUriParameter(uri, prefix, 'tag');
+    return ResourceValidationUtil.normalizeTagName(tagParam);
   }
 }

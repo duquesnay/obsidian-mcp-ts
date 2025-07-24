@@ -60,7 +60,7 @@ describe('DailyNoteHandler', () => {
       });
 
       await expect(handler.execute('vault://daily/2024-01-15', mockServer))
-        .rejects.toThrow('Daily note not found: 2024-01-15');
+        .rejects.toThrow('Resource not found: Daily note at 2024-01-15');
     });
   });
 

@@ -1,4 +1,5 @@
 import { BaseResourceHandler } from './BaseResourceHandler.js';
+import { ResourceErrorHandler } from '../utils/ResourceErrorHandler.js';
 
 interface FolderStructure {
   files: string[];
@@ -32,8 +33,7 @@ export class VaultStructureHandler extends BaseResourceHandler {
         totalFolders
       };
     } catch (error: any) {
-      // Re-throw the error for now to match test expectations
-      throw error;
+      ResourceErrorHandler.handle(error, 'Vault structure');
     }
   }
   

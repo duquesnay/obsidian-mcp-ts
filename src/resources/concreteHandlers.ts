@@ -1,4 +1,5 @@
 import { BaseResourceHandler } from './BaseResourceHandler.js';
+import { ResourceErrorHandler } from '../utils/ResourceErrorHandler.js';
 
 export class TagsHandler extends BaseResourceHandler {
   async handleRequest(uri: string, server?: any): Promise<any> {
@@ -8,9 +9,7 @@ export class TagsHandler extends BaseResourceHandler {
       const tags = await client.getAllTags();
       return { tags };
     } catch (error: any) {
-      // If the API call fails, return an empty array
-      console.error('Failed to fetch tags:', error);
-      return { tags: [] };
+      ResourceErrorHandler.handle(error, 'Tags');
     }
   }
 }
@@ -30,11 +29,7 @@ export class StatsHandler extends BaseResourceHandler {
         noteCount
       };
     } catch (error: any) {
-      console.error('Failed to fetch vault statistics:', error);
-      return {
-        fileCount: 0,
-        noteCount: 0
-      };
+      ResourceErrorHandler.handle(error, 'Vault statistics');
     }
   }
 }
@@ -56,8 +51,7 @@ export class RecentHandler extends BaseResourceHandler {
       
       return { notes };
     } catch (error: any) {
-      console.error('Failed to fetch recent changes:', error);
-      return { notes: [] };
+      ResourceErrorHandler.handle(error, 'Recent notes');
     }
   }
 }
@@ -70,7 +64,7 @@ export class NoteHandler extends BaseResourceHandler {
     try {
       return await client.getFileContents(path);
     } catch (error: any) {
-      this.handleError(error, 'Note', path);
+      ResourceErrorHandler.handle(error, 'Note', path);
     }
   }
 }
@@ -87,7 +81,7 @@ export class FolderHandler extends BaseResourceHandler {
         items: items
       };
     } catch (error: any) {
-      this.handleError(error, 'Folder', path);
+      ResourceErrorHandler.handle(error, 'Folder', path);
     }
   }
 }
