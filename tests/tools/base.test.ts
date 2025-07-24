@@ -1,11 +1,9 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { BaseTool } from './base.js';
-import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
-
-//@Todo a test file should bot be in src/
+import { BaseTool } from '../../src/tools/base.js';
+import { ObsidianErrorHandler } from '../../src/utils/ObsidianErrorHandler.js';
 
 // Mock ObsidianErrorHandler
-vi.mock('../utils/ObsidianErrorHandler', () => ({
+vi.mock('../../src/utils/ObsidianErrorHandler', () => ({
   ObsidianErrorHandler: {
     handleHttpError: vi.fn().mockReturnValue({
       type: 'text',

@@ -1,7 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { OptimizedBatchProcessor } from './OptimizedBatchProcessor.js';
-
-// @TODO test in the source base?
+import { OptimizedBatchProcessor } from '../../src/utils/OptimizedBatchProcessor.js';
 
 describe('OptimizedBatchProcessor', () => {
   beforeEach(() => {

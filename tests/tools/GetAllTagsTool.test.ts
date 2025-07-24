@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { GetAllTagsTool } from './GetAllTagsTool.js';
-import { ObsidianClient } from '../obsidian/ObsidianClient.js';
+import { GetAllTagsTool } from '../../src/tools/GetAllTagsTool.js';
+import { ObsidianClient } from '../../src/obsidian/ObsidianClient.js';
 
 describe('GetAllTagsTool', () => {
   let tool: GetAllTagsTool;

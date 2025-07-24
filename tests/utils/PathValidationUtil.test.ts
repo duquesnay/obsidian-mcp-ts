@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { PathValidationUtil, PathValidationError, PathValidationType } from './PathValidationUtil.js';
+import { PathValidationUtil, PathValidationError, PathValidationType } from '../../src/utils/PathValidationUtil.js';
 
 describe('PathValidationUtil', () => {
   describe('validate', () => {

@@ -1,7 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { RequestDeduplicator } from './RequestDeduplicator.js';
-
-// @Todo test in the source base???
+import { RequestDeduplicator } from '../../src/utils/RequestDeduplicator.js';
 
 describe('RequestDeduplicator', () => {
   let deduplicator: RequestDeduplicator;

@@ -1,7 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { LRUCache } from './Cache.js';
-
-// @TODO tests on the source folder?
+import { LRUCache } from '../../src/utils/Cache.js';
 
 describe('LRUCache', () => {
   let cache: LRUCache<string, any>;

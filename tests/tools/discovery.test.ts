@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { discoverTools, getToolMetadata, getToolsByCategory, isValidToolClass, validateToolInstance } from './discovery.js';
-import { BaseTool } from './base.js';
-import type { ToolResponse } from './base.js';
+import { discoverTools, getToolMetadata, getToolsByCategory, isValidToolClass, validateToolInstance } from '../../src/tools/discovery.js';
+import { BaseTool } from '../../src/tools/base.js';
+import type { ToolResponse } from '../../src/tools/base.js';
 
 // Mock fs/promises
 vi.mock('fs/promises', () => ({

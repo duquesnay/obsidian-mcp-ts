@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { ListFilesInVaultTool } from './ListFilesInVaultTool.js';
-import { ObsidianClient } from '../obsidian/ObsidianClient.js';
+import { ListFilesInVaultTool } from '../../src/tools/ListFilesInVaultTool.js';
+import { ObsidianClient } from '../../src/obsidian/ObsidianClient.js';
 
 describe('ListFilesInVaultTool', () => {
   let tool: ListFilesInVaultTool;
