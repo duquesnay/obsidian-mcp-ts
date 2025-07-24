@@ -2,6 +2,7 @@ import { BaseTool, ToolResponse, ToolMetadata } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 import { FILE_PATH_SCHEMA } from '../utils/validation.js';
 import { SimpleAppendArgs } from './types/SimpleAppendArgs.js';
+import { hasHttpResponse } from '../utils/errorTypeGuards.js';
 
 export class SimpleAppendTool extends BaseTool<SimpleAppendArgs> {
   name = 'obsidian_simple_append';
@@ -58,7 +59,7 @@ export class SimpleAppendTool extends BaseTool<SimpleAppendArgs> {
       });
     } catch (error: unknown) {
       // Use the new handleHttpError method with custom handlers
-      if (error.response?.status) {
+      if (hasHttpResponse(error) && error.response?.status) {
         // Special handling for 404 - suggest creating the file
         if (error.response.status === 404 && !create_file_if_missing) {
           return this.handleHttpError(error, {

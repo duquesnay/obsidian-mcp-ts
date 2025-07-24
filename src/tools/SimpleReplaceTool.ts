@@ -2,6 +2,7 @@ import { BaseTool, ToolResponse, ToolMetadata } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 import { FILE_PATH_SCHEMA } from '../utils/validation.js';
 import { SimpleReplaceArgs } from './types/SimpleReplaceArgs.js';
+import { hasHttpResponse } from '../utils/errorTypeGuards.js';
 
 export class SimpleReplaceTool extends BaseTool<SimpleReplaceArgs> {
   name = 'obsidian_simple_replace';
@@ -77,7 +78,7 @@ export class SimpleReplaceTool extends BaseTool<SimpleReplaceArgs> {
       });
     } catch (error: unknown) {
       // Use the new handleHttpError method with custom handlers
-      if (error.response?.status) {
+      if (hasHttpResponse(error) && error.response?.status) {
         return this.handleHttpError(error, {
           404: {
             message: 'File not found',

@@ -3,6 +3,7 @@ import { PathValidationUtil, PathValidationType } from '../utils/PathValidationU
 import { ListFilesInDirArgs } from './types/ListFilesInDirArgs.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
 import { PAGINATION_SCHEMA, DIR_PATH_SCHEMA } from '../utils/validation.js';
+import { hasHttpResponse, getErrorMessage } from '../utils/errorTypeGuards.js';
 
 export class ListFilesInDirTool extends BaseTool<ListFilesInDirArgs> {
   name = 'obsidian_list_files_in_dir';
@@ -71,7 +72,8 @@ export class ListFilesInDirTool extends BaseTool<ListFilesInDirArgs> {
         return this.formatResponse(files);
       } catch (error: unknown) {
         // If we get a 404 error, check if it's an empty directory
-        if (error.response?.status === 404 || error.message?.includes('404') || error.message?.includes('Not Found')) {
+        const errorMessage = getErrorMessage(error);
+        if (hasHttpResponse(error) && error.response?.status === 404 || errorMessage.includes('404') || errorMessage.includes('Not Found')) {
           // Check if the path exists and is a directory
           const pathInfo = await client.checkPathExists(args.dirpath);
           
@@ -86,7 +88,7 @@ export class ListFilesInDirTool extends BaseTool<ListFilesInDirArgs> {
       }
     } catch (error: unknown) {
       // Use the new handleHttpError method with custom handlers
-      if (error.response?.status) {
+      if (hasHttpResponse(error) && error.response?.status) {
         return this.handleHttpError(error, {
           404: {
             message: 'Directory not found',

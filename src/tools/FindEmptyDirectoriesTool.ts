@@ -1,5 +1,6 @@
 import { FindEmptyDirectoriesArgs } from './types/FindEmptyDirectoriesArgs.js';
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
+import { getErrorMessage } from '../utils/errorTypeGuards.js';
 
 export class FindEmptyDirectoriesTool extends BaseTool<FindEmptyDirectoriesArgs> {
   name = 'obsidian_find_empty_directories';
@@ -102,7 +103,8 @@ export class FindEmptyDirectoriesTool extends BaseTool<FindEmptyDirectoriesArgs>
             }
           } catch (error: unknown) {
             // If we get a 404, the directory might be empty
-            if (error.message?.includes('404') || error.message?.includes('Not Found')) {
+            const errorMessage = getErrorMessage(error);
+            if (errorMessage.includes('404') || errorMessage.includes('Not Found')) {
               // Verify it's actually a directory that exists
               const pathToCheck = dir.startsWith(searchPath) ? dir.substring(searchPath.length) : dir;
               const pathExists = await client.checkPathExists(pathToCheck);
