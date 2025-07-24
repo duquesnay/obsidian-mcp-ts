@@ -21,33 +21,26 @@ This section shows what resources and capabilities are available in the Obsidian
 
 MCP Resources provide read-only access to data from your Obsidian vault through the resources protocol. These are ideal for AI assistants to maintain context about your vault.
 
-#### Core Resources
+**📚 See the [Complete Resources Guide](docs/RESOURCES.md) for detailed documentation, examples, and best practices.**
 
-| Resource | Status | Description | Example URI |
-|----------|--------|-------------|-------------|
-| **Vault Tags** | ✅ | All unique tags with usage counts | `vault://tags` |
-| **Vault Statistics** | ✅ | File and note counts for the vault | `vault://stats` |
-| **Recent Changes** | ✅ | Recently modified notes in the vault | `vault://recent` |
+#### Static Resources (Cached 5min)
 
-#### Dynamic Resources
+| Resource | Description | Example URI |
+|----------|-------------|-------------|
+| **Vault Tags** | All unique tags with usage counts | `vault://tags` |
+| **Vault Statistics** | File and note counts for the vault | `vault://stats` |
+| **Recent Changes** | Recently modified notes (cached 30s) | `vault://recent` |
+| **Vault Structure** | Complete hierarchical structure | `vault://structure` |
 
-| Resource | Status | Description | Example URI |
-|----------|--------|-------------|-------------|
-| **Individual Notes** | ✅ | Read any note by path | `vault://note/Daily/2024-01-01.md` |
-| **Folder Contents** | ✅ | Browse folder contents by path | `vault://folder/Projects` |
-| **Daily Notes** | ✅ | Access daily notes by date | `vault://daily/2024-01-15` |
-| **Notes by Tag** | ✅ | Find all notes with specific tag | `vault://tag/project` |
+#### Dynamic Resources (Cached 1-2min)
 
-#### Planned Resources
-
-| Resource | Status | Description | Expected URI |
-|----------|--------|-------------|--------------|
-| **Vault Structure** | 🔄 | Full vault folder hierarchy | `vault://structure` |
-| **Search Results** | 📋 | Search results as resources | `vault://search/{query}` |
-| **Backlinks** | 📋 | Files linking to a specific note | `vault://backlinks/{path}` |
-| **Forward Links** | 📋 | Outgoing links from a note | `vault://links/{path}` |
-
-**Legend**: ✅ Implemented | 🔄 In Progress | 📋 Planned
+| Resource | Description | Example URI |
+|----------|-------------|-------------|
+| **Individual Notes** | Read any note by path | `vault://note/Daily/2024-01-01.md` |
+| **Folder Contents** | Browse folder contents by path | `vault://folder/Projects` |
+| **Daily Notes** | Access daily notes by date | `vault://daily/2024-01-15` |
+| **Notes by Tag** | Find all notes with specific tag | `vault://tag/project` |
+| **Search Results** | Search vault for content | `vault://search/meeting%20notes` |
 
 #### Using Resources
 

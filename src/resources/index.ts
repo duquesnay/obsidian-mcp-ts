@@ -1,3 +1,20 @@
+/**
+ * MCP Resources for Obsidian
+ * 
+ * This module provides read-only access to Obsidian vault data through the 
+ * Model Context Protocol (MCP) resources system. Resources are cached for 
+ * performance and provide a standardized way for AI assistants to access 
+ * vault information.
+ * 
+ * Available resources:
+ * - Static: vault://tags, vault://stats, vault://recent, vault://structure
+ * - Dynamic: vault://note/{path}, vault://folder/{path}, vault://daily/{date},
+ *            vault://tag/{tagname}, vault://search/{query}
+ * 
+ * @see {@link https://github.com/yourusername/obsidian-mcp-ts/blob/main/docs/RESOURCES.md}
+ * @module resources
+ */
+
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { ListResourcesRequestSchema, ReadResourceRequestSchema, ListResourceTemplatesRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { ObsidianClient } from '../obsidian/ObsidianClient.js';
