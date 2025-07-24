@@ -35,6 +35,12 @@ export const OBSIDIAN_DEFAULTS = {
   
   /** Maximum context length for search results */
   MAX_CONTEXT_LENGTH: 500,
+  
+  /** Default limit for list operations */
+  DEFAULT_LIST_LIMIT: 1000,
+  
+  /** Maximum limit for list operations to prevent memory issues */
+  MAX_LIST_LIMIT: 5000,
 } as const;
 
 export const CACHE_DEFAULTS = {

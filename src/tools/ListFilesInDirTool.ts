@@ -1,14 +1,16 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
+import { ListFilesInDirArgs } from './types/ListFilesInDirArgs.js';
+import { OBSIDIAN_DEFAULTS } from '../constants.js';
 
-export class ListFilesInDirTool extends BaseTool {
+export class ListFilesInDirTool extends BaseTool<ListFilesInDirArgs> {
   name = 'obsidian_list_files_in_dir';
   description = 'List notes and folders in a specific Obsidian vault directory (vault-only - NOT general filesystem access).';
   
   metadata: ToolMetadata = {
     category: 'file-operations',
-    keywords: ['list', 'files', 'directory', 'folder', 'browse'],
-    version: '1.0.0'
+    keywords: ['list', 'files', 'directory', 'folder', 'browse', 'pagination'],
+    version: '1.1.0'
   };
   
   inputSchema = {
@@ -17,12 +19,23 @@ export class ListFilesInDirTool extends BaseTool {
       dirpath: {
         type: 'string',
         description: 'Path to list files from (relative to your vault root). Note that empty directories will not be returned.'
+      },
+      limit: {
+        type: 'integer',
+        description: `Maximum number of files to return (default: all files, max: ${OBSIDIAN_DEFAULTS.MAX_LIST_LIMIT})`,
+        minimum: 1,
+        maximum: OBSIDIAN_DEFAULTS.MAX_LIST_LIMIT
+      },
+      offset: {
+        type: 'integer',
+        description: 'Number of files to skip for pagination (default: 0)',
+        minimum: 0
       }
     },
     required: ['dirpath']
   };
 
-  async executeTyped(args: { dirpath: string }): Promise<ToolResponse> {
+  async executeTyped(args: ListFilesInDirArgs): Promise<ToolResponse> {
     try {
       if (!args.dirpath) {
         throw new Error('dirpath argument missing in arguments');
@@ -35,6 +48,30 @@ export class ListFilesInDirTool extends BaseTool {
       
       try {
         const files = await client.listFilesInDir(args.dirpath);
+        
+        // Handle pagination
+        const totalCount = files.length;
+        const isPaginated = args.limit !== undefined || args.offset !== undefined;
+        
+        if (isPaginated) {
+          const limit = Math.min(args.limit || totalCount, OBSIDIAN_DEFAULTS.MAX_LIST_LIMIT);
+          const offset = args.offset || 0;
+          
+          const paginatedFiles = files.slice(offset, offset + limit);
+          const hasMore = offset + limit < totalCount;
+          
+          return this.formatResponse({
+            files: paginatedFiles,
+            totalCount,
+            hasMore,
+            limit,
+            offset,
+            nextOffset: hasMore ? offset + limit : undefined,
+            message: `Showing ${paginatedFiles.length} of ${totalCount} files in ${args.dirpath}`
+          });
+        }
+        
+        // Non-paginated response
         return this.formatResponse(files);
       } catch (error: unknown) {
         // If we get a 404 error, check if it's an empty directory
