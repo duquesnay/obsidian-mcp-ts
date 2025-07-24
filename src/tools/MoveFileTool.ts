@@ -1,5 +1,6 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
+import { validateRequiredArgs, FILE_PATH_SCHEMA } from '../utils/validation.js';
 
 export class MoveFileTool extends BaseTool {
   name = 'obsidian_move_file';
@@ -15,11 +16,11 @@ export class MoveFileTool extends BaseTool {
     type: 'object' as const,
     properties: {
       sourcePath: {
-        type: 'string',
+        ...FILE_PATH_SCHEMA,
         description: 'Current path of the file to move (relative to vault root).'
       },
       destinationPath: {
-        type: 'string',
+        ...FILE_PATH_SCHEMA,
         description: 'Destination path for the file (relative to vault root). Can be in a different directory and/or have a different filename.'
       }
     },
@@ -28,12 +29,8 @@ export class MoveFileTool extends BaseTool {
 
   async executeTyped(args: { sourcePath: string; destinationPath: string }): Promise<ToolResponse> {
     try {
-      if (!args.sourcePath) {
-        throw new Error('sourcePath argument missing in arguments');
-      }
-      if (!args.destinationPath) {
-        throw new Error('destinationPath argument missing in arguments');
-      }
+      // Validate required arguments
+      validateRequiredArgs(args, ['sourcePath', 'destinationPath']);
       
       // Validate both paths
       PathValidationUtil.validate(args.sourcePath, 'sourcePath', { type: PathValidationType.FILE });

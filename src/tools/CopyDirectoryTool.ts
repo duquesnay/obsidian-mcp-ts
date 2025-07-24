@@ -1,5 +1,6 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
+import { validateRequiredArgs, DIR_PATH_SCHEMA, BOOLEAN_FLAG_SCHEMA } from '../utils/validation.js';
 
 export class CopyDirectoryTool extends BaseTool {
   name = 'obsidian_copy_directory';
@@ -15,17 +16,16 @@ export class CopyDirectoryTool extends BaseTool {
     type: 'object' as const,
     properties: {
       sourcePath: {
-        type: 'string',
+        ...DIR_PATH_SCHEMA,
         description: 'Path of the directory to copy (relative to vault root).'
       },
       destinationPath: {
-        type: 'string',
+        ...DIR_PATH_SCHEMA,
         description: 'Destination path for the copied directory (relative to vault root).'
       },
       overwrite: {
-        type: 'boolean',
-        description: 'Whether to overwrite existing files in the destination (default: false).',
-        default: false
+        ...BOOLEAN_FLAG_SCHEMA,
+        description: 'Whether to overwrite existing files in the destination (default: false).'
       }
     },
     required: ['sourcePath', 'destinationPath']
@@ -33,12 +33,8 @@ export class CopyDirectoryTool extends BaseTool {
 
   async executeTyped(args: { sourcePath: string; destinationPath: string; overwrite?: boolean }): Promise<ToolResponse> {
     try {
-      if (!args.sourcePath) {
-        throw new Error('sourcePath argument missing in arguments');
-      }
-      if (!args.destinationPath) {
-        throw new Error('destinationPath argument missing in arguments');
-      }
+      // Validate required arguments
+      validateRequiredArgs(args, ['sourcePath', 'destinationPath']);
       
       // Validate both paths
       PathValidationUtil.validate(args.sourcePath, 'sourcePath', { type: PathValidationType.DIRECTORY });

@@ -1,6 +1,7 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
+import { validateRequiredArgs, PAGE_PAGINATION_SCHEMA } from '../utils/validation.js';
 
 export class BatchGetFileContentsTool extends BaseTool {
   name = 'obsidian_batch_get_file_contents';
@@ -22,23 +23,15 @@ export class BatchGetFileContentsTool extends BaseTool {
         },
         description: 'Array of paths to get contents from (relative to vault root).'
       },
-      page: {
-        type: 'number',
-        description: 'Page number (0-based) for pagination. Optional.'
-      },
-      pageSize: {
-        type: 'number',
-        description: `Number of files per page. Defaults to ${OBSIDIAN_DEFAULTS.PAGE_SIZE}. Optional.`
-      }
+      ...PAGE_PAGINATION_SCHEMA
     },
     required: ['filepaths']
   };
 
   async executeTyped(args: { filepaths: string[]; page?: number; pageSize?: number }): Promise<ToolResponse> {
     try {
-      if (!args.filepaths || !Array.isArray(args.filepaths)) {
-        throw new Error('filepaths argument must be an array');
-      }
+      // Validate required arguments - filepaths must be a non-empty array
+      validateRequiredArgs(args, ['filepaths'], { filepaths: { notEmpty: true } });
       
       // Validate all filepaths
       PathValidationUtil.validateBatch(args.filepaths, { type: PathValidationType.FILE });

@@ -419,6 +419,15 @@ This separation enables clean PRs by cherry-picking only non-claude commits.
 **Methodological insights:**
 - **TDD with Comprehensive Test Coverage**: Created tests covering edge cases (empty tags, special characters, URL encoding, missing parameters) before implementation. This approach caught potential issues early and ensured robust error handling.
 
+### 2025-01-24 - Type Safety Migration and Tool Discovery Hardening
+
+**Technical:**
+- **Type Guard Flexibility for Testing**: When adding type guards (like `isErrorLike`), avoid strict `instanceof` checks that break test mocks. Instead, use shape-based validation (`typeof error === 'object' && error !== null && 'message' in error`) to support both production Error instances and test mock objects.
+- **Runtime Validation for Dynamic Loading**: When implementing dynamic tool discovery, validate at multiple levels: class constructor validation (`isValidToolClass`), instance validation (`validateToolInstance`), and schema structure validation. This multi-layer approach catches issues early while providing clear error messages.
+
+**Methodological:**
+- **Incremental Type Migration with Tests**: Successfully migrating from `any` to specific types across 25+ occurrences worked best by running tests after each change. This caught breaking changes immediately (like the mock error objects) rather than discovering them after multiple changes. The pattern of fix-test-fix proved more efficient than batch changes.
+
 ## Insights and Memories
 
 - **Obsidian MCP is only for obsidian notes, not filesystem access**

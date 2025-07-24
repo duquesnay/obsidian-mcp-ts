@@ -1,5 +1,6 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
+import { validateRequiredArgs, FILE_PATH_SCHEMA, TAGS_ARRAY_SCHEMA, normalizeTagName } from '../utils/validation.js';
 
 export class ManageFileTagsTool extends BaseTool {
   name = 'obsidian_manage_file_tags';
@@ -14,18 +15,14 @@ export class ManageFileTagsTool extends BaseTool {
   inputSchema = {
     type: 'object' as const,
     properties: {
-      filePath: {
-        type: 'string',
-        description: 'Path to the file to modify (relative to vault root).'
-      },
+      filePath: FILE_PATH_SCHEMA,
       operation: {
         type: 'string',
         enum: ['add', 'remove'],
         description: 'Whether to add or remove tags.'
       },
       tags: {
-        type: 'array',
-        items: { type: 'string' },
+        ...TAGS_ARRAY_SCHEMA,
         description: 'Array of tags to add or remove (with or without # prefix).'
       },
       location: {
@@ -45,23 +42,16 @@ export class ManageFileTagsTool extends BaseTool {
     location?: 'frontmatter' | 'inline' | 'both'
   }): Promise<ToolResponse> {
     try {
-      if (!args.filePath) {
-        throw new Error('filePath argument missing in arguments');
-      }
-      if (!args.operation) {
-        throw new Error('operation argument missing in arguments');
-      }
-      if (!args.tags || !Array.isArray(args.tags) || args.tags.length === 0) {
-        throw new Error('tags argument must be a non-empty array');
-      }
+      // Validate required arguments with tags as non-empty array
+      validateRequiredArgs(args, ['filePath', 'operation', 'tags'], {
+        tags: { notEmpty: true }
+      });
       
       // Validate the file path
       PathValidationUtil.validate(args.filePath, 'filePath', { type: PathValidationType.FILE });
       
       // Normalize tags (remove # if present)
-      const normalizedTags = args.tags.map(tag => 
-        tag.startsWith('#') ? tag.substring(1) : tag
-      );
+      const normalizedTags = args.tags.map(normalizeTagName);
       
       const client = this.getClient();
       const result = await client.manageFileTags(

@@ -1,6 +1,7 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
 import { SimpleSearchArgs } from './types/SimpleSearchArgs.js';
+import { validateRequiredArgs, PAGINATION_SCHEMA } from '../utils/validation.js';
 
 export class SimpleSearchTool extends BaseTool<SimpleSearchArgs> {
   name = 'obsidian_simple_search';
@@ -25,28 +26,23 @@ export class SimpleSearchTool extends BaseTool<SimpleSearchArgs> {
         default: OBSIDIAN_DEFAULTS.CONTEXT_LENGTH
       },
       limit: {
-        type: 'integer',
-        description: 'Maximum number of results to return (default: 50, max: 200)',
+        ...PAGINATION_SCHEMA.limit,
         default: OBSIDIAN_DEFAULTS.DEFAULT_SEARCH_LIMIT,
-        minimum: 1,
         maximum: OBSIDIAN_DEFAULTS.MAX_SEARCH_RESULTS
       },
-      offset: {
-        type: 'integer',
-        description: 'Number of results to skip for pagination (default: 0)',
-        default: 0,
-        minimum: 0
-      }
+      offset: PAGINATION_SCHEMA.offset
     },
     required: ['query']
   };
 
   async executeTyped(args: SimpleSearchArgs): Promise<ToolResponse> {
     try {
-      // Enhanced input validation with recovery
-      if (!args.query) {
+      // Use centralized validation
+      try {
+        validateRequiredArgs(args, ['query']);
+      } catch (error) {
         return this.handleSimplifiedError(
-          new Error('Missing required parameters'),
+          error,
           'Provide query parameter to specify what text to search for',
           {
             query: 'search text',

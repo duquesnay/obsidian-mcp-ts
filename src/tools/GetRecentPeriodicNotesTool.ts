@@ -1,4 +1,5 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
+import { validateRequiredArgs, validatePeriod, PERIOD_SCHEMA, PeriodType } from '../utils/validation.js';
 
 export class GetRecentPeriodicNotesTool extends BaseTool {
   name = 'obsidian_get_recent_periodic_notes';
@@ -13,11 +14,7 @@ export class GetRecentPeriodicNotesTool extends BaseTool {
   inputSchema = {
     type: 'object' as const,
     properties: {
-      period: {
-        type: 'string',
-        enum: ['daily', 'weekly', 'monthly', 'quarterly', 'yearly'],
-        description: 'The type of periodic notes to retrieve.'
-      },
+      period: PERIOD_SCHEMA,
       days: {
         type: 'integer',
         description: 'Number of days to look back for notes. Default varies by period type.'
@@ -27,18 +24,13 @@ export class GetRecentPeriodicNotesTool extends BaseTool {
   };
 
   async executeTyped(args: { 
-    period: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly';
+    period: PeriodType;
     days?: number;
   }): Promise<ToolResponse> {
     try {
-      if (!args.period) {
-        throw new Error('period argument missing in arguments');
-      }
-      
-      const validPeriods = ['daily', 'weekly', 'monthly', 'quarterly', 'yearly'];
-      if (!validPeriods.includes(args.period)) {
-        throw new Error(`Invalid period. Must be one of: ${validPeriods.join(', ')}`);
-      }
+      // Validate required arguments
+      validateRequiredArgs(args, ['period']);
+      validatePeriod(args.period);
       
       const client = this.getClient();
       const result = await client.getRecentPeriodicNotes(args.period, args.days);

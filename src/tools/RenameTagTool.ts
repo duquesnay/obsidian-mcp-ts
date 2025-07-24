@@ -1,4 +1,5 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
+import { validateRequiredArgs, TAG_SCHEMA, normalizeTagName } from '../utils/validation.js';
 
 export class RenameTagTool extends BaseTool {
   name = 'obsidian_rename_tag';
@@ -13,30 +14,20 @@ export class RenameTagTool extends BaseTool {
   inputSchema = {
     type: 'object' as const,
     properties: {
-      oldTagName: {
-        type: 'string',
-        description: 'The current tag name to rename (with or without # prefix).'
-      },
-      newTagName: {
-        type: 'string',
-        description: 'The new tag name (with or without # prefix).'
-      }
+      oldTagName: TAG_SCHEMA,
+      newTagName: TAG_SCHEMA
     },
     required: ['oldTagName', 'newTagName']
   };
 
   async executeTyped(args: { oldTagName: string; newTagName: string }): Promise<ToolResponse> {
     try {
-      if (!args.oldTagName) {
-        throw new Error('oldTagName argument missing in arguments');
-      }
-      if (!args.newTagName) {
-        throw new Error('newTagName argument missing in arguments');
-      }
+      // Validate required arguments
+      validateRequiredArgs(args, ['oldTagName', 'newTagName']);
       
       // Normalize tag names (remove # if present)
-      const oldTag = args.oldTagName.startsWith('#') ? args.oldTagName.substring(1) : args.oldTagName;
-      const newTag = args.newTagName.startsWith('#') ? args.newTagName.substring(1) : args.newTagName;
+      const oldTag = normalizeTagName(args.oldTagName);
+      const newTag = normalizeTagName(args.newTagName);
       
       const client = this.getClient();
       const result = await client.renameTag(oldTag, newTag);

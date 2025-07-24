@@ -2,6 +2,7 @@ import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 import { ListFilesInDirArgs } from './types/ListFilesInDirArgs.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
+import { PAGINATION_SCHEMA } from '../utils/validation.js';
 
 export class ListFilesInDirTool extends BaseTool<ListFilesInDirArgs> {
   name = 'obsidian_list_files_in_dir';
@@ -21,16 +22,11 @@ export class ListFilesInDirTool extends BaseTool<ListFilesInDirArgs> {
         description: 'Path to list files from (relative to your vault root). Note that empty directories will not be returned.'
       },
       limit: {
-        type: 'integer',
-        description: `Maximum number of files to return (default: all files, max: ${OBSIDIAN_DEFAULTS.MAX_LIST_LIMIT})`,
-        minimum: 1,
+        ...PAGINATION_SCHEMA.limit,
+        description: `Maximum number of files to return (default: all, max: ${OBSIDIAN_DEFAULTS.MAX_LIST_LIMIT})`,
         maximum: OBSIDIAN_DEFAULTS.MAX_LIST_LIMIT
       },
-      offset: {
-        type: 'integer',
-        description: 'Number of files to skip for pagination (default: 0)',
-        minimum: 0
-      }
+      offset: PAGINATION_SCHEMA.offset
     },
     required: ['dirpath']
   };

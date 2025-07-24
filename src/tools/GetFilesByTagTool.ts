@@ -1,4 +1,5 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
+import { validateRequiredArgs, TAG_SCHEMA, normalizeTagName } from '../utils/validation.js';
 
 export class GetFilesByTagTool extends BaseTool {
   name = 'obsidian_get_files_by_tag';
@@ -13,23 +14,18 @@ export class GetFilesByTagTool extends BaseTool {
   inputSchema = {
     type: 'object' as const,
     properties: {
-      tagName: {
-        type: 'string',
-        description: 'The tag name to search for (with or without # prefix).'
-      }
+      tagName: TAG_SCHEMA
     },
     required: ['tagName']
   };
 
   async executeTyped(args: { tagName: string }): Promise<ToolResponse> {
     try {
-      if (!args.tagName) {
-        throw new Error('tagName argument missing in arguments');
-      }
+      // Validate required arguments
+      validateRequiredArgs(args, ['tagName']);
 
       // Normalize tag name (remove # if present)
-      // @todo deserve its own function
-      const tagName = args.tagName.startsWith('#') ? args.tagName.substring(1) : args.tagName;
+      const tagName = normalizeTagName(args.tagName);
 
       const client = this.getClient();
       const files = await client.getFilesByTag(tagName);

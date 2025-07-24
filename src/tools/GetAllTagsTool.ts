@@ -1,6 +1,7 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { GetAllTagsArgs } from './types/GetAllTagsArgs.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
+import { PAGINATION_SCHEMA } from '../utils/validation.js';
 
 export class GetAllTagsTool extends BaseTool<GetAllTagsArgs> {
   name = 'obsidian_get_all_tags';
@@ -26,16 +27,11 @@ export class GetAllTagsTool extends BaseTool<GetAllTagsArgs> {
         description: 'Sort order (default: asc for name, desc for count)'
       },
       limit: {
-        type: 'integer',
-        description: `Maximum number of tags to return (default: all tags, max: ${OBSIDIAN_DEFAULTS.MAX_LIST_LIMIT})`,
-        minimum: 1,
+        ...PAGINATION_SCHEMA.limit,
+        description: `Maximum number of tags to return (default: all, max: ${OBSIDIAN_DEFAULTS.MAX_LIST_LIMIT})`,
         maximum: OBSIDIAN_DEFAULTS.MAX_LIST_LIMIT
       },
-      offset: {
-        type: 'integer',
-        description: 'Number of tags to skip for pagination (default: 0)',
-        minimum: 0
-      }
+      offset: PAGINATION_SCHEMA.offset
     },
     required: []
   };

@@ -1,5 +1,6 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
+import { PAGINATION_SCHEMA } from '../utils/validation.js';
 
 export class GetRecentChangesTool extends BaseTool {
   name = 'obsidian_get_recent_changes';
@@ -19,15 +20,10 @@ export class GetRecentChangesTool extends BaseTool {
         description: 'Specific directory to check for recent changes (optional).'
       },
       limit: {
-        type: 'integer',
-        description: 'Maximum number of files to return.',
+        ...PAGINATION_SCHEMA.limit,
         default: OBSIDIAN_DEFAULTS.PAGE_SIZE
       },
-      offset: {
-        type: 'integer',
-        description: 'Number of files to skip.',
-        default: 0
-      },
+      offset: PAGINATION_SCHEMA.offset,
       contentLength: {
         type: 'integer',
         description: 'Number of characters of content to include for each file.',

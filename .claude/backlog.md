@@ -218,8 +218,9 @@ After each sub-agent completes:
 
 ## Total Project Summary
 
-**Quality Improvement Tasks**: 63 (100% completed)
-**Resource Tasks**: 17 completed, 1 remaining
+**Quality Improvement Tasks**: 63 (100% completed) ✅
+**Resource Tasks**: 18 (100% completed) ✅
+**Quality Check Tasks**: 7/10 completed (70%)
 
 ---
 
@@ -236,7 +237,86 @@ After each sub-agent completes:
 - [x] Q2.3: Replace remaining `any` types with specific interfaces - Replaced ~25 any types with proper interfaces
 - [x] Q2.4: Add stricter type checking for dynamic tool discovery - Added validation for tool classes and instances
 
-### Low Priority
+## Code Quality Improvements from Quality Review (2025-01-24)
+
+### High Priority (Code Organization & Maintainability)
+- [ ] CQ1: Move test files from src/ to tests/
+  - Move 8 test files: base.test.ts, discovery.test.ts, GetAllTagsTool.test.ts, ListFilesInVaultTool.test.ts, Cache.test.ts, OptimizedBatchProcessor.test.ts, PathValidationUtil.test.ts, RequestDeduplicator.test.ts
+  - Update tsconfig to exclude test files from compilation
+  - Clean dist/ folder of compiled test files
+
+### Medium Priority (Architectural Improvements - Do Early)
+- [ ] CQ4: Split ObsidianClient into focused services (SRP)
+  - Extract IObsidianClient interface from ObsidianClient class
+  - Create FileOperationsClient for file CRUD
+  - Create DirectoryOperationsClient for directory operations
+  - Create SearchClient for all search functionality
+  - Create TagManagementClient for tag operations
+  - Create PeriodicNotesClient for periodic notes
+  - Keep ObsidianClient as facade/coordinator
+  - Update BaseTool to depend on interface instead of concrete class
+
+- [ ] CQ5: Refactor UnifiedEditTool using strategy pattern
+  - Extract each edit operation into separate strategy
+  - Reduce complexity from 401 lines
+  - Improve maintainability and testability
+
+- [ ] CQ6: Consolidate schema definitions
+  - Create central schema fragments file
+  - Define reusable property schemas
+  - Implement schema builder pattern
+
+- [ ] CQ7: Address TODO comments
+  - ObsidianClient.ts line 31: "break apart, file is too long"
+  - Remove or address test file TODOs
+  - Clean up technical debt markers
+
+### High Priority (Continued)
+- [ ] CQ3: Create validation utilities for DRY
+  - Implement validateRequiredArgs() helper function
+  - Create reusable schema fragments (PATH_SCHEMA, PAGINATION_SCHEMA, etc.)
+  - Extract period validation to shared constant/function
+  - Reduce validation code duplication across 20+ tools
+
+### Low Priority (Type Safety & Documentation)
+- [ ] CQ8: Complete argument type extraction
+  - Extract remaining ~23 tool argument types to src/tools/types/
+  - Maintain consistency across all tools
+
+- [ ] CQ9: Extract remaining magic numbers to constants
+  - Path length limit (1000) in pathValidator.ts
+  - Various retry delays and timeouts
+  - Any other hardcoded numeric values
+
+- [ ] CQ10: Replace any types with proper type guards
+  - Create hasResponse() type guard for error handling
+  - Fix all (err as any).response patterns
+  - Improve type safety throughout
+
+- [ ] CQ11: Document complex regex patterns
+  - Extract regex patterns to named constants
+  - Add explanatory comments for complex patterns
+  - Improve code readability
+
+### Low Priority (From Previous Quality Check)
 - [ ] Q3.1: Add performance benchmarks for optimization utilities
 - [ ] Q3.2: Create troubleshooting guide for common issues
 - [ ] Q3.3: Document SSL verification rationale (disabled for local Obsidian access)
+
+### Performance Features Integration (Lower Priority)
+- [ ] CQ12: Complete subscription system integration
+  - Connect cache invalidation to notification triggers
+  - Implement file watching or change detection
+  - Wire up cacheNotifications hooks
+  - Enable live updates for subscribed resources
+
+- [ ] CQ13: Integrate RequestDeduplicator
+  - Add to ObsidianClient methods to prevent duplicate concurrent API calls
+  - Configure appropriate TTL for different operation types
+  - Add performance metrics to measure effectiveness
+
+- [ ] CQ14: Migrate to OptimizedBatchProcessor
+  - Replace BatchProcessor usage in ObsidianClient
+  - Configure retry logic for network operations
+  - Add progress callbacks for long-running operations
+  - Gain reliability benefits from retry mechanism

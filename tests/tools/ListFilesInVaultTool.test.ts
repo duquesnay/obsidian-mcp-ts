@@ -74,7 +74,7 @@ describe('ListFilesInVaultTool', () => {
       expect(result.type).toBe('text');
       const data = JSON.parse(result.text);
       expect(data.success).toBe(false);
-      expect(data.error).toContain('Invalid pagination parameters');
+      expect(data.error).toMatch(/limit must be a positive integer|offset must be non-negative/);
     });
 
     it('should apply maximum limit constraint', async () => {

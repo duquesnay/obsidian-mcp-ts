@@ -1,5 +1,6 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
+import { validateRequiredArgs, PATH_SCHEMA } from '../utils/validation.js';
 
 export class CheckPathExistsTool extends BaseTool {
   name = 'obsidian_check_path_exists';
@@ -14,19 +15,15 @@ export class CheckPathExistsTool extends BaseTool {
   inputSchema = {
     type: 'object' as const,
     properties: {
-      path: {
-        type: 'string',
-        description: 'Path to check for existence (relative to vault root).'
-      }
+      path: PATH_SCHEMA
     },
     required: ['path']
   };
 
   async executeTyped(args: { path: string }): Promise<ToolResponse> {
     try {
-      if (!args.path) {
-        throw new Error('path argument missing in arguments');
-      }
+      // Validate required arguments
+      validateRequiredArgs(args, ['path']);
       
       // Validate the path (can be either file or directory)
       PathValidationUtil.validate(args.path, 'path', { type: PathValidationType.ANY });

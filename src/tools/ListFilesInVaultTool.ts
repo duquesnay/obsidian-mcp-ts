@@ -1,6 +1,7 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { ListFilesArgs } from './types/ListFilesArgs.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
+import { PAGINATION_SCHEMA, validatePaginationParams } from '../utils/validation.js';
 
 export class ListFilesInVaultTool extends BaseTool<ListFilesArgs> {
   name = 'obsidian_list_files_in_vault';
@@ -16,16 +17,11 @@ export class ListFilesInVaultTool extends BaseTool<ListFilesArgs> {
     type: 'object' as const,
     properties: {
       limit: {
-        type: 'integer',
+        ...PAGINATION_SCHEMA.limit,
         description: `Maximum number of files to return (default: ${OBSIDIAN_DEFAULTS.DEFAULT_LIST_LIMIT}, max: ${OBSIDIAN_DEFAULTS.MAX_LIST_LIMIT})`,
-        minimum: 1,
         maximum: OBSIDIAN_DEFAULTS.MAX_LIST_LIMIT
       },
-      offset: {
-        type: 'integer',
-        description: 'Number of files to skip for pagination (default: 0)',
-        minimum: 0
-      }
+      offset: PAGINATION_SCHEMA.offset
     },
     required: []
   };
@@ -33,18 +29,12 @@ export class ListFilesInVaultTool extends BaseTool<ListFilesArgs> {
   async executeTyped(args: ListFilesArgs): Promise<ToolResponse> {
     try {
       // Validate pagination parameters
-      if (args.limit !== undefined && args.limit < 1) {
+      try {
+        validatePaginationParams(args.limit, args.offset);
+      } catch (error) {
         return this.handleSimplifiedError(
-          new Error('Invalid pagination parameters'),
-          'limit must be a positive integer',
-          { limit: 1000, offset: 0 }
-        );
-      }
-      
-      if (args.offset !== undefined && args.offset < 0) {
-        return this.handleSimplifiedError(
-          new Error('Invalid pagination parameters'),
-          'offset must be non-negative',
+          error,
+          undefined,
           { limit: 1000, offset: 0 }
         );
       }
@@ -79,13 +69,14 @@ export class ListFilesInVaultTool extends BaseTool<ListFilesArgs> {
       return this.formatResponse(response);
     } catch (error: unknown) {
       // Use the new handleHttpError method with custom handlers
-      if (error.response?.status) {
+      if (error && typeof error === 'object' && 'response' in error && (error as any).response?.status) {
         return this.handleHttpError(error, {
           500: 'Server error. The Obsidian REST API may be experiencing issues'
         });
       }
       
-      if (error.message?.includes('vault') || error.message?.includes('connection')) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes('vault') || errorMessage.includes('connection')) {
         return this.handleSimplifiedError(
           error,
           'Cannot connect to Obsidian vault. Ensure Obsidian is running and the Local REST API plugin is active'

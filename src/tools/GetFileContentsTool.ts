@@ -1,6 +1,7 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationError } from '../utils/PathValidationUtil.js';
 import { GetFileContentsArgs } from './types/GetFileContentsArgs.js';
+import { FILE_PATH_SCHEMA } from '../utils/validation.js';
 
 export class GetFileContentsTool extends BaseTool<GetFileContentsArgs> {
   name = 'obsidian_get_file_contents';
@@ -15,10 +16,7 @@ export class GetFileContentsTool extends BaseTool<GetFileContentsArgs> {
   inputSchema = {
     type: 'object' as const,
     properties: {
-      filepath: {
-        type: 'string',
-        description: 'Path to get the content from (relative to vault root).'
-      },
+      filepath: FILE_PATH_SCHEMA,
       format: {
         type: 'string',
         enum: ['content', 'metadata', 'frontmatter', 'plain', 'html'],

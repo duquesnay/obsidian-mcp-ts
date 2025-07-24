@@ -1,5 +1,6 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
+import { validateRequiredArgs, DIR_PATH_SCHEMA, BOOLEAN_FLAG_SCHEMA } from '../utils/validation.js';
 
 export class DeleteDirectoryTool extends BaseTool {
   name = 'obsidian_delete_directory';
@@ -15,18 +16,16 @@ export class DeleteDirectoryTool extends BaseTool {
     type: 'object' as const,
     properties: {
       directoryPath: {
-        type: 'string',
+        ...DIR_PATH_SCHEMA,
         description: 'Path of the directory to delete (relative to vault root).'
       },
       recursive: {
-        type: 'boolean',
-        description: 'Whether to delete directory and all its contents recursively (default: false).',
-        default: false
+        ...BOOLEAN_FLAG_SCHEMA,
+        description: 'Whether to delete directory and all its contents recursively (default: false).'
       },
       permanent: {
-        type: 'boolean',
-        description: 'Permanently delete directory instead of moving to trash (default: false).',
-        default: false
+        ...BOOLEAN_FLAG_SCHEMA,
+        description: 'Permanently delete directory instead of moving to trash (default: false).'
       }
     },
     required: ['directoryPath']
@@ -34,9 +33,8 @@ export class DeleteDirectoryTool extends BaseTool {
 
   async executeTyped(args: { directoryPath: string; recursive?: boolean; permanent?: boolean }): Promise<ToolResponse> {
     try {
-      if (!args.directoryPath) {
-        throw new Error('directoryPath argument missing in arguments');
-      }
+      // Validate required arguments
+      validateRequiredArgs(args, ['directoryPath']);
       
       // Validate the path
       PathValidationUtil.validate(args.directoryPath, 'directoryPath', { type: PathValidationType.DIRECTORY });

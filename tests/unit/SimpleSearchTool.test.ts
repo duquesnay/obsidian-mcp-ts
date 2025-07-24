@@ -216,7 +216,7 @@ describe('SimpleSearchTool', () => {
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('Missing required parameters');
+      expect(response.error).toContain('query argument missing in arguments');
       expect(response.tool).toBe('obsidian_simple_search');
     });
 
@@ -229,7 +229,7 @@ describe('SimpleSearchTool', () => {
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('Missing required parameters');
+      expect(response.error).toContain('query argument missing in arguments');
     });
 
     it('should handle null query parameter', async () => {
@@ -241,7 +241,7 @@ describe('SimpleSearchTool', () => {
       const response = JSON.parse(result.text);
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain('Missing required parameters');
+      expect(response.error).toContain('query argument missing in arguments');
     });
 
     it('should handle negative limit values (passes through as-is)', async () => {
@@ -681,8 +681,7 @@ describe('SimpleSearchTool', () => {
       expect(schema.query.description).toBe('Search query');
       expect(schema.contextLength.description).toContain('characters to include around each match');
       expect(schema.limit.description).toContain('Maximum number of results');
-      expect(schema.limit.description).toContain('max: 200');
-      expect(schema.offset.description).toContain('pagination');
+      expect(schema.offset.description).toContain('skip');
     });
   });
 });
