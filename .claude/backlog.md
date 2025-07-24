@@ -3,17 +3,49 @@
 ## 🤖 AI Agent Instructions
 
 ### Overview
-This backlog decomposes quality improvement recommendations into fine-grained, incremental tasks following TDD principles and green-line development.
+This backlog decomposes quality improvement recommendations into fine-grained, incremental tasks. Each task must be implemented using the Task tool to launch a sub-agent.
 
-### Task Template
+### Orchestration Rules
+1. **MANDATORY**: Use the Task tool to create a sub-agent for EACH backlog item
+2. **NEVER** implement tasks directly - always delegate to sub-agents
+3. Use @./scratchpad.md as a scratchpad for tracking progress
+4. Update the backlog after each sub-agent completes its task
 
-For each task:
-1. Write failing test first (Red)
-2. Implement minimal code to pass (Green)
-3. Refactor if needed (Refactor)
-4. Run full test suite
-5. Commit with descriptive message
-6. Update this backlog
+### Sub-Agent Task Instructions
+When creating a sub-agent with the Task tool, include these instructions:
+
+```
+You are implementing task [TASK_ID]: [TASK_DESCRIPTION]
+
+Follow this TDD workflow:
+1. Write failing test first (Red phase)
+2. Implement minimal code to pass (Green phase)
+3. Refactor if needed (Refactor phase)
+4. Run full test suite to ensure no regressions
+5. Commit incrementally with descriptive message using format:
+   - feat: for new features
+   - fix: for bug fixes
+   - refactor: for code improvements
+   - test: for test additions
+
+Technical context:
+- This is an Obsidian MCP TypeScript server
+- Use existing patterns from the codebase
+- Follow TypeScript best practices
+- Ensure all tests pass before completing
+
+Return a summary of:
+- What was changed
+- Test results
+- Any issues encountered
+```
+
+### Backlog Update Template
+After each sub-agent completes:
+1. Mark the task as [x] in the backlog
+2. Add completion notes if needed
+3. Update the Progress Status section
+4. Proceed to next task
 
 ### Success Metrics
 - All tests passing after each change
@@ -177,9 +209,10 @@ For each task:
 
 **Last Updated**: 2025-01-23
 **Current Priority**: 5 - Polish  
-**Next Task**: Q2.1 - Create shared error handling utility for resource handlers
-**Green Line Status**: ✅ All tests passing
+**Next Task**: Q2.3 - Replace remaining any types with specific interfaces
+**Green Line Status**: ✅ All tests passing (601 tests)
 **High Priority TODOs**: ✅ All 3 completed
+**Medium Priority**: 2/4 completed
 
 ## Total Project Summary
 
@@ -196,8 +229,8 @@ For each task:
 - [x] Q1.3: Address TODO in ComplexSearchTool.ts about JsonLogic implementation - Added JsonLogic validation to ensure proper query structure
 
 ### Medium Priority
-- [ ] Q2.1: Create shared error handling utility for resource handlers
-- [ ] Q2.2: Extract common validation patterns into reusable functions
+- [x] Q2.1: Create shared error handling utility for resource handlers - Created ResourceErrorHandler with consistent error messages
+- [x] Q2.2: Extract common validation patterns into reusable functions - Created ResourceValidationUtil with URI extraction, date validation, etc.
 - [ ] Q2.3: Replace remaining `any` types with specific interfaces
 - [ ] Q2.4: Add stricter type checking for dynamic tool discovery
 

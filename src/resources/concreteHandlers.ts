@@ -8,7 +8,7 @@ export class TagsHandler extends BaseResourceHandler {
     try {
       const tags = await client.getAllTags();
       return { tags };
-    } catch (error: any) {
+    } catch (error: unknown) {
       ResourceErrorHandler.handle(error, 'Tags');
     }
   }
@@ -28,7 +28,7 @@ export class StatsHandler extends BaseResourceHandler {
         fileCount,
         noteCount
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       ResourceErrorHandler.handle(error, 'Vault statistics');
     }
   }
@@ -50,7 +50,7 @@ export class RecentHandler extends BaseResourceHandler {
       }));
       
       return { notes };
-    } catch (error: any) {
+    } catch (error: unknown) {
       ResourceErrorHandler.handle(error, 'Recent notes');
     }
   }
@@ -63,7 +63,7 @@ export class NoteHandler extends BaseResourceHandler {
     
     try {
       return await client.getFileContents(path);
-    } catch (error: any) {
+    } catch (error: unknown) {
       ResourceErrorHandler.handle(error, 'Note', path);
     }
   }
@@ -80,7 +80,7 @@ export class FolderHandler extends BaseResourceHandler {
         path: path,
         items: items
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       ResourceErrorHandler.handle(error, 'Folder', path);
     }
   }

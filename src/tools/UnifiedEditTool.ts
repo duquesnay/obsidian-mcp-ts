@@ -15,15 +15,18 @@ interface TextEdit {
   replace?: string;
 }
 
+type BatchOperation = {
+  after?: string;
+  before?: string;
+  add?: string;
+  find?: string;
+  replace?: string;
+  at?: 'start' | 'end';
+  append?: string;
+};
+
 interface BatchEdit {
-  batch?: Array<{
-    after?: string;
-    before?: string;
-    add?: string;
-    find?: string;
-    replace?: string;
-    at?: 'start' | 'end';
-  }>;
+  batch?: BatchOperation[];
 }
 
 interface NewSectionEdit {
@@ -153,12 +156,12 @@ export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
         help: "Use one of the patterns above. For questions, check the tool description."
       });
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       return this.handleError(error);
     }
   }
 
-  private async handleAppend(filepath: string, content: string): Promise<any> {
+  private async handleAppend(filepath: string, content: string): Promise<ToolResponse> {
     try {
       const client = this.getClient();
       await client.appendContent(filepath, content, false);
@@ -169,7 +172,7 @@ export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
         operation: 'append',
         filepath
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Provide working alternative on failure
       return this.formatResponse({
         error: `Append failed: ${error.message}`,
@@ -181,7 +184,7 @@ export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
     }
   }
 
-  private async handleHeadingInsert(filepath: string, args: StructureEdit): Promise<any> {
+  private async handleHeadingInsert(filepath: string, args: StructureEdit): Promise<ToolResponse> {
     try {
       const client = this.getClient();
       
@@ -221,11 +224,11 @@ export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
         });
       }
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Smart error recovery with working alternatives
       const heading = args.after || args.before;
       return this.formatResponse({
-        error: `Heading insertion failed: ${error.message}`,
+        error: `Heading insertion failed: ${error instanceof Error ? error.message : String(error)}`,
         possible_causes: [
           `Heading "${heading}" not found in document`,
           "File doesn't exist",
@@ -245,7 +248,7 @@ export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
     }
   }
 
-  private async handleReplace(filepath: string, find: string, replace: string): Promise<any> {
+  private async handleReplace(filepath: string, find: string, replace: string): Promise<ToolResponse> {
     try {
       const client = this.getClient();
       
@@ -284,7 +287,7 @@ export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
         replace
       });
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       return this.formatResponse({
         error: `Replace failed: ${error.message}`,
         working_alternative: {
@@ -295,7 +298,7 @@ export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
     }
   }
 
-  private async handleNewSection(filepath: string, args: NewSectionEdit): Promise<any> {
+  private async handleNewSection(filepath: string, args: NewSectionEdit): Promise<ToolResponse> {
     try {
       const client = this.getClient();
       const sectionTitle = args.new_section!;
@@ -332,9 +335,9 @@ export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
         position
       });
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       return this.formatResponse({
-        error: `New section creation failed: ${error.message}`,
+        error: `New section creation failed: ${error instanceof Error ? error.message : String(error)}`,
         working_alternative: {
           description: "Try appending the section to the end",
           example: { file: filepath, append: `\n## ${args.new_section}\n${args.content || ""}` }
@@ -343,9 +346,20 @@ export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
     }
   }
 
-  private async handleBatch(filepath: string, operations: any[]): Promise<any> {
-    const results: any[] = [];
-    const errors: any[] = [];
+  private async handleBatch(filepath: string, operations: BatchOperation[]): Promise<ToolResponse> {
+    interface BatchResult {
+      operation: number;
+      result: ToolResponse | { error: string };
+    }
+    
+    interface BatchError {
+      operation: number;
+      error: string;
+      attempted: BatchOperation;
+    }
+    
+    const results: BatchResult[] = [];
+    const errors: BatchError[] = [];
     
     for (let i = 0; i < operations.length; i++) {
       const op = operations[i];
@@ -368,8 +382,9 @@ export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
         
         results.push({ operation: i, result });
         
-      } catch (error: any) {
-        errors.push({ operation: i, error: error.message, attempted: op });
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        errors.push({ operation: i, error: errorMessage, attempted: op });
       }
     }
     

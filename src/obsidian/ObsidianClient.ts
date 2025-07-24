@@ -18,6 +18,7 @@ import type {
   PaginatedSearchResponse,
   SearchResult
 } from '../types/obsidian.js';
+import type { JsonLogicQuery } from '../types/jsonlogic.js';
 
 export interface ObsidianClientConfig {
   apiKey: string;
@@ -309,7 +310,7 @@ export class ObsidianClient {
    *   ">": ["mtime", Date.now() - 7 * 24 * 60 * 60 * 1000]
    * });
    */
-  async complexSearch(query: any): Promise<ComplexSearchResponse> {
+  async complexSearch(query: JsonLogicQuery): Promise<ComplexSearchResponse> {
     return this.safeCall(async () => {
       const response = await this.axiosInstance.post('/search/', query);
       return response.data;

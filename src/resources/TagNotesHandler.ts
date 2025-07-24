@@ -22,7 +22,7 @@ export class TagNotesHandler extends BaseResourceHandler {
         fileCount: files.length,
         files: files
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       ResourceErrorHandler.handle(error, 'Tag notes', tagName);
     }
   }

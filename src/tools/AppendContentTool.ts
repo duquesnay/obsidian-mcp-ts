@@ -58,7 +58,7 @@ export class AppendContentTool extends BaseTool<AppendContentArgs> {
       );
       
       return this.formatResponse({ success: true, message: 'Content appended successfully' });
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Special case: 404 with createIfNotExists false
       if (error.response?.status === 404 && args.createIfNotExists === false) {
         return this.handleSimplifiedError(

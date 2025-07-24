@@ -48,21 +48,21 @@ export class HttpClient {
   /**
    * Make a POST request
    */
-  async post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  async post<T = any>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
     return this.safeCall(() => this.axiosInstance.post<T>(url, data, config));
   }
 
   /**
    * Make a PUT request
    */
-  async put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  async put<T = any>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
     return this.safeCall(() => this.axiosInstance.put<T>(url, data, config));
   }
 
   /**
    * Make a PATCH request
    */
-  async patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  async patch<T = any>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
     return this.safeCall(() => this.axiosInstance.patch<T>(url, data, config));
   }
 

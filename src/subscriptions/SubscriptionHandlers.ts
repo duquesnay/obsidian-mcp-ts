@@ -3,7 +3,7 @@ import { SubscribeRequestSchema, UnsubscribeRequestSchema } from '@modelcontextp
 import { SubscriptionManager } from './SubscriptionManager.js';
 
 export interface NotificationSender {
-  (notification: any, clientId?: string): Promise<void>;
+  (notification: unknown, clientId?: string): Promise<void>;
 }
 
 /**

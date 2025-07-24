@@ -36,7 +36,7 @@ export class ListFilesInDirTool extends BaseTool {
       try {
         const files = await client.listFilesInDir(args.dirpath);
         return this.formatResponse(files);
-      } catch (error: any) {
+      } catch (error: unknown) {
         // If we get a 404 error, check if it's an empty directory
         if (error.response?.status === 404 || error.message?.includes('404') || error.message?.includes('Not Found')) {
           // Check if the path exists and is a directory
@@ -51,7 +51,7 @@ export class ListFilesInDirTool extends BaseTool {
         // Re-throw the error if it's not an empty directory case
         throw error;
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Use the new handleHttpError method with custom handlers
       if (error.response?.status) {
         return this.handleHttpError(error, {

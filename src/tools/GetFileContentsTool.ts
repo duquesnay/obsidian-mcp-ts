@@ -50,7 +50,7 @@ export class GetFileContentsTool extends BaseTool<GetFileContentsArgs> {
       const client = this.getClient();
       const result = await client.getFileContents(args.filepath, args.format);
       return this.formatResponse(result);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Use the new handleHttpError method with custom handlers for specific status codes
       if (error.response?.status) {
         return this.handleHttpError(error, {

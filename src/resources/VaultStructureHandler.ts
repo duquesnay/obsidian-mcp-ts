@@ -32,7 +32,7 @@ export class VaultStructureHandler extends BaseResourceHandler {
         totalFiles,
         totalFolders
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       ResourceErrorHandler.handle(error, 'Vault structure');
     }
   }

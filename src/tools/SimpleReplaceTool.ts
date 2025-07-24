@@ -82,7 +82,7 @@ export class SimpleReplaceTool extends BaseTool<SimpleReplaceArgs> {
         find,
         replace
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Use the new handleHttpError method with custom handlers
       if (error.response?.status) {
         return this.handleHttpError(error, {

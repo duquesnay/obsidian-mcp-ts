@@ -34,7 +34,7 @@ export class ResourceValidationUtil {
    * Validate that a required parameter is present and not empty
    * @throws Error if parameter is missing or empty
    */
-  static validateRequiredParameter(value: any, paramName: string): void {
+  static validateRequiredParameter(value: unknown, paramName: string): void {
     if (value === null || value === undefined) {
       throw new Error(`${paramName} is required`);
     }

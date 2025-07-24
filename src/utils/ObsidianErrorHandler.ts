@@ -1,4 +1,6 @@
 
+import type { HttpError } from '../types/common.js';
+
 // MCP tool response format
 interface ToolResponse {
   type: 'text';
@@ -22,16 +24,24 @@ export class ObsidianErrorHandler {
   /**
    * Handle HTTP errors with appropriate recovery suggestions
    */
-  static handleHttpError(error: any, toolName: string): ToolResponse {
-    if (!error.response) {
+  static handleHttpError(error: unknown, toolName: string): ToolResponse {
+    // Type guard to check if it's an HTTP error
+    const isHttpError = (err: unknown): err is HttpError => {
+      return err instanceof Error && 'response' in err && 
+        typeof (err as any).response === 'object' &&
+        'status' in (err as any).response;
+    };
+
+    if (!isHttpError(error)) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       return this.formatResponse({
         success: false,
-        error: error.message || 'Unknown error occurred',
+        error: errorMessage,
         tool: toolName
       });
     }
 
-    const status = error.response.status;
+    const status = error.response!.status;
     
     switch (status) {
       case 401:
@@ -45,13 +55,13 @@ export class ObsidianErrorHandler {
       default:
         return this.formatResponse({
           success: false,
-          error: `HTTP ${status}: ${error.message}`,
+          error: `HTTP ${status}: ${error instanceof Error ? error.message : 'Unknown error'}`,
           tool: toolName
         });
     }
   }
 
-  private static handle401(error: any, toolName: string): ToolResponse {
+  private static handle401(error: unknown, toolName: string): ToolResponse {
     return this.formatResponse({
       success: false,
       error: error.message || 'Authentication failed',
@@ -64,7 +74,7 @@ export class ObsidianErrorHandler {
     });
   }
 
-  private static handle403(error: any, toolName: string): ToolResponse {
+  private static handle403(error: unknown, toolName: string): ToolResponse {
     return this.formatResponse({
       success: false,
       error: error.message || 'Permission denied',
@@ -77,7 +87,7 @@ export class ObsidianErrorHandler {
     });
   }
 
-  private static handle404(error: any, toolName: string): ToolResponse {
+  private static handle404(error: unknown, toolName: string): ToolResponse {
     const isDirectory = toolName.includes('Dir') || toolName.includes('Directory');
     const resourceType = isDirectory ? 'Directory' : 'File';
     
@@ -94,7 +104,7 @@ export class ObsidianErrorHandler {
     });
   }
 
-  private static handle500(error: any, toolName: string): ToolResponse {
+  private static handle500(error: unknown, toolName: string): ToolResponse {
     return this.formatResponse({
       success: false,
       error: 'Internal server error',

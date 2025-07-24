@@ -63,7 +63,7 @@ export class SimpleAppendTool extends BaseTool<SimpleAppendArgs> {
         operation: 'append',
         filepath
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Use the new handleHttpError method with custom handlers
       if (error.response?.status) {
         // Special handling for 404 - suggest creating the file

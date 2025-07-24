@@ -62,7 +62,7 @@ export class SimpleSearchTool extends BaseTool<SimpleSearchArgs> {
       const client = this.getClient();
       const results = await client.search(args.query, args.contextLength || OBSIDIAN_DEFAULTS.CONTEXT_LENGTH, limit, offset);
       return this.formatResponse(results);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Use the new handleHttpError method with custom handlers
       if (error.response?.status) {
         return this.handleHttpError(error, {

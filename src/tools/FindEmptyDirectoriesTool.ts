@@ -99,7 +99,7 @@ export class FindEmptyDirectoriesTool extends BaseTool {
                 emptyDirectories.push(dir);
               }
             }
-          } catch (error: any) {
+          } catch (error: unknown) {
             // If we get a 404, the directory might be empty
             if (error.message?.includes('404') || error.message?.includes('Not Found')) {
               // Verify it's actually a directory that exists

@@ -17,7 +17,7 @@ export class SearchHandler extends BaseResourceHandler {
         totalResults: searchResults.totalResults,
         hasMore: searchResults.hasMore
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       ResourceErrorHandler.handle(error, 'Search results', query);
     }
   }

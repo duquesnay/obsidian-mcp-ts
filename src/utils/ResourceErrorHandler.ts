@@ -1,3 +1,5 @@
+import { HttpError } from '../types/common.js';
+
 /**
  * Standardized error handling for resource handlers
  */
@@ -5,7 +7,7 @@ export class ResourceErrorHandler {
   /**
    * Main error handler that delegates based on error type
    */
-  static handle(error: any, resourceType: string, context?: string): never {
+  static handle(error: unknown, resourceType: string, context?: string): never {
     // If it's a 404 error, format the message appropriately
     if (this.isHttpError(error) && error.response.status === 404) {
       const message = context 
@@ -45,7 +47,7 @@ export class ResourceErrorHandler {
   /**
    * Handle API errors with appropriate messages based on status code
    */
-  static handleApiError(error: any, resourceType?: string, path?: string): never {
+  static handleApiError(error: unknown, resourceType?: string, path?: string): never {
     // Check if it's an HTTP error with status code
     if (this.isHttpError(error)) {
       const status = error.response.status;
@@ -72,8 +74,8 @@ export class ResourceErrorHandler {
   /**
    * Format error response for resource handlers
    */
-  static formatResourceError(message: string, uri: string, details?: any): any {
-    const response: any = {
+  static formatResourceError(message: string, uri: string, details?: unknown): JsonObject {
+    const response: JsonObject = {
       error: message,
       uri
     };
@@ -88,7 +90,7 @@ export class ResourceErrorHandler {
   /**
    * Type guard to check if error has HTTP response
    */
-  static isHttpError(error: any): error is { response: { status: number } } {
+  static isHttpError(error: unknown): error is HttpError {
     return error && 
            typeof error === 'object' && 
            'response' in error &&

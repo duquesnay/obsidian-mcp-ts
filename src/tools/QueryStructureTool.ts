@@ -19,6 +19,14 @@ interface BlockInfo {
   context_heading?: string[];
 }
 
+interface HeadingFilter {
+  text?: string;
+  level?: number;
+  min_level?: number;
+  max_level?: number;
+  path_contains?: string[];
+}
+
 interface StructureQueryResult {
   headings?: HeadingInfo[];
   blocks?: BlockInfo[];
@@ -152,7 +160,7 @@ export class QueryStructureTool extends BaseTool {
     }
   }
   
-  private parseHeadings(lines: string[], filter?: any): HeadingInfo[] {
+  private parseHeadings(lines: string[], filter?: HeadingFilter): HeadingInfo[] {
     const headings: HeadingInfo[] = [];
     const headingStack: { text: string; level: number }[] = [];
     

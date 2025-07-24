@@ -3,6 +3,7 @@ import { ConfigLoader } from '../utils/configLoader.js';
 import { isTestEnvironment } from '../utils/environment.js';
 import { SimplifiedError } from '../types/errors.js';
 import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
+import type { HttpError } from '../types/common.js';
 
 // Type helper for defining tool argument types
 export type ToolArgs = Record<string, unknown>;
@@ -184,15 +185,24 @@ export abstract class BaseTool<TArgs = Record<string, unknown>> implements ToolI
    * @returns ToolResponse with appropriate error message and metadata
    */
   protected handleHttpError(
-    error: any,
+    error: unknown,
     statusHandlers?: Record<number, string | { message: string; suggestion?: string; example?: Record<string, unknown> }>
   ): ToolResponse {
+    // Type guard to check if it's an HTTP error
+    const isHttpError = (err: unknown): err is HttpError => {
+      return err !== null && 
+        typeof err === 'object' && 
+        'response' in err && 
+        typeof (err as any).response === 'object' &&
+        'status' in (err as any).response;
+    };
+
     // If no response property, use the general error handler
-    if (!error.response) {
+    if (!isHttpError(error)) {
       return ObsidianErrorHandler.handleHttpError(error, this.name);
     }
 
-    const status = error.response.status;
+    const status = error.response!.status;
 
     // Check if we have a custom handler for this status code
     if (statusHandlers && statusHandlers[status]) {

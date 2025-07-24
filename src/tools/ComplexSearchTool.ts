@@ -1,5 +1,6 @@
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
+import type { JsonLogicQuery } from '../types/jsonlogic.js';
 
 /**
  * Validates if an object appears to be a JsonLogic query
@@ -7,7 +8,7 @@ import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
  * @param query - The query object to validate
  * @returns true if it looks like a JsonLogic structure
  */
-function isValidJsonLogic(query: any): boolean {
+function isValidJsonLogic(query: unknown): boolean {
   if (!query || typeof query !== 'object') return false;
   
   // Standard JsonLogic operators
@@ -67,7 +68,7 @@ export class ComplexSearchTool extends BaseTool {
     required: ['query']
   };
 
-  async executeTyped(args: { query: any }): Promise<ToolResponse> {
+  async executeTyped(args: { query: JsonLogicQuery }): Promise<ToolResponse> {
     try {
       if (!args.query) {
         throw new McpError(ErrorCode.InvalidParams, 'query argument is required');

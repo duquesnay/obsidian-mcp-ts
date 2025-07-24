@@ -16,7 +16,7 @@ export class ListFilesInVaultTool extends BaseTool {
     required: []
   };
 
-  async executeTyped(args: any): Promise<ToolResponse> {
+  async executeTyped(args: Record<string, never>): Promise<ToolResponse> {
     try {
       const client = this.getClient();
       const files = await client.listFilesInVault();
@@ -28,7 +28,7 @@ export class ListFilesInVaultTool extends BaseTool {
       };
       
       return this.formatResponse(response);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Use the new handleHttpError method with custom handlers
       if (error.response?.status) {
         return this.handleHttpError(error, {
