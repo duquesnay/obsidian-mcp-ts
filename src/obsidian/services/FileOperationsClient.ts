@@ -2,8 +2,8 @@ import axios, { AxiosInstance, AxiosError } from 'axios';
 import https from 'https';
 import { ObsidianError } from '../../types/errors.js';
 import { validatePath, validatePaths } from '../../utils/pathValidator.js';
-import { OBSIDIAN_DEFAULTS, TIMEOUTS } from '../../constants.js';
-import { BatchProcessor } from '../../utils/BatchProcessor.js';
+import { OBSIDIAN_DEFAULTS, TIMEOUTS, BATCH_PROCESSOR } from '../../constants.js';
+import { OptimizedBatchProcessor } from '../../utils/OptimizedBatchProcessor.js';
 import type { IFileOperationsClient } from '../interfaces/IFileOperationsClient.js';
 import type { FileContentResponse, RecentChange } from '../../types/obsidian.js';
 import type { ObsidianClientConfig } from '../ObsidianClient.js';
@@ -114,16 +114,26 @@ export class FileOperationsClient implements IFileOperationsClient {
   async getBatchFileContents(filepaths: string[]): Promise<string> {
     validatePaths(filepaths, 'filepaths');
 
-    return BatchProcessor.processBatchWithFormat(
+    // Use OptimizedBatchProcessor with retry capabilities
+    const processor = new OptimizedBatchProcessor({
+      maxConcurrency: OBSIDIAN_DEFAULTS.BATCH_SIZE,
+      retryAttempts: BATCH_PROCESSOR.DEFAULT_RETRY_ATTEMPTS,
+      retryDelay: BATCH_PROCESSOR.DEFAULT_RETRY_DELAY_MS
+    });
+    
+    const results = await processor.process(
       filepaths,
-      async (filepath) => await this.getFileContents(filepath),
-      (filepath, content) => {
-        if (content instanceof Error) {
-          return `# ${filepath}\n\nError reading file: ${content.message}\n\n---\n\n`;
-        }
-        return `# ${filepath}\n\n${content}\n\n---\n\n`;
-      }
+      async (filepath) => await this.getFileContents(filepath)
     );
+
+    // Format the results
+    return filepaths.map((filepath, index) => {
+      const result = results[index];
+      if (result.error) {
+        return `# ${filepath}\n\nError reading file: ${result.error.message}\n\n---\n\n`;
+      }
+      return `# ${filepath}\n\n${result.result}\n\n---\n\n`;
+    }).join('');
   }
 
   async createFile(filepath: string, content: string): Promise<void> {
