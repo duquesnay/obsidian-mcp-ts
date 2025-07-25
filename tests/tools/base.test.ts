@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { BaseTool } from '../../src/tools/base.js';
 import { ObsidianErrorHandler } from '../../src/utils/ObsidianErrorHandler.js';
+import { hasHttpResponse, hasMessage, getErrorMessage } from '../../src/utils/errorTypeGuards.js';
 
 // Mock ObsidianErrorHandler
 vi.mock('../../src/utils/ObsidianErrorHandler', () => ({
@@ -40,13 +41,25 @@ class TestTool extends BaseTool<{ testParam: string }> {
     return this.formatResponse({ success: true, result: args.testParam });
   }
 
-  // Expose protected method for testing
+  // Expose protected methods for testing
   public testHandleHttpError(
     error: any,
     statusHandlers?: Record<number, string | { message: string; suggestion?: string; example?: Record<string, unknown> }>
   ) {
     // This will fail until we implement the method
     return (this as any).handleHttpError(error, statusHandlers);
+  }
+
+  public testHandleError(error: unknown) {
+    return this.handleError(error);
+  }
+
+  public testHandleSimplifiedError(
+    error: unknown,
+    suggestion?: string,
+    example?: Record<string, unknown>
+  ) {
+    return this.handleSimplifiedError(error, suggestion, example);
   }
 }
 
@@ -194,6 +207,113 @@ describe('BaseTool', () => {
 
       expect(response404.error).toBe('File not found');
       expect(response403.error).toBe('Access denied');
+    });
+  });
+
+  describe('handleError with type guards', () => {
+    it('should use getErrorMessage for Error instances', () => {
+      const error = new Error('Test error message');
+      const result = tool.testHandleError(error);
+
+      const response = JSON.parse(result.text);
+      expect(response.success).toBe(false);
+      expect(response.error).toBe('Test error message');
+      expect(response.tool).toBe('test-tool');
+    });
+
+    it('should use getErrorMessage for string errors', () => {
+      const error = 'String error message';
+      const result = tool.testHandleError(error);
+
+      const response = JSON.parse(result.text);
+      expect(response.success).toBe(false);
+      expect(response.error).toBe('String error message');
+      expect(response.tool).toBe('test-tool');
+    });
+
+    it('should use getErrorMessage for unknown errors', () => {
+      const error = { someProperty: 'value' };
+      const result = tool.testHandleError(error);
+
+      const response = JSON.parse(result.text);
+      expect(response.success).toBe(false);
+      // With type guards, this should return 'Unknown error' instead of '[object Object]'
+      expect(response.error).toBe('Unknown error');
+      expect(response.tool).toBe('test-tool');
+    });
+  });
+
+  describe('handleSimplifiedError with type guards', () => {
+    it('should use getErrorMessage for Error instances', () => {
+      const error = new Error('Test error');
+      const result = tool.testHandleSimplifiedError(error, 'Try this', { example: 'value' });
+
+      const response = JSON.parse(result.text);
+      expect(response.success).toBe(false);
+      expect(response.error).toBe('Test error');
+      expect(response.suggestion).toBe('Try this');
+      expect(response.example).toEqual({ example: 'value' });
+    });
+
+    it('should use getErrorMessage for non-Error objects', () => {
+      const error = { message: 'Custom error object' };
+      const result = tool.testHandleSimplifiedError(error);
+
+      const response = JSON.parse(result.text);
+      expect(response.success).toBe(false);
+      // With type guards, this should extract the message property
+      expect(response.error).toBe('Custom error object');
+      expect(response.tool).toBe('test-tool');
+    });
+  });
+
+  describe('handleHttpError with type guards', () => {
+    it('should use hasHttpResponse type guard instead of manual checking', () => {
+      const error = {
+        response: { status: 404 },
+        message: 'Not found'
+      };
+
+      // This test ensures we're using the type guard properly
+      const result = tool.testHandleHttpError(error, {
+        404: 'Custom not found'
+      });
+
+      const response = JSON.parse(result.text);
+      expect(response.error).toBe('Custom not found');
+    });
+
+    it('should handle errors without response using type guard', () => {
+      const error = new Error('Network error');
+      
+      const result = tool.testHandleHttpError(error);
+
+      // Should fall back to ObsidianErrorHandler
+      expect(ObsidianErrorHandler.handleHttpError).toHaveBeenCalledWith(error, 'test-tool');
+    });
+
+    it('should handle malformed response objects', () => {
+      const error = {
+        response: 'not an object', // Invalid response
+        message: 'Error'
+      };
+
+      const result = tool.testHandleHttpError(error);
+
+      // Should fall back to ObsidianErrorHandler since hasHttpResponse should return false
+      expect(ObsidianErrorHandler.handleHttpError).toHaveBeenCalledWith(error, 'test-tool');
+    });
+
+    it('should handle response without status', () => {
+      const error = {
+        response: { data: 'some data' }, // Missing status
+        message: 'Error'
+      };
+
+      const result = tool.testHandleHttpError(error);
+
+      // Should fall back to ObsidianErrorHandler since hasHttpResponse should return false
+      expect(ObsidianErrorHandler.handleHttpError).toHaveBeenCalledWith(error, 'test-tool');
     });
   });
 });
