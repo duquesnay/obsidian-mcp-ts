@@ -6,11 +6,11 @@ import type { IObsidianClient } from '../../obsidian/interfaces/IObsidianClient.
 // Test implementation of BaseEditStrategy
 class TestEditStrategy extends BaseEditStrategy {
   async canHandle(operation: EditOperation): Promise<boolean> {
-    return operation.type === 'test';
+    return operation.type === 'append';
   }
 
   async execute(operation: EditOperation, context: EditContext): Promise<EditResult> {
-    if (operation.type !== 'test') {
+    if (operation.type !== 'append') {
       throw new Error('Invalid operation type');
     }
     
@@ -49,13 +49,13 @@ describe('BaseEditStrategy', () => {
 
   describe('canHandle', () => {
     it('should return true for supported operation type', async () => {
-      const operation: EditOperation = { type: 'test' };
+      const operation: EditOperation = { type: 'append', content: 'test content' };
       const result = await strategy.canHandle(operation);
       expect(result).toBe(true);
     });
 
     it('should return false for unsupported operation type', async () => {
-      const operation: EditOperation = { type: 'unsupported' as any };
+      const operation: EditOperation = { type: 'batch', operations: [] };
       const result = await strategy.canHandle(operation);
       expect(result).toBe(false);
     });
@@ -63,7 +63,7 @@ describe('BaseEditStrategy', () => {
 
   describe('execute', () => {
     it('should execute the operation successfully', async () => {
-      const operation: EditOperation = { type: 'test' };
+      const operation: EditOperation = { type: 'append', content: 'test content' };
       const context: EditContext = {
         filepath: 'test.md',
         client: mockClient
@@ -73,12 +73,12 @@ describe('BaseEditStrategy', () => {
 
       expect(result.success).toBe(true);
       expect(result.message).toBe('Test operation executed');
-      expect(result.operation).toBe('test');
+      expect(result.operation).toBe('append');
       expect(result.filepath).toBe('test.md');
     });
 
     it('should throw error for invalid operation type', async () => {
-      const operation: EditOperation = { type: 'invalid' as any };
+      const operation: EditOperation = { type: 'replace', find: 'old', replace: 'new' };
       const context: EditContext = {
         filepath: 'test.md',
         client: mockClient

@@ -28,14 +28,17 @@ export function isValidToolClass(value: unknown): value is typeof BaseTool {
     return false;
   }
   
-  // Try to create an instance and check if it extends BaseTool
-  try {
-    const instance = new (value as any)();
-    return instance instanceof BaseTool;
-  } catch {
-    // If instantiation fails, it's not a valid tool class
-    return false;
+  // Check if the prototype chain includes BaseTool
+  // This avoids instantiation and works for both concrete and abstract classes
+  let proto = value.prototype;
+  while (proto) {
+    if (proto.constructor === BaseTool) {
+      return true;
+    }
+    proto = Object.getPrototypeOf(proto);
   }
+  
+  return false;
 }
 
 /**
@@ -132,10 +135,22 @@ export async function discoverTools(): Promise<AnyTool[]> {
           continue;
         }
         
+        // Skip if it's the base class itself (should not happen with our filter)
+        if (ToolClass === BaseTool || className === 'BaseTool') {
+          console.error(`Skipping abstract class ${className}`);
+          continue;
+        }
+        
+        // Additional check - skip if it's abstract
+        if (ToolClass.prototype.constructor === BaseTool) {
+          console.error(`Skipping abstract BaseTool class`);
+          continue;
+        }
+        
         // Create instance with error handling
         let instance: unknown;
         try {
-          instance = new ToolClass();
+          instance = new (ToolClass as any)();
         } catch (constructorError) {
           console.error(`Failed to instantiate ${className}:`, constructorError);
           continue;

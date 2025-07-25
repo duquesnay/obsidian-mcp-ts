@@ -1,4 +1,4 @@
-import { HttpError, JsonObject } from '../types/common.js';
+import { HttpError, JsonObject, JsonValue } from '../types/common.js';
 
 /**
  * Standardized error handling for resource handlers
@@ -9,7 +9,7 @@ export class ResourceErrorHandler {
    */
   static handle(error: unknown, resourceType: string, context?: string): never {
     // If it's a 404 error, format the message appropriately
-    if (this.isHttpError(error) && error.response.status === 404) {
+    if (this.isHttpError(error) && error.response?.status === 404) {
       const message = context 
         ? `${resourceType} not found: ${context}`
         : `${resourceType} not found`;
@@ -50,7 +50,7 @@ export class ResourceErrorHandler {
   static handleApiError(error: unknown, resourceType?: string, path?: string): never {
     // Check if it's an HTTP error with status code
     if (this.isHttpError(error)) {
-      const status = error.response.status;
+      const status = error.response?.status;
       
       switch (status) {
         case 404:
@@ -80,11 +80,39 @@ export class ResourceErrorHandler {
       uri
     };
     
-    if (details) {
-      response.details = details;
+    if (details !== undefined) {
+      // Ensure details is JSON-serializable
+      response.details = this.toJsonValue(details);
     }
     
     return response;
+  }
+  
+  /**
+   * Convert unknown value to JsonValue
+   */
+  private static toJsonValue(value: unknown): JsonValue {
+    if (value === null || 
+        typeof value === 'string' || 
+        typeof value === 'number' || 
+        typeof value === 'boolean') {
+      return value;
+    }
+    
+    if (Array.isArray(value)) {
+      return value.map(v => this.toJsonValue(v));
+    }
+    
+    if (typeof value === 'object' && value !== null) {
+      const result: JsonObject = {};
+      for (const [key, val] of Object.entries(value)) {
+        result[key] = this.toJsonValue(val);
+      }
+      return result;
+    }
+    
+    // For functions, undefined, symbols, etc., convert to string
+    return String(value);
   }
 
   /**

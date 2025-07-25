@@ -101,6 +101,13 @@ export interface EditResult {
     results: any[];
     errors?: any[];
   };
+  // Additional properties for specific operation types
+  find?: string;
+  replace?: string;
+  heading?: string;
+  section?: string;
+  possible_causes?: string[];
+  [key: string]: any; // Allow additional properties for extensibility
 }
 
 /**

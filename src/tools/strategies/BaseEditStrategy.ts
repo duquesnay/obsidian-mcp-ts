@@ -21,8 +21,8 @@ export abstract class BaseEditStrategy implements IEditStrategy {
    */
   protected formatResult(result: Partial<EditResult> & { success: true }): EditResult {
     return {
-      success: true,
-      ...result
+      ...result,
+      success: true
     };
   }
 

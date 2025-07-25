@@ -39,7 +39,7 @@ export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
     );
     
     // Store strategies by operation type
-    this.strategies = new Map([
+    this.strategies = new Map<string, IEditStrategy>([
       ['append', appendStrategy],
       ['replace', findReplaceStrategy],
       ['heading-insert', headingInsertStrategy],

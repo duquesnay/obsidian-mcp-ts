@@ -18,7 +18,8 @@ export async function registerSubscriptions(server: ServerWithSubscriptions): Pr
   // Create notification sender that uses the server's notification method
   const notificationSender: NotificationSender = async (notification, clientId) => {
     // For now, send to all clients since MCP doesn't distinguish clients
-    await server.notification(notification);
+    // Cast to any since we know the notification structure is valid
+    await server.notification(notification as any);
   };
   
   // Create subscription handlers 

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SectionEditStrategy } from './SectionEditStrategy.js';
-import { NewSectionOperation, EditContext } from './IEditStrategy.js';
+import { NewSectionOperation, EditContext, EditOperation } from './IEditStrategy.js';
 import type { IObsidianClient } from '../../obsidian/interfaces/IObsidianClient.js';
 
 describe('SectionEditStrategy', () => {
@@ -37,7 +37,7 @@ describe('SectionEditStrategy', () => {
     });
 
     it('should not handle other operation types', async () => {
-      const operation = {
+      const operation: EditOperation = {
         type: 'append',
         content: 'test'
       };
