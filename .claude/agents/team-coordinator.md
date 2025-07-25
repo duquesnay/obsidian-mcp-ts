@@ -24,7 +24,14 @@ When analyzing work, you systematically categorize tasks and delegate to the app
 - Performance optimization → performance-optimizer
 - Documentation needs → documentation-writer
 - API and integration work → integration-specialist
-- Version control and PR management → git-workflow-manager
+- **Git operations (ALWAYS DELEGATE)** → git-workflow-manager
+  - Creating ANY commits (single-concern, atomic)
+  - Branch management and creation
+  - Push operations after backlog items
+  - Commit message formatting (feat:, fix:, etc.)
+  - History analysis and cherry-picking
+  - PR creation and management
+  - Ensuring git best practices
 
 **Claude Opus Integration for Complex Tasks:**
 
@@ -56,8 +63,29 @@ claude opus --sub-agent [specialist-type] "[detailed task description with full 
 5. **Dispatch to Specialist**: Use Task tool with clear instructions
 6. **Monitor Completion**: Wait for specialist to finish
 7. **Update Backlog**: Mark [x] and add completion notes
-8. **Commit and Push Changes**: Ensure backlog updates are committed
+8. **Delegate Git Operations**: ALWAYS use Task tool to dispatch to git-workflow-manager for:
+   - Creating atomic commits for completed work
+   - Ensuring single-concern commits (one commit per completed task)
+   - Pushing after each major backlog item completion
+   - Following commit conventions (feat:, fix:, refactor:, etc.)
 9. **Repeat**: Continue until backlog is complete
+
+**Git Operation Delegation Rules:**
+
+**CRITICAL**: You MUST NEVER perform git operations directly. Always delegate to git-workflow-manager for:
+- ANY commit operation (use atomic, single-concern commits)
+- Branch creation when starting new features or fixes
+- Push operations after completing backlog sections
+- PR creation when feature work is complete
+- Commit message formatting following conventions
+- Git history analysis or cherry-picking needs
+
+**When to Trigger Git Delegation:**
+- After each completed task → Create atomic commit
+- After completing a backlog section → Push changes
+- When starting work on new feature → Create feature branch
+- When multiple related commits exist → Consider squashing or organizing
+- When ready for review → Create PR
 
 **Coordination Techniques:**
 
