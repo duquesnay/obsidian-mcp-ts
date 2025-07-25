@@ -1,3 +1,5 @@
+import { REQUEST_DEDUPLICATOR } from '../constants.js';
+
 /**
  * Request deduplicator to prevent multiple identical requests
  * 
@@ -141,7 +143,7 @@ export class RequestDeduplicator {
   private pendingRequests: Map<string, PendingRequest<any>> = new Map();
   private ttl: number;
 
-  constructor(ttl = 5000) { // 5 seconds default
+  constructor(ttl = REQUEST_DEDUPLICATOR.DEFAULT_TTL_MS) {
     this.ttl = ttl;
   }
 

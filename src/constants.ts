@@ -57,6 +57,19 @@ export const CACHE_DEFAULTS = {
   NOTE_TTL: 120000, // 2 minutes
 } as const;
 
+export const BATCH_PROCESSOR = {
+  /** Default number of retry attempts for failed operations */
+  DEFAULT_RETRY_ATTEMPTS: 2,
+  
+  /** Default delay between retry attempts in milliseconds */
+  DEFAULT_RETRY_DELAY_MS: 1000,
+} as const;
+
+export const REQUEST_DEDUPLICATOR = {
+  /** Default TTL for deduplication cache in milliseconds */
+  DEFAULT_TTL_MS: 5000, // 5 seconds
+} as const;
+
 export const API_ENDPOINTS = {
   BASE: 'https://{host}:{port}',
   VAULT: '/vault',

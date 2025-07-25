@@ -1,4 +1,4 @@
-import { OBSIDIAN_DEFAULTS } from '../constants.js';
+import { OBSIDIAN_DEFAULTS, BATCH_PROCESSOR } from '../constants.js';
 
 export interface BatchProcessorOptions {
   batchSize?: number;
@@ -146,8 +146,8 @@ export class OptimizedBatchProcessor {
     this.options = {
       batchSize: options.batchSize ?? OBSIDIAN_DEFAULTS.BATCH_SIZE,
       maxConcurrency: options.maxConcurrency ?? OBSIDIAN_DEFAULTS.BATCH_SIZE,
-      retryAttempts: options.retryAttempts ?? 2,
-      retryDelay: options.retryDelay ?? 1000,
+      retryAttempts: options.retryAttempts ?? BATCH_PROCESSOR.DEFAULT_RETRY_ATTEMPTS,
+      retryDelay: options.retryDelay ?? BATCH_PROCESSOR.DEFAULT_RETRY_DELAY_MS,
       onProgress: options.onProgress ?? (() => {})
     };
   }
