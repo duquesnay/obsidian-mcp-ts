@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { LRUCache } from '../../src/utils/Cache.js';
-import { LRU_CACHE } from '../../src/constants.js';
+import { LRU_CACHE, SUBSCRIPTION_EVENTS } from '../../src/constants.js';
+import { NotificationManager } from '../../src/utils/NotificationManager.js';
 
 describe('LRUCache', () => {
   let cache: LRUCache<string, any>;
@@ -161,6 +162,94 @@ describe('LRUCache', () => {
       
       vi.advanceTimersByTime(100000);
       expect(cache.get('key1')).toBe('value1');
+    });
+  });
+
+  describe('notification integration', () => {
+    let notificationManager: NotificationManager;
+    let notificationSpy: ReturnType<typeof vi.spyOn>;
+    let cacheWithNotifications: LRUCache<string, string>;
+
+    beforeEach(() => {
+      // Reset notification manager to ensure clean state
+      NotificationManager.reset();
+      notificationManager = NotificationManager.getInstance();
+      notificationSpy = vi.spyOn(notificationManager, 'notifyCacheInvalidation');
+      
+      cacheWithNotifications = new LRUCache<string, string>({
+        maxSize: 3,
+        ttl: 1000,
+        notificationManager,
+        instanceId: 'test-cache'
+      });
+    });
+
+    afterEach(() => {
+      notificationSpy.mockRestore();
+      NotificationManager.reset();
+    });
+
+    it('should notify when deleting a key', () => {
+      cacheWithNotifications.set('key1', 'value1');
+      cacheWithNotifications.delete('key1');
+      
+      expect(notificationSpy).toHaveBeenCalledWith('key1', {
+        instanceId: 'test-cache',
+        operation: 'delete'
+      });
+    });
+
+    it('should notify when clearing cache', () => {
+      cacheWithNotifications.set('key1', 'value1');
+      cacheWithNotifications.set('key2', 'value2');
+      cacheWithNotifications.clear();
+      
+      expect(notificationSpy).toHaveBeenCalledWith('*', {
+        instanceId: 'test-cache',
+        operation: 'clear'
+      });
+    });
+
+    it('should notify when cache entries expire', () => {
+      cacheWithNotifications.set('key1', 'value1', 100); // 100ms TTL
+      
+      vi.advanceTimersByTime(150);
+      
+      // Trigger cleanup by calling size()
+      cacheWithNotifications.size();
+      
+      expect(notificationSpy).toHaveBeenCalledWith('key1', {
+        instanceId: 'test-cache',
+        operation: 'expire'
+      });
+    });
+
+    it('should not notify when notification manager is not provided', () => {
+      const cacheWithoutNotifications = new LRUCache<string, string>({
+        maxSize: 3,
+        ttl: 1000
+      });
+      
+      cacheWithoutNotifications.set('key1', 'value1');
+      cacheWithoutNotifications.delete('key1');
+      
+      // Should not throw and should not call notification manager
+      expect(notificationSpy).not.toHaveBeenCalled();
+    });
+
+    it('should notify when LRU eviction occurs', () => {
+      // Fill cache to capacity
+      cacheWithNotifications.set('key1', 'value1');
+      cacheWithNotifications.set('key2', 'value2');
+      cacheWithNotifications.set('key3', 'value3');
+      
+      // This should evict key1 (least recently used)
+      cacheWithNotifications.set('key4', 'value4');
+      
+      expect(notificationSpy).toHaveBeenCalledWith('key1', {
+        instanceId: 'test-cache',
+        operation: 'evict'
+      });
     });
   });
 });
