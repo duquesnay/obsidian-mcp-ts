@@ -85,3 +85,29 @@ export class FolderHandler extends BaseResourceHandler {
     }
   }
 }
+
+export class NotesHandler extends BaseResourceHandler {
+  async handleRequest(uri: string, server?: any): Promise<any> {
+    const client = this.getObsidianClient(server);
+    
+    try {
+      // Get all files in the vault
+      const files = await client.listFilesInVault();
+      
+      // Filter to only markdown files (notes)
+      const notes = files
+        .filter(file => file.endsWith('.md'))
+        .map(path => ({
+          path,
+          name: path.split('/').pop()?.replace('.md', '') || path
+        }));
+      
+      return {
+        count: notes.length,
+        notes
+      };
+    } catch (error: unknown) {
+      ResourceErrorHandler.handle(error, 'Notes list');
+    }
+  }
+}
