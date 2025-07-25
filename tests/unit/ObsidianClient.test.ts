@@ -196,6 +196,134 @@ describe('ObsidianClient', () => {
       expect(mockAxiosInstance.get).toHaveBeenCalledWith('/vault/test.md');
       expect(result).toBe(mockContent);
     });
+
+    it('should deduplicate concurrent calls for the same file', async () => {
+      const mockContent = '# Test File\n\nThis is test content.';
+      let resolveFunction: any;
+      const promise = new Promise((resolve) => {
+        resolveFunction = resolve;
+      });
+      
+      (mockAxiosInstance.get as any).mockReturnValue(promise);
+
+      // Make multiple concurrent calls for the same file
+      const call1 = client.getFileContents('test.md');
+      const call2 = client.getFileContents('test.md');
+      const call3 = client.getFileContents('test.md');
+
+      // Should only make one actual API call
+      expect(mockAxiosInstance.get).toHaveBeenCalledTimes(1);
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/vault/test.md');
+
+      // Resolve the promise
+      resolveFunction({ data: mockContent });
+
+      // All calls should return the same result
+      const [result1, result2, result3] = await Promise.all([call1, call2, call3]);
+      expect(result1).toBe(mockContent);
+      expect(result2).toBe(mockContent);
+      expect(result3).toBe(mockContent);
+    });
+
+    it('should make separate requests for different files', async () => {
+      const mockContent1 = '# File 1';
+      const mockContent2 = '# File 2';
+      
+      (mockAxiosInstance.get as any)
+        .mockResolvedValueOnce({ data: mockContent1 })
+        .mockResolvedValueOnce({ data: mockContent2 });
+
+      // Make calls for different files
+      const [result1, result2] = await Promise.all([
+        client.getFileContents('file1.md'),
+        client.getFileContents('file2.md')
+      ]);
+
+      // Should make two separate API calls
+      expect(mockAxiosInstance.get).toHaveBeenCalledTimes(2);
+      expect(mockAxiosInstance.get).toHaveBeenNthCalledWith(1, '/vault/file1.md');
+      expect(mockAxiosInstance.get).toHaveBeenNthCalledWith(2, '/vault/file2.md');
+      
+      expect(result1).toBe(mockContent1);
+      expect(result2).toBe(mockContent2);
+    });
+
+    it('should make new request after TTL expires', async () => {
+      const mockContent1 = '# Old Content';
+      const mockContent2 = '# New Content';
+      
+      // First call
+      (mockAxiosInstance.get as any).mockResolvedValueOnce({
+        data: mockContent1
+      });
+      
+      const result1 = await client.getFileContents('test.md');
+      expect(result1).toBe(mockContent1);
+      expect(mockAxiosInstance.get).toHaveBeenCalledTimes(1);
+      
+      // Clear the deduplicator's cache to simulate TTL expiration
+      const clientWithPrivate = client as any;
+      clientWithPrivate.requestDeduplicator.clear();
+      
+      // Second call after cache clear
+      (mockAxiosInstance.get as any).mockResolvedValueOnce({
+        data: mockContent2
+      });
+      
+      const result2 = await client.getFileContents('test.md');
+      expect(result2).toBe(mockContent2);
+      expect(mockAxiosInstance.get).toHaveBeenCalledTimes(2);
+    });
+
+    it('should handle deduplicated error cases', async () => {
+      const errorResponse = {
+        response: {
+          data: {
+            errorCode: 404,
+            message: 'File not found'
+          }
+        }
+      };
+      
+      (mockAxiosInstance.get as any).mockRejectedValue(errorResponse);
+      vi.mocked(axios.isAxiosError).mockReturnValue(true);
+
+      // Make multiple concurrent calls
+      const call1 = client.getFileContents('missing.md');
+      const call2 = client.getFileContents('missing.md');
+      const call3 = client.getFileContents('missing.md');
+
+      // Should only make one actual API call
+      expect(mockAxiosInstance.get).toHaveBeenCalledTimes(1);
+
+      // All calls should fail with the same error
+      await expect(call1).rejects.toThrow('Error 404: File not found');
+      await expect(call2).rejects.toThrow('Error 404: File not found');
+      await expect(call3).rejects.toThrow('Error 404: File not found');
+    });
+
+    it('should handle format parameter with deduplication', async () => {
+      const mockMetadata = { size: 1024, created: '2024-01-01' };
+      const mockContent = '# Test File';
+      
+      (mockAxiosInstance.get as any)
+        .mockResolvedValueOnce({ data: mockMetadata })
+        .mockResolvedValueOnce({ data: mockContent });
+
+      // Different format parameters should make separate requests
+      const [result1, result2] = await Promise.all([
+        client.getFileContents('test.md', 'metadata'),
+        client.getFileContents('test.md', 'content')
+      ]);
+
+      // Should make two separate API calls due to different format parameters
+      expect(mockAxiosInstance.get).toHaveBeenCalledTimes(2);
+      expect(mockAxiosInstance.get).toHaveBeenNthCalledWith(1, '/vault/test.md?format=metadata');
+      expect(mockAxiosInstance.get).toHaveBeenNthCalledWith(2, '/vault/test.md?format=content');
+      
+      expect(result1).toEqual(mockMetadata);
+      expect(result2).toBe(mockContent);
+    });
   });
 
   describe('getBatchFileContents', () => {

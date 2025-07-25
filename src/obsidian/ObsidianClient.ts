@@ -137,7 +137,12 @@ export class ObsidianClient implements IObsidianClient {
    * const html = await client.getFileContents('notes/example.md', 'html');
    */
   async getFileContents(filepath: string, format?: 'content' | 'metadata' | 'frontmatter' | 'plain' | 'html'): Promise<FileContentResponse> {
-    return this.getFileOperationsClient().getFileContents(filepath, format);
+    // Create a unique key that includes both filepath and format
+    const key = format ? `file-content:${filepath}:${format}` : `file-content:${filepath}`;
+    
+    return this.requestDeduplicator.dedupe(key, () =>
+      this.getFileOperationsClient().getFileContents(filepath, format)
+    );
   }
 
   /**
