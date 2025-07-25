@@ -289,19 +289,19 @@ After each sub-agent completes:
 - [x] CQ8: Complete argument type extraction (COMPLETED - UnifiedEditArgs extracted)
 
 - [ ] CQ9: Extract remaining magic numbers to constants
-  - [ ] CQ9.1: Extract PATH_LENGTH_LIMIT (1000) from pathValidator.ts to constants.ts
-  - [ ] CQ9.2: Search for numeric literals in BatchProcessor.ts and extract to named constants
-  - [ ] CQ9.3: Search for numeric literals in OptimizedBatchProcessor.ts and extract to named constants
-  - [ ] CQ9.4: Search for numeric literals in LRUCache.ts and extract to named constants
-  - [ ] CQ9.5: Search for numeric literals in RequestDeduplicator.ts and extract to named constants
+  - [x] CQ9.1: Extract PATH_LENGTH_LIMIT (1000) from pathValidator.ts to constants.ts (DONE - extracted as PATH_VALIDATION.MAX_LENGTH)
+  - [x] CQ9.2: Search for numeric literals in BatchProcessor.ts and extract to named constants (DONE - no changes needed)
+  - [x] CQ9.3: Search for numeric literals in OptimizedBatchProcessor.ts and extract to named constants (DONE - extracted retry constants)
+  - [x] CQ9.4: Search for numeric literals in LRUCache.ts and extract to named constants (DONE - extracted LRU_CACHE.NO_EXPIRATION)
+  - [x] CQ9.5: Search for numeric literals in RequestDeduplicator.ts and extract to named constants (DONE - extracted DEFAULT_TTL_MS)
   - [ ] CQ9.6: Search for timeout values across all tool files and centralize in constants.ts
   - [ ] CQ9.7: Search for retry count values across utilities and centralize in constants.ts
   - [ ] CQ9.8: Create validation to ensure no hardcoded numbers remain in utility files
 
 - [ ] CQ10: Replace any types with proper type guards
   - [x] CQ10.1: Create hasResponse() type guard function in src/utils/typeGuards.ts (DONE - hasHttpResponse created)
-  - [ ] CQ10.2: Create isToolResponse() type guard for MCP tool response validation
-  - [ ] CQ10.3: Create isObsidianError() type guard for API error responses
+  - [x] CQ10.2: Create isToolResponse() type guard for MCP tool response validation (DONE - validates ToolResponse shape)
+  - [x] CQ10.3: Create isObsidianError() type guard for API error responses (DONE - validates AxiosError<ObsidianErrorData>)
   - [x] CQ10.4: Replace any type usage in ObsidianErrorHandler with proper type guards (DONE during type fixes)
   - [x] CQ10.5: Replace any type usage in error catch blocks across all tools (DONE during type fixes)
   - [ ] CQ10.6: Update BaseTool error handling to use new type guards
@@ -331,7 +331,7 @@ After each sub-agent completes:
   - [ ] CQ12.9: Create unit tests for notification trigger scenarios
 
 - [ ] CQ13: Integrate RequestDeduplicator
-  - [ ] CQ13.1: Add RequestDeduplicator instance to ObsidianClient constructor
+  - [x] CQ13.1: Add RequestDeduplicator instance to ObsidianClient constructor (DONE - added as private property)
   - [ ] CQ13.2: Wrap getVault() method with deduplication logic
   - [ ] CQ13.3: Wrap getFileContent() method with deduplication logic
   - [ ] CQ13.4: Wrap searchVault() method with deduplication logic
