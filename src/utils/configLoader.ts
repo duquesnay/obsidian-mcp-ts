@@ -1,6 +1,7 @@
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
+import { OBSIDIAN_DEFAULTS } from '../constants.js';
 import { isTestEnvironment } from './environment.js';
 
 interface ObsidianConfig {
@@ -117,7 +118,7 @@ export class ConfigLoader {
   
   getHost(): string {
     const config = this.loadConfig();
-    return config.host || '127.0.0.1';
+    return config.host || OBSIDIAN_DEFAULTS.HOST;
   }
   
   // For testing

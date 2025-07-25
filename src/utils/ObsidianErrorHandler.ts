@@ -1,4 +1,5 @@
 
+import { OBSIDIAN_DEFAULTS } from '../constants.js';
 import type { HttpError } from '../types/common.js';
 import type { ToolResponse } from '../tools/base.js';
 
@@ -79,7 +80,7 @@ export class ObsidianErrorHandler {
       suggestion: 'Ensure the Obsidian Local REST API plugin is enabled and running',
       working_alternative: 'Open Obsidian → Settings → Community plugins → Enable "Local REST API"',
       example: {
-        troubleshooting: 'Check that Obsidian is running and the REST API is listening on port 27124'
+        troubleshooting: `Check that Obsidian is running and the REST API is listening on port ${OBSIDIAN_DEFAULTS.PORT}`
       }
     });
   }
@@ -103,9 +104,9 @@ export class ObsidianErrorHandler {
       error: 'Host not found - Cannot resolve Obsidian REST API address',
       tool: toolName,
       suggestion: 'Check your OBSIDIAN_HOST environment variable',
-      working_alternative: 'Use the default host: 127.0.0.1 or localhost',
+      working_alternative: `Use the default host: ${OBSIDIAN_DEFAULTS.HOST} or localhost`,
       example: {
-        setup: 'export OBSIDIAN_HOST=127.0.0.1'
+        setup: `export OBSIDIAN_HOST=${OBSIDIAN_DEFAULTS.HOST}`
       }
     });
   }
