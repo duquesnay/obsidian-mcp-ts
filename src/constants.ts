@@ -106,3 +106,20 @@ export const TIMEOUTS = {
   /** Timeout for search operations in milliseconds - 30 seconds */
   SEARCH_OPERATIONS: 30000,
 } as const;
+
+export const REGEX_PATTERNS = {
+  /**
+   * Validates HTTP and HTTPS URLs.
+   * Matches URLs with:
+   * - Protocol: http:// or https://
+   * - Host: domain names, localhost, or IP addresses
+   * - Optional port: :number
+   * - Optional path, query string, and fragment
+   * 
+   * Examples:
+   * - http://localhost:27124
+   * - https://127.0.0.1:27124
+   * - https://example.com/path?query=value#fragment
+   */
+  URL_VALIDATION: /^https?:\/\/(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)*[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?|localhost|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?::\d+)?(?:\/[^?#]*)?(?:\?[^#]*)?(?:#.*)?$/,
+} as const;
