@@ -45,11 +45,14 @@ Return a summary of:
 ```
 
 ### Backlog Update Template
-After each sub-agent completes:
-1. Mark the task as [x] in the backlog
-2. Add completion notes if needed
-3. Update the Progress Status section
-4. Proceed to next task
+For each task:
+1. Mark as [⏳] when starting (work in progress)
+2. Delegate to appropriate sub-agent via Task tool
+3. After sub-agent completes:
+   - Mark the task as [x] in the backlog
+   - Add completion notes if needed
+   - Update the Progress Status section
+4. Team coordinator should dispatch all tasks
 
 ### Success Metrics
 - All tests passing after each change
@@ -308,8 +311,8 @@ After each sub-agent completes:
 
 - [ ] CQ11: Document complex regex patterns (Partial)
   - [x] CQ11.1: Extract URL validation regex from ObsidianClient to named constant with comment (DONE - added REGEX_PATTERNS.URL_VALIDATION)
-  - [ ] CQ11.2: Extract path validation regex patterns to constants with explanatory comments
-  - [ ] CQ11.3: Extract markdown heading regex patterns from editing tools to constants
+  - [x] CQ11.2: Extract path validation regex patterns to constants with explanatory comments (DONE - 10 patterns extracted)
+  - [x] CQ11.3: Extract markdown heading regex patterns from editing tools to constants (DONE - MARKDOWN_HEADING pattern added)
   - [ ] CQ11.4: Extract tag validation regex patterns to constants with documentation
   - [ ] CQ11.5: Extract file extension patterns to constants with use case comments
   - [ ] CQ11.6: Create REGEX_PATTERNS object in constants.ts to group all patterns
