@@ -543,3 +543,8 @@ export const SUBSCRIPTION_EVENTS = {
   /** Event emitted when a tag is removed from a file */
   TAG_REMOVED: 'tag:removed',
 } as const;
+
+export const EVENT_EMITTER_DEFAULTS = {
+  /** Maximum number of listeners for NotificationManager EventEmitter to support multiple cache instances */
+  MAX_LISTENERS: 20,
+} as const;
