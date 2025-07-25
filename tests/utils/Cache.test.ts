@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { LRUCache } from '../../src/utils/Cache.js';
+import { LRU_CACHE } from '../../src/constants.js';
 
 describe('LRUCache', () => {
   let cache: LRUCache<string, any>;
@@ -141,6 +142,25 @@ describe('LRUCache', () => {
       expect(stats.hits).toBe(0);
       expect(stats.misses).toBe(0);
       expect(stats.hitRate).toBe(0);
+    });
+  });
+
+  describe('constants usage', () => {
+    it('should use NO_EXPIRATION constant for TTL checks', () => {
+      // Test that cache with ttl: 0 uses the NO_EXPIRATION constant correctly
+      const noExpirationCache = new LRUCache<string, string>({ maxSize: 3, ttl: LRU_CACHE.NO_EXPIRATION });
+      noExpirationCache.set('key1', 'value1');
+      
+      vi.advanceTimersByTime(100000);
+      expect(noExpirationCache.get('key1')).toBe('value1');
+    });
+
+    it('should use NO_EXPIRATION for expiry calculations', () => {
+      // Test that custom TTL of 0 means no expiration
+      cache.set('key1', 'value1', LRU_CACHE.NO_EXPIRATION);
+      
+      vi.advanceTimersByTime(100000);
+      expect(cache.get('key1')).toBe('value1');
     });
   });
 });

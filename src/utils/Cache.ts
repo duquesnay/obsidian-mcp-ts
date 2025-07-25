@@ -1,3 +1,5 @@
+import { LRU_CACHE } from '../constants.js';
+
 /**
  * LRU (Least Recently Used) Cache with TTL support
  * 
@@ -37,7 +39,7 @@
  * 
  * @example
  * // Performance monitoring
- * const cache = new LRUCache<string, any>({ maxSize: 1000, ttl: 0 }); // No expiration
+ * const cache = new LRUCache<string, any>({ maxSize: 1000, ttl: LRU_CACHE.NO_EXPIRATION }); // No expiration
  * 
  * // Use cache with monitoring
  * for (const key of keys) {
@@ -273,12 +275,12 @@ export class LRUCache<K, V> {
   }
 
   private isExpired(node: CacheNode<K, V>): boolean {
-    return node.expires > 0 && Date.now() > node.expires;
+    return node.expires > LRU_CACHE.NO_EXPIRATION && Date.now() > node.expires;
   }
 
   private calculateExpiry(customTtl?: number): number {
     const ttl = customTtl !== undefined ? customTtl : this.ttl;
-    return ttl > 0 ? Date.now() + ttl : 0;
+    return ttl > LRU_CACHE.NO_EXPIRATION ? Date.now() + ttl : LRU_CACHE.NO_EXPIRATION;
   }
 
   private moveToFront(node: CacheNode<K, V>): void {

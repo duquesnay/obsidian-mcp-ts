@@ -57,6 +57,11 @@ export const CACHE_DEFAULTS = {
   NOTE_TTL: 120000, // 2 minutes
 } as const;
 
+export const LRU_CACHE = {
+  /** Value indicating no expiration for cache entries */
+  NO_EXPIRATION: 0,
+} as const;
+
 export const BATCH_PROCESSOR = {
   /** Default number of retry attempts for failed operations */
   DEFAULT_RETRY_ATTEMPTS: 2,
