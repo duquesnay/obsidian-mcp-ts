@@ -1,4 +1,5 @@
 import { ObsidianError } from '../types/errors.js';
+import { PATH_VALIDATION } from '../constants.js';
 
 const DANGEROUS_PATH_PATTERNS = [
   /\.\.[\/\\]/,           // Path traversal: ../ or ..\
@@ -44,7 +45,7 @@ export function validatePath(path: string, fieldName: string = 'path'): void {
   }
 
   // Check path length (reasonable limit)
-  if (path.length > 1000) {
+  if (path.length > PATH_VALIDATION.MAX_LENGTH) {
     throw new ObsidianError(`Invalid ${fieldName}: path too long`);
   }
 

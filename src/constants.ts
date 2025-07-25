@@ -65,6 +65,11 @@ export const API_ENDPOINTS = {
   TAGS: '/tags',
 } as const;
 
+export const PATH_VALIDATION = {
+  /** Maximum allowed length for file paths to prevent excessively long paths */
+  MAX_LENGTH: 1000,
+} as const;
+
 export const ERROR_MESSAGES = {
   MISSING_API_KEY: 'OBSIDIAN_API_KEY environment variable is not set',
   CONNECTION_FAILED: 'Failed to connect to Obsidian REST API',
