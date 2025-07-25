@@ -4,6 +4,7 @@ import { TagManagementClient } from './services/TagManagementClient.js';
 import { FileOperationsClient } from './services/FileOperationsClient.js';
 import { DirectoryOperationsClient } from './services/DirectoryOperationsClient.js';
 import { SearchClient } from './services/SearchClient.js';
+import { RequestDeduplicator } from '../utils/RequestDeduplicator.js';
 import type { IObsidianClient } from './interfaces/IObsidianClient.js';
 import type { IPeriodicNotesClient } from './interfaces/IPeriodicNotesClient.js';
 import type { ITagManagementClient } from './interfaces/ITagManagementClient.js';
@@ -51,6 +52,7 @@ export class ObsidianClient implements IObsidianClient {
   private host: string;
   private port: number;
   private verifySsl: boolean;
+  private requestDeduplicator: RequestDeduplicator;
   private periodicNotesClient?: IPeriodicNotesClient;
   private tagManagementClient?: ITagManagementClient;
   private fileOperationsClient?: IFileOperationsClient;
@@ -79,6 +81,7 @@ export class ObsidianClient implements IObsidianClient {
     this.host = config.host || OBSIDIAN_DEFAULTS.HOST;
     this.port = config.port || OBSIDIAN_DEFAULTS.PORT;
     this.verifySsl = config.verifySsl ?? true;
+    this.requestDeduplicator = new RequestDeduplicator();
   }
 
   /**

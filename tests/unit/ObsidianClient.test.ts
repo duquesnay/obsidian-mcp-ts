@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import axios, { AxiosInstance } from 'axios';
 import { ObsidianClient } from '../../src/obsidian/ObsidianClient.js';
 import { ObsidianError } from '../../src/types/errors.js';
+import { RequestDeduplicator } from '../../src/utils/RequestDeduplicator.js';
 
 // Mock axios
 vi.mock('axios', () => ({
@@ -55,6 +56,16 @@ describe('ObsidianClient', () => {
       
       expect(client).toBeDefined();
       expect(client).toBeInstanceOf(ObsidianClient);
+    });
+
+    it('should instantiate RequestDeduplicator', () => {
+      const client = new ObsidianClient({ apiKey: 'test-key' });
+      
+      // Access private property using type assertion
+      const clientWithPrivate = client as any;
+      
+      expect(clientWithPrivate.requestDeduplicator).toBeDefined();
+      expect(clientWithPrivate.requestDeduplicator).toBeInstanceOf(RequestDeduplicator);
     });
   });
 
