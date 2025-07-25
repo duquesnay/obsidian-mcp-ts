@@ -1,11 +1,6 @@
 
 import type { HttpError } from '../types/common.js';
-
-// MCP tool response format
-interface ToolResponse {
-  type: 'text';
-  text: string;
-}
+import type { ToolResponse } from '../tools/base.js';
 
 // Error response structure
 interface ErrorResponse {

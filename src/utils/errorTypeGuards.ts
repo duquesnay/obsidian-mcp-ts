@@ -2,6 +2,8 @@
  * Type guards and utilities for error handling
  */
 
+import type { ToolResponse } from '../tools/base.js';
+
 /**
  * Interface for errors with HTTP response
  */
@@ -61,4 +63,25 @@ export function getErrorMessage(error: unknown): string {
     return error;
   }
   return 'Unknown error';
+}
+
+/**
+ * Type guard to check if a value is a valid ToolResponse
+ * ToolResponse must have exactly type: 'text' and text: string properties
+ */
+export function isToolResponse(value: unknown): value is ToolResponse {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+  
+  const obj = value as Record<string, unknown>;
+  
+  // Check if it has exactly the required properties
+  const keys = Object.keys(obj);
+  if (keys.length !== 2 || !keys.includes('type') || !keys.includes('text')) {
+    return false;
+  }
+  
+  // Check if type is exactly 'text' and text is a string
+  return obj.type === 'text' && typeof obj.text === 'string';
 }
