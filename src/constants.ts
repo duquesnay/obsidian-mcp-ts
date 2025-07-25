@@ -43,6 +43,11 @@ export const OBSIDIAN_DEFAULTS = {
   MAX_LIST_LIMIT: 5000,
 } as const;
 
+export const DEDUPLICATION_DEFAULTS = {
+  /** Length of hash for batch operations */
+  BATCH_HASH_LENGTH: 8,
+} as const;
+
 export const CACHE_DEFAULTS = {
   /** Default cache size for resources */
   MAX_SIZE: 100,
