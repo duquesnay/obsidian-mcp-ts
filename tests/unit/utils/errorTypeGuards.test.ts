@@ -1,10 +1,12 @@
 import { describe, it, expect } from 'vitest';
+import { AxiosError } from 'axios';
 import {
   hasHttpResponse,
   hasMessage,
   getHttpStatus,
   getErrorMessage,
-  isToolResponse
+  isToolResponse,
+  isObsidianError
 } from '../../../src/utils/errorTypeGuards.js';
 
 describe('errorTypeGuards', () => {
@@ -154,6 +156,193 @@ describe('errorTypeGuards', () => {
         anotherType: 'json'
       };
       expect(isToolResponse(response)).toBe(false);
+    });
+  });
+
+  describe('isObsidianError', () => {
+    it('should return true for valid AxiosError instances', () => {
+      // Create a proper AxiosError instance
+      const axiosError = new AxiosError(
+        'Request failed',
+        'ERR_BAD_REQUEST',
+        undefined,
+        undefined,
+        {
+          status: 404,
+          statusText: 'Not Found',
+          headers: {},
+          config: {} as any,
+          data: {
+            errorCode: 404,
+            message: 'File not found'
+          }
+        }
+      );
+      
+      expect(isObsidianError(axiosError)).toBe(true);
+    });
+
+    it('should return true for AxiosError without Obsidian-specific data', () => {
+      // AxiosError without the errorCode/message in data
+      const axiosError = new AxiosError(
+        'Network error',
+        'ERR_NETWORK',
+        undefined,
+        undefined,
+        {
+          status: 500,
+          statusText: 'Internal Server Error',
+          headers: {},
+          config: {} as any,
+          data: 'Generic error string'
+        }
+      );
+      
+      expect(isObsidianError(axiosError)).toBe(true);
+    });
+
+    it('should return true for AxiosError without response', () => {
+      // Network errors might not have a response
+      const axiosError = new AxiosError(
+        'Network timeout',
+        'ECONNABORTED',
+        undefined,
+        undefined,
+        undefined
+      );
+      
+      expect(isObsidianError(axiosError)).toBe(true);
+    });
+
+    it('should return false for regular Error instances', () => {
+      const regularError = new Error('Regular error');
+      expect(isObsidianError(regularError)).toBe(false);
+    });
+
+    it('should return false for objects that look like AxiosError but are not', () => {
+      // Mock object with AxiosError-like properties
+      const mockError = {
+        isAxiosError: true,
+        message: 'Mock error',
+        response: {
+          status: 404,
+          data: {
+            errorCode: 404,
+            message: 'Not found'
+          }
+        },
+        toJSON: () => ({})
+      };
+      
+      expect(isObsidianError(mockError)).toBe(false);
+    });
+
+    it('should return false for null', () => {
+      expect(isObsidianError(null)).toBe(false);
+    });
+
+    it('should return false for undefined', () => {
+      expect(isObsidianError(undefined)).toBe(false);
+    });
+
+    it('should return false for non-object values', () => {
+      expect(isObsidianError('string error')).toBe(false);
+      expect(isObsidianError(123)).toBe(false);
+      expect(isObsidianError(true)).toBe(false);
+      expect(isObsidianError([])).toBe(false);
+    });
+
+    it('should return false for plain objects', () => {
+      const plainObject = {
+        message: 'Error message',
+        status: 404
+      };
+      expect(isObsidianError(plainObject)).toBe(false);
+    });
+
+    it('should return false for Error with axios-like properties', () => {
+      const error = new Error('Test error') as any;
+      error.isAxiosError = true;
+      error.response = {
+        status: 404,
+        data: { errorCode: 404 }
+      };
+      
+      expect(isObsidianError(error)).toBe(false);
+    });
+
+    it('should handle errors from different realms gracefully', () => {
+      // Simulate cross-realm object (e.g., from iframe)
+      const crossRealmError = Object.create(null);
+      Object.defineProperty(crossRealmError, 'isAxiosError', {
+        value: true,
+        enumerable: true
+      });
+      Object.defineProperty(crossRealmError, 'message', {
+        value: 'Cross-realm error',
+        enumerable: true
+      });
+      Object.defineProperty(crossRealmError, 'toJSON', {
+        value: () => ({}),
+        enumerable: true
+      });
+      
+      // This should be handled gracefully without throwing
+      expect(() => isObsidianError(crossRealmError)).not.toThrow();
+    });
+
+    it('should handle instanceof errors in catch block', () => {
+      // Create an object that will cause instanceof to throw
+      const problematicError = {
+        isAxiosError: true,
+        message: 'Test error',
+        toJSON: () => ({})
+      };
+      
+      // Override the Symbol.hasInstance to throw
+      Object.defineProperty(Error, Symbol.hasInstance, {
+        value: () => {
+          throw new Error('Symbol.hasInstance error');
+        },
+        configurable: true
+      });
+      
+      // The function should still return true because isAxiosError returned true
+      expect(isObsidianError(problematicError)).toBe(true);
+      
+      // Restore the original Symbol.hasInstance
+      delete (Error as any)[Symbol.hasInstance];
+    });
+
+    it('should validate Obsidian error data structure when present', () => {
+      const axiosError = new AxiosError(
+        'API Error',
+        'ERR_BAD_REQUEST',
+        undefined,
+        undefined,
+        {
+          status: 400,
+          statusText: 'Bad Request',
+          headers: {},
+          config: {} as any,
+          data: {
+            errorCode: 400,
+            message: 'Invalid request parameters'
+          }
+        }
+      );
+      
+      expect(isObsidianError(axiosError)).toBe(true);
+      
+      // TypeScript should allow accessing these properties
+      if (isObsidianError(axiosError)) {
+        // These properties should be accessible without TypeScript errors
+        const errorCode = axiosError.response?.data?.errorCode;
+        const message = axiosError.response?.data?.message;
+        
+        expect(errorCode).toBe(400);
+        expect(message).toBe('Invalid request parameters');
+      }
     });
   });
 });
