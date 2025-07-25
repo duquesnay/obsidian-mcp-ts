@@ -25,7 +25,7 @@ interface ValidationOptions {
  * @throws ValidationError if any required argument is missing
  */
 export function validateRequiredArgs(
-  args: Record<string, any>,
+  args: Record<string, unknown>,
   required: string[],
   options?: ValidationOptions
 ): void {

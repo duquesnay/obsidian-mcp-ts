@@ -3,8 +3,18 @@ import { DEDUPLICATION_DEFAULTS } from '../constants';
 
 export type RequestType = 'vault-list' | 'file-content' | 'search' | 'batch' | string;
 
+// Define a type for serializable values
+export type SerializableValue = 
+  | string 
+  | number 
+  | boolean 
+  | null 
+  | undefined
+  | SerializableValue[]
+  | { [key: string]: SerializableValue };
+
 export interface RequestParameters {
-  [key: string]: any;
+  [key: string]: SerializableValue;
 }
 
 // Specific parameter types for better type safety
@@ -23,13 +33,13 @@ export interface SearchParameters {
   offset?: number;
   filters?: {
     tags?: string[];
-    frontmatter?: Record<string, any>;
+    frontmatter?: Record<string, SerializableValue>;
   };
 }
 
 export interface BatchParameters {
   operation: string;
-  items: any[];
+  items: SerializableValue[];
 }
 
 /**
@@ -67,7 +77,7 @@ export class DeduplicationKeyGenerator {
    * @param items Array of items to hash
    * @returns A short hash string
    */
-  static generateBatchHash(items: any[]): string {
+  static generateBatchHash(items: SerializableValue[]): string {
     // Sort items to ensure consistent hash regardless of order
     const sortedItems = [...items].sort((a, b) => {
       const strA = JSON.stringify(a);
@@ -166,7 +176,7 @@ export class DeduplicationKeyGenerator {
     return filtered;
   }
 
-  private static serializeValue(value: any): string {
+  private static serializeValue(value: SerializableValue): string {
     if (Array.isArray(value)) {
       return value.join(',');
     } else if (typeof value === 'object') {
