@@ -339,6 +339,183 @@ export const REGEX_PATTERNS = {
     }
     return new RegExp(`^#{${level}} +(\\S.*)$`);
   },
+
+  /**
+   * Detects tag names that start with # prefix.
+   * Used for tag normalization and validation.
+   * 
+   * Valid examples (will match):
+   * - #project
+   * - #meeting-notes
+   * - #todo/urgent
+   * - #dev/javascript
+   * 
+   * Invalid examples (won't match):
+   * - project (no # prefix)
+   * - ##project (double #)
+   * - # (just hash, no name)
+   * - #   (hash with just spaces)
+   */
+  TAG_PREFIX: /^#/,
+
+  /**
+   * Validates proper tag name format.
+   * Matches tags that contain only valid characters for Obsidian tags.
+   * Valid characters: letters, numbers, hyphens, underscores, forward slashes
+   * 
+   * Valid examples:
+   * - project
+   * - meeting-notes
+   * - todo_item
+   * - dev/javascript
+   * - tag123
+   * - parent/child/grandchild
+   * 
+   * Invalid examples:
+   * - project with spaces
+   * - tag@name (special chars)
+   * - tag.name (dots not allowed)
+   * - tag&name (ampersand not allowed)
+   */
+  TAG_NAME_VALIDATION: /^[a-zA-Z0-9_/-]+$/,
+
+  /**
+   * Detects hierarchical tag separators.
+   * Used to identify parent/child tag relationships.
+   * 
+   * Valid examples:
+   * - parent/child
+   * - category/subcategory/item
+   * - dev/frontend/react
+   * 
+   * Usage:
+   * - Split hierarchical tags: tag.split(HIERARCHICAL_TAG_SEPARATOR)
+   * - Check if tag is hierarchical: HIERARCHICAL_TAG_SEPARATOR.test(tag)
+   */
+  HIERARCHICAL_TAG_SEPARATOR: /\//,
+
+  /**
+   * Matches Markdown file extensions.
+   * Primary file format for Obsidian notes.
+   * 
+   * Valid examples:
+   * - note.md
+   * - daily-notes.md
+   * - project-plan.md
+   * 
+   * Usage:
+   * - Filter markdown files: files.filter(f => MARKDOWN_FILE.test(f))
+   * - Validate file type: MARKDOWN_FILE.test(filename)
+   * - Extract markdown files from directory listings
+   */
+  MARKDOWN_FILE: /\.md$/,
+
+  /**
+   * Matches common text file extensions supported by Obsidian.
+   * Used for file type validation and filtering.
+   * 
+   * Valid examples:
+   * - document.txt
+   * - readme.txt
+   * - notes.md
+   * - data.json
+   * - config.yaml
+   * - style.css
+   * - script.js
+   * 
+   * Usage:
+   * - Filter text files: files.filter(f => TEXT_FILE.test(f))
+   * - Validate editable files: TEXT_FILE.test(filename)
+   * - Content operations support: check if file can be edited
+   */
+  TEXT_FILE: /\.(md|txt|json|yaml|yml|css|js|ts|html|htm|xml|csv)$/i,
+
+  /**
+   * Matches image file extensions commonly used in Obsidian.
+   * Used for embedding and attachment validation.
+   * 
+   * Valid examples:
+   * - diagram.png
+   * - screenshot.jpg
+   * - icon.svg
+   * - chart.gif
+   * - photo.webp
+   * 
+   * Usage:
+   * - Filter images: attachments.filter(f => IMAGE_FILE.test(f))
+   * - Validate attachment type: IMAGE_FILE.test(filename)
+   * - Media file handling: determine if file is an image
+   */
+  IMAGE_FILE: /\.(png|jpg|jpeg|gif|svg|webp|bmp|ico)$/i,
+
+  /**
+   * Matches date format in filenames (YYYY-MM-DD).
+   * Common pattern for daily notes and dated files.
+   * 
+   * Valid examples:
+   * - 2024-01-15.md
+   * - daily-2024-12-25.md
+   * - meeting-2024-06-30.md
+   * 
+   * Usage:
+   * - Parse date from filename: filename.match(DATE_IN_FILENAME)
+   * - Validate daily note format: DATE_IN_FILENAME.test(filename)
+   * - Sort files by date: extract dates for chronological ordering
+   */
+  DATE_IN_FILENAME: /(\d{4}-\d{2}-\d{2})/,
+
+  /**
+   * Matches ISO 8601 date format (YYYY-MM-DD).
+   * Used for date validation in various contexts.
+   * 
+   * Valid examples:
+   * - 2024-01-15
+   * - 2024-12-31
+   * - 2024-06-30
+   * 
+   * Invalid examples:
+   * - 2024-13-01 (invalid month)
+   * - 2024-01-32 (invalid day)
+   * - 24-01-15 (incomplete year)
+   * 
+   * Usage:
+   * - Validate date strings: ISO_DATE_FORMAT.test(dateStr)
+   * - Parse user input: check format before processing
+   * - API parameter validation: ensure proper date format
+   */
+  ISO_DATE_FORMAT: /^\d{4}-\d{2}-\d{2}$/,
+
+  /**
+   * Matches block reference IDs in Obsidian.
+   * Block references are used to link to specific paragraphs or sections.
+   * 
+   * Valid examples:
+   * - ^abc123
+   * - ^block-ref-1
+   * - ^my-important-note
+   * 
+   * Usage:
+   * - Extract block IDs: content.match(BLOCK_REFERENCE)
+   * - Validate block format: BLOCK_REFERENCE.test(blockId)
+   * - Parse block references: find all block markers in content
+   */
+  BLOCK_REFERENCE: /\^([a-zA-Z0-9-]+)\s*$/,
+
+  /**
+   * Matches and captures block reference content for cleaning.
+   * Used to remove block references from content while preserving text.
+   * 
+   * Valid examples (will match and remove):
+   * - Some text ^block123
+   * - Important note ^my-ref
+   * - Content here ^abc-def
+   * 
+   * Usage:
+   * - Clean content: text.replace(BLOCK_REFERENCE_CLEANUP, '')
+   * - Remove block markers: preserve content, remove references
+   * - Content processing: clean text for display or export
+   */
+  BLOCK_REFERENCE_CLEANUP: /\s*\^[a-zA-Z0-9-]+\s*$/,
 } as const;
 
 export const SUBSCRIPTION_EVENTS = {

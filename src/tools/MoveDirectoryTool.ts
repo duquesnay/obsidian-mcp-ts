@@ -2,6 +2,7 @@ import { MoveDirectoryArgs } from './types/MoveDirectoryArgs.js';
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 import { DIR_PATH_SCHEMA } from '../utils/validation.js';
+import { REGEX_PATTERNS } from '../constants.js';
 
 export class MoveDirectoryTool extends BaseTool<MoveDirectoryArgs> {
   name = 'obsidian_move_directory';
@@ -42,8 +43,8 @@ export class MoveDirectoryTool extends BaseTool<MoveDirectoryArgs> {
       PathValidationUtil.validate(args.destinationPath, 'destinationPath', { type: PathValidationType.DIRECTORY });
       
       // Ensure paths don't end with slash for consistency
-      const sourcePath = args.sourcePath.replace(/\/$/, '');
-      const destinationPath = args.destinationPath.replace(/\/$/, '');
+      const sourcePath = args.sourcePath.replace(REGEX_PATTERNS.TRAILING_SLASH, '');
+      const destinationPath = args.destinationPath.replace(REGEX_PATTERNS.TRAILING_SLASH, '');
       
       // Prevent moving a directory into itself
       if (destinationPath.startsWith(sourcePath + '/')) {

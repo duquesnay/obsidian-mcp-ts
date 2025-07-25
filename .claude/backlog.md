@@ -297,7 +297,7 @@ For each task:
   - [x] CQ9.5: Search for numeric literals in RequestDeduplicator.ts and extract to named constants (DONE - extracted DEFAULT_TTL_MS)
   - [x] CQ9.6: Search for timeout values across all tool files and centralize in constants.ts (DONE - created TIMEOUTS constants)
   - [x] CQ9.7: Search for retry count values across utilities and centralize in constants.ts (DONE - already centralized)
-  - [⏳] CQ9.8: Create validation to ensure no hardcoded numbers remain in utility files
+  - [x] CQ9.8: Create validation to ensure no hardcoded numbers remain in utility files
 
 - [x] CQ10: Replace any types with proper type guards ✅
   - [x] CQ10.1: Create hasResponse() type guard function in src/utils/typeGuards.ts (DONE - hasHttpResponse created)

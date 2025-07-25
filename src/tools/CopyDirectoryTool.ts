@@ -2,6 +2,7 @@ import { CopyDirectoryArgs } from './types/CopyDirectoryArgs.js';
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 import { validateRequiredArgs, DIR_PATH_SCHEMA, BOOLEAN_FLAG_SCHEMA } from '../utils/validation.js';
+import { REGEX_PATTERNS } from '../constants.js';
 
 export class CopyDirectoryTool extends BaseTool<CopyDirectoryArgs> {
   name = 'obsidian_copy_directory';
@@ -42,8 +43,8 @@ export class CopyDirectoryTool extends BaseTool<CopyDirectoryArgs> {
       PathValidationUtil.validate(args.destinationPath, 'destinationPath', { type: PathValidationType.DIRECTORY });
       
       // Ensure paths don't end with slash for consistency
-      const sourcePath = args.sourcePath.replace(/\/$/, '');
-      const destinationPath = args.destinationPath.replace(/\/$/, '');
+      const sourcePath = args.sourcePath.replace(REGEX_PATTERNS.TRAILING_SLASH, '');
+      const destinationPath = args.destinationPath.replace(REGEX_PATTERNS.TRAILING_SLASH, '');
       
       // Prevent copying a directory into itself
       if (destinationPath.startsWith(sourcePath + '/')) {

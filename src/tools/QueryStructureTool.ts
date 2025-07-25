@@ -234,12 +234,12 @@ export class QueryStructureTool extends BaseTool<QueryStructureArgs> {
       }
       
       // Find block references
-      const blockMatch = line.match(/\^([a-zA-Z0-9-]+)\s*$/);
+      const blockMatch = line.match(REGEX_PATTERNS.BLOCK_REFERENCE);
       if (blockMatch) {
         const id = blockMatch[1];
         
         // Get preview text (the line or paragraph containing the block ref)
-        let preview = line.replace(/\s*\^[a-zA-Z0-9-]+\s*$/, '').trim();
+        let preview = line.replace(REGEX_PATTERNS.BLOCK_REFERENCE_CLEANUP, '').trim();
         if (!preview && index > 0) {
           preview = lines[index - 1].trim();
         }

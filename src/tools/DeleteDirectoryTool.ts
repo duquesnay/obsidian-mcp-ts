@@ -2,6 +2,7 @@ import { DeleteDirectoryArgs } from './types/DeleteDirectoryArgs.js';
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 import { validateRequiredArgs, DIR_PATH_SCHEMA, BOOLEAN_FLAG_SCHEMA } from '../utils/validation.js';
+import { REGEX_PATTERNS } from '../constants.js';
 
 export class DeleteDirectoryTool extends BaseTool<DeleteDirectoryArgs> {
   name = 'obsidian_delete_directory';
@@ -41,7 +42,7 @@ export class DeleteDirectoryTool extends BaseTool<DeleteDirectoryArgs> {
       PathValidationUtil.validate(args.directoryPath, 'directoryPath', { type: PathValidationType.DIRECTORY });
       
       // Clean up the path (remove trailing slashes)
-      const cleanPath = args.directoryPath.replace(/\/$/, '');
+      const cleanPath = args.directoryPath.replace(REGEX_PATTERNS.TRAILING_SLASH, '');
       
       // Safety check - prevent deleting root or critical paths
       if (cleanPath === '' || cleanPath === '.' || cleanPath === '/') {

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import 'dotenv/config';
 import { TagManagementClient } from '../../src/obsidian/services/TagManagementClient';
 import type { ObsidianClientConfig } from '../../src/obsidian/ObsidianClient';
+import { REGEX_PATTERNS } from '../../src/constants.js';
 
 describe('TagManagementClient Integration Tests', () => {
   let client: TagManagementClient;
@@ -53,7 +54,7 @@ describe('TagManagementClient Integration Tests', () => {
         expect(files.length).toBeGreaterThan(0);
         files.forEach(file => {
           expect(typeof file).toBe('string');
-          expect(file).toMatch(/\.md$/);
+          expect(file).toMatch(REGEX_PATTERNS.MARKDOWN_FILE);
         });
       }
     });

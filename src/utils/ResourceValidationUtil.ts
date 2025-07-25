@@ -1,3 +1,5 @@
+import { REGEX_PATTERNS } from '../constants.js';
+
 /**
  * Common validation and extraction utilities for resource handlers
  */
@@ -80,7 +82,7 @@ export class ResourceValidationUtil {
     }
     
     // Check format with regex
-    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    const dateRegex = REGEX_PATTERNS.ISO_DATE_FORMAT;
     if (!dateRegex.test(date)) {
       return false;
     }
