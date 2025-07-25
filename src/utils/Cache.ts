@@ -1,4 +1,5 @@
 import { LRU_CACHE } from '../constants.js';
+import type { NotificationManager } from './NotificationManager.js';
 
 /**
  * LRU (Least Recently Used) Cache with TTL support
@@ -94,6 +95,12 @@ interface CacheNode<K, V> {
 interface CacheOptions {
   maxSize: number;
   ttl: number; // Time to live in milliseconds, 0 = no expiration
+  
+  /** Optional NotificationManager for cache invalidation events */
+  notificationManager?: NotificationManager;
+  
+  /** Cache instance identifier for notification events */
+  instanceId?: string;
 }
 
 export interface CacheStats {
@@ -111,11 +118,15 @@ export class LRUCache<K, V> {
   private tail: CacheNode<K, V> | null = null;
   private hits = 0;
   private misses = 0;
+  private notificationManager?: NotificationManager;
+  private instanceId?: string;
 
   constructor(options: CacheOptions) {
     this.maxSize = options.maxSize;
     this.ttl = options.ttl;
     this.cache = new Map();
+    this.notificationManager = options.notificationManager;
+    this.instanceId = options.instanceId;
   }
 
   /**
@@ -213,6 +224,7 @@ export class LRUCache<K, V> {
     if (!node) return false;
     
     this.remove(node);
+    this.notifyInvalidation(key, 'delete');
     return true;
   }
 
@@ -223,6 +235,7 @@ export class LRUCache<K, V> {
     this.cache.clear();
     this.head = null;
     this.tail = null;
+    this.notifyInvalidation('*' as K, 'clear');
   }
 
   /**
@@ -270,7 +283,10 @@ export class LRUCache<K, V> {
     
     for (const key of expiredKeys) {
       const node = this.cache.get(key);
-      if (node) this.remove(node);
+      if (node) {
+        this.remove(node);
+        this.notifyInvalidation(key, 'expire');
+      }
     }
   }
 
@@ -320,6 +336,20 @@ export class LRUCache<K, V> {
 
   private evictLRU(): void {
     if (!this.tail) return;
+    const evictedKey = this.tail.key;
     this.remove(this.tail);
+    this.notifyInvalidation(evictedKey, 'evict');
+  }
+
+  /**
+   * Send cache invalidation notification if notification manager is configured
+   */
+  private notifyInvalidation(key: K, operation: 'delete' | 'clear' | 'expire' | 'evict'): void {
+    if (this.notificationManager && this.instanceId) {
+      this.notificationManager.notifyCacheInvalidation(String(key), {
+        instanceId: this.instanceId,
+        operation
+      });
+    }
   }
 }
