@@ -94,7 +94,10 @@ export class ObsidianClient implements IObsidianClient {
    * // Returns: ['notes/daily/2024-01-01.md', 'projects/todo.md', ...]
    */
   async listFilesInVault(): Promise<string[]> {
-    return this.getFileOperationsClient().listFilesInVault();
+    // Use deduplication to avoid multiple concurrent requests
+    return this.requestDeduplicator.dedupe('vault-list', () => 
+      this.getFileOperationsClient().listFilesInVault()
+    );
   }
 
   /**

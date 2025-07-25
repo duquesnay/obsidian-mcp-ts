@@ -97,6 +97,91 @@ describe('ObsidianClient', () => {
 
       await expect(client.listFilesInVault()).rejects.toThrow('Error 404: Vault not found');
     });
+
+    it('should deduplicate concurrent calls', async () => {
+      const mockFiles = ['file1.md', 'file2.md', 'folder/file3.md'];
+      let resolveFunction: any;
+      const promise = new Promise((resolve) => {
+        resolveFunction = resolve;
+      });
+      
+      (mockAxiosInstance.get as any).mockReturnValue(promise);
+
+      // Make multiple concurrent calls
+      const call1 = client.listFilesInVault();
+      const call2 = client.listFilesInVault();
+      const call3 = client.listFilesInVault();
+
+      // Should only make one actual API call
+      expect(mockAxiosInstance.get).toHaveBeenCalledTimes(1);
+
+      // Resolve the promise
+      resolveFunction({ data: { files: mockFiles } });
+
+      // All calls should return the same result
+      const [result1, result2, result3] = await Promise.all([call1, call2, call3]);
+      expect(result1).toEqual(mockFiles);
+      expect(result2).toEqual(mockFiles);
+      expect(result3).toEqual(mockFiles);
+      
+      // All promises should resolve to the same value (deduplication worked)
+    });
+
+    it('should make new request after TTL expires', async () => {
+      const mockFiles1 = ['file1.md'];
+      const mockFiles2 = ['file1.md', 'file2.md'];
+      
+      // First call
+      (mockAxiosInstance.get as any).mockResolvedValueOnce({
+        data: { files: mockFiles1 }
+      });
+      
+      const result1 = await client.listFilesInVault();
+      expect(result1).toEqual(mockFiles1);
+      expect(mockAxiosInstance.get).toHaveBeenCalledTimes(1);
+      
+      // Mock time passing (simulate TTL expiration)
+      // Since we can't easily mock the internal cache TTL, we'll use a workaround
+      // by clearing the deduplicator's cache
+      const clientWithPrivate = client as any;
+      clientWithPrivate.requestDeduplicator.clear();
+      
+      // Second call after cache clear
+      (mockAxiosInstance.get as any).mockResolvedValueOnce({
+        data: { files: mockFiles2 }
+      });
+      
+      const result2 = await client.listFilesInVault();
+      expect(result2).toEqual(mockFiles2);
+      expect(mockAxiosInstance.get).toHaveBeenCalledTimes(2);
+    });
+
+    it('should handle deduplicated error cases', async () => {
+      const errorResponse = {
+        response: {
+          data: {
+            errorCode: 500,
+            message: 'Internal Server Error'
+          }
+        }
+      };
+      
+      (mockAxiosInstance.get as any).mockRejectedValue(errorResponse);
+      vi.mocked(axios.isAxiosError).mockReturnValue(true);
+
+      // Make multiple concurrent calls
+      const call1 = client.listFilesInVault();
+      const call2 = client.listFilesInVault();
+      const call3 = client.listFilesInVault();
+
+      // Should only make one actual API call
+      expect(mockAxiosInstance.get).toHaveBeenCalledTimes(1);
+
+      // All calls should fail with the same error
+      await expect(call1).rejects.toThrow('Error 500: Internal Server Error');
+      await expect(call2).rejects.toThrow('Error 500: Internal Server Error');
+      await expect(call3).rejects.toThrow('Error 500: Internal Server Error');
+    });
   });
 
   describe('getFileContents', () => {

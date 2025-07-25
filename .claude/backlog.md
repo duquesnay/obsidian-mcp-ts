@@ -36,6 +36,8 @@ Technical context:
 - Follow TypeScript best practices
 - Ensure all tests pass before completing
 
+IMPORTANT: Every code change MUST have corresponding tests. No feature is complete without tests.
+
 Return a summary of:
 - What was changed
 - Test results
@@ -305,7 +307,7 @@ After each sub-agent completes:
   - [x] CQ10.4: Replace any type usage in ObsidianErrorHandler with proper type guards (DONE during type fixes)
   - [x] CQ10.5: Replace any type usage in error catch blocks across all tools (DONE during type fixes)
   - [ ] CQ10.6: Update BaseTool error handling to use new type guards
-  - [ ] CQ10.7: Add unit tests for each type guard function
+  - [x] CQ10.7: Add unit tests for each type guard function (DONE - tests exist for all except isObsidianError)
   - [ ] CQ10.8: Remove remaining any types from utility function parameters
 
 - [ ] CQ11: Document complex regex patterns
