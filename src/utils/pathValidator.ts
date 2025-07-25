@@ -1,13 +1,13 @@
 import { ObsidianError } from '../types/errors.js';
-import { PATH_VALIDATION } from '../constants.js';
+import { PATH_VALIDATION, REGEX_PATTERNS } from '../constants.js';
 
 const DANGEROUS_PATH_PATTERNS = [
-  /\.\.[\/\\]/,           // Path traversal: ../ or ..\
-  /^[\/\\]/,              // Absolute paths starting with / or \
-  /^[a-zA-Z]:[\/\\]/,     // Windows absolute paths (C:\, D:\, etc.)
-  /\0/,                   // Null bytes
-  /[\x00-\x1f\x7f]/,      // Control characters
-  /^~/,                   // Home directory expansion
+  REGEX_PATTERNS.PATH_TRAVERSAL,        // Path traversal: ../ or ..\
+  REGEX_PATTERNS.ABSOLUTE_PATH_UNIX,    // Absolute paths starting with / or \
+  REGEX_PATTERNS.ABSOLUTE_PATH_WINDOWS, // Windows absolute paths (C:\, D:\, etc.)
+  /\0/,                                 // Null bytes (keeping for specific check)
+  REGEX_PATTERNS.CONTROL_CHARACTERS,    // Control characters
+  REGEX_PATTERNS.HOME_DIRECTORY,        // Home directory expansion
 ];
 
 const DANGEROUS_CHARS = [
@@ -50,7 +50,7 @@ export function validatePath(path: string, fieldName: string = 'path'): void {
   }
 
   // Ensure path doesn't start with dots (hidden files) followed by slashes
-  if (/^\.+[\/\\]/.test(path)) {
+  if (REGEX_PATTERNS.HIDDEN_FILE_WITH_SLASH.test(path)) {
     throw new ObsidianError(`Invalid ${fieldName}: invalid path format`);
   }
 }
@@ -69,12 +69,13 @@ export function sanitizePath(path: string): string {
   let sanitized = path;
 
   // Remove null bytes and control characters
-  sanitized = sanitized.replace(/[\x00-\x1f\x7f]/g, '');
+  sanitized = sanitized.replace(REGEX_PATTERNS.CONTROL_CHARACTERS, '');
 
   // Remove path traversal sequences
-  sanitized = sanitized.replace(/\.\.[\/\\]/g, '');
+  sanitized = sanitized.replace(REGEX_PATTERNS.PATH_TRAVERSAL, '');
 
   // Remove leading slashes and home directory references
+  // Note: This combines multiple patterns for efficiency in sanitization
   sanitized = sanitized.replace(/^[\/\\~]+/, '');
 
   // Remove dangerous characters
@@ -83,7 +84,7 @@ export function sanitizePath(path: string): string {
   }
 
   // Normalize multiple slashes
-  sanitized = sanitized.replace(/[\/\\]+/g, '/');
+  sanitized = sanitized.replace(REGEX_PATTERNS.MULTIPLE_SLASHES, '/');
 
   // Trim whitespace
   sanitized = sanitized.trim();

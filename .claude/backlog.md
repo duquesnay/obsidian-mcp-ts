@@ -254,7 +254,6 @@ After each sub-agent completes:
 - [x] CQ4.4: Create AND integrate SearchClient (created and integrated)
 - [x] CQ4.5: Create AND integrate TagManagementClient (created and integrated)
 - [x] CQ4.6: Create AND integrate PeriodicNotesClient (created and integrated correctly)
-- [ ] CQ4.7: ~~Refactor ObsidianClient as facade/coordinator~~ (not needed if services are integrated incrementally)
 - [x] CQ4.8: Update BaseTool to depend on interface instead of concrete class
 
 - [x] CQ5.1: Create EditStrategy interface and base class
@@ -263,14 +262,11 @@ After each sub-agent completes:
 - [x] CQ5.4: Extract AND integrate HeadingInsertStrategy (must be used immediately)
 - [x] CQ5.5: Extract AND integrate BatchEditStrategy (must be used immediately)
 - [x] CQ5.6: Extract AND integrate SectionEditStrategy ✅ (must be used immediately)
-- [ ] CQ5.7: ~~Refactor UnifiedEditTool to use strategy pattern~~ (happens incrementally with each strategy)
 - [x] CQ5.8: Clean up and optimize UnifiedEditTool ✅
 
 - [x] CQ6.1: ~~Create central schema fragments file~~ (already done in validation.ts with schema fragments)
 - [x] CQ6.2: ~~Extract common propertchemas~~ (already done: PATH_SCHEMA, CONTENT_SCHEMA, etc.)
-- [ ] CQ6.3: ~~Create schema builder utility~~ (may not be needed with current approach)
 - [x] CQ6.4: Migrate remaining tools to use schema fragments from validation.ts ✅
-- [ ] CQ6.5: ~~Remove duplicate schema definitions~~ (happens as part of CQ6.4)
 
 - [x] CQ7: Address TODO comments ✅
   - ObsidianClient.ts line 31: "break apart, file is too long" ✅ (moved getRecentChanges to FileOperationsClient)

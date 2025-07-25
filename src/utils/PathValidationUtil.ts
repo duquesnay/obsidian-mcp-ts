@@ -1,4 +1,5 @@
 import { ObsidianError } from '../types/errors.js';
+import { REGEX_PATTERNS } from '../constants.js';
 
 /**
  * Types of paths that can be validated
@@ -47,10 +48,10 @@ export class PathValidationError extends ObsidianError {
 export class PathValidationUtil {
   // Dangerous patterns that could lead to security issues
   private static readonly DANGEROUS_PATTERNS = [
-    /\.\.[\/\\]/,           // Parent directory traversal: ../ or ..\
-    /^[\/\\]/,              // Absolute paths starting with / or \
-    /^[a-zA-Z]:[\/\\]/,     // Windows absolute paths (C:\, D:\, etc.)
-    /^~/,                   // Home directory expansion
+    REGEX_PATTERNS.PATH_TRAVERSAL,        // Parent directory traversal: ../ or ..\
+    REGEX_PATTERNS.ABSOLUTE_PATH_UNIX,    // Absolute paths starting with / or \
+    REGEX_PATTERNS.ABSOLUTE_PATH_WINDOWS, // Windows absolute paths (C:\, D:\, etc.)
+    REGEX_PATTERNS.HOME_DIRECTORY,        // Home directory expansion
   ];
 
   // Dangerous characters that should not be in paths
@@ -64,7 +65,7 @@ export class PathValidationUtil {
   ];
 
   // Control characters regex
-  private static readonly CONTROL_CHARS = /[\x00-\x1f\x7f]/;
+  private static readonly CONTROL_CHARS = REGEX_PATTERNS.CONTROL_CHARACTERS;
 
   // Default maximum path length
   private static readonly DEFAULT_MAX_LENGTH = 1000;
@@ -95,11 +96,11 @@ export class PathValidationUtil {
         let specificMessage = messages.security ?? `${fieldName} contains dangerous pattern`;
         
         // Provide specific error messages for common patterns
-        if (/\.\.[\/\\]/.test(trimmedPath)) {
+        if (REGEX_PATTERNS.PATH_TRAVERSAL.test(trimmedPath)) {
           specificMessage = messages.security ?? `${fieldName} contains parent directory traversal`;
-        } else if (/^[\/\\]/.test(trimmedPath) || /^[a-zA-Z]:[\/\\]/.test(trimmedPath)) {
+        } else if (REGEX_PATTERNS.ABSOLUTE_PATH_UNIX.test(trimmedPath) || REGEX_PATTERNS.ABSOLUTE_PATH_WINDOWS.test(trimmedPath)) {
           specificMessage = messages.security ?? `${fieldName} cannot be an absolute path`;
-        } else if (/^~/.test(trimmedPath)) {
+        } else if (REGEX_PATTERNS.HOME_DIRECTORY.test(trimmedPath)) {
           specificMessage = messages.security ?? `${fieldName} cannot start with home directory reference`;
         }
         
@@ -178,16 +179,16 @@ export class PathValidationUtil {
     let normalized = path.trim();
 
     // Convert backslashes to forward slashes
-    normalized = normalized.replace(/\\/g, '/');
+    normalized = normalized.replace(REGEX_PATTERNS.BACKSLASH, '/');
 
     // Remove leading slashes
-    normalized = normalized.replace(/^\/+/, '');
+    normalized = normalized.replace(REGEX_PATTERNS.LEADING_SLASH, '');
 
     // Normalize multiple slashes
-    normalized = normalized.replace(/\/+/g, '/');
+    normalized = normalized.replace(new RegExp(REGEX_PATTERNS.MULTIPLE_SLASHES.source, 'g'), '/');
 
     // Remove trailing slashes (always remove for consistency)
-    normalized = normalized.replace(/\/+$/, '');
+    normalized = normalized.replace(REGEX_PATTERNS.TRAILING_SLASH, '');
 
     return normalized;
   }

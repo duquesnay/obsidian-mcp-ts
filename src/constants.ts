@@ -127,6 +127,174 @@ export const REGEX_PATTERNS = {
    * - https://example.com/path?query=value#fragment
    */
   URL_VALIDATION: /^https?:\/\/(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)*[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?|localhost|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?::\d+)?(?:\/[^?#]*)?(?:\?[^#]*)?(?:#.*)?$/,
+
+  /**
+   * Detects parent directory traversal attempts.
+   * Matches: ../ or ..\
+   * Security: Prevents accessing files outside the vault
+   * 
+   * Valid examples (will match - these are dangerous):
+   * - ../
+   * - ..\
+   * - ../../secret.md
+   * - path/../other
+   * 
+   * Invalid examples (won't match - these are safe):
+   * - ./file.md
+   * - ..file.md
+   * - path..name/file.md
+   */
+  PATH_TRAVERSAL: /\.\.[\/\\]/,
+
+  /**
+   * Detects Unix/Linux absolute paths.
+   * Matches paths starting with / or \
+   * Security: Ensures paths are relative to vault root
+   * 
+   * Valid examples (will match - these are absolute):
+   * - /home/user/file.md
+   * - /var/log/notes.txt
+   * - \network\share
+   * 
+   * Invalid examples (won't match - these are relative):
+   * - home/user/file.md
+   * - ./relative/path.md
+   * - file.txt
+   */
+  ABSOLUTE_PATH_UNIX: /^[\/\\]/,
+
+  /**
+   * Detects Windows absolute paths.
+   * Matches: Drive letter followed by :\ or :/
+   * Security: Prevents accessing files outside the vault on Windows
+   * 
+   * Valid examples (will match - these are absolute):
+   * - C:\
+   * - D:\Documents\notes.md
+   * - Z:/path/to/file.txt
+   * 
+   * Invalid examples (won't match - these are relative):
+   * - folder\file.txt
+   * - C:file.txt (missing slash)
+   * - 1:\path (invalid drive letter)
+   */
+  ABSOLUTE_PATH_WINDOWS: /^[a-zA-Z]:[\/\\]/,
+
+  /**
+   * Detects home directory expansion.
+   * Matches paths starting with ~
+   * Security: Prevents expanding to user's home directory
+   * 
+   * Valid examples (will match - these expand):
+   * - ~
+   * - ~/Documents
+   * - ~username/files
+   * 
+   * Invalid examples (won't match - no expansion):
+   * - path/~/file
+   * - file~name.txt
+   */
+  HOME_DIRECTORY: /^~/,
+
+  /**
+   * Detects control characters including null bytes.
+   * Matches: ASCII 0x00-0x1F and 0x7F
+   * Security: Prevents injection of non-printable characters
+   * 
+   * Valid examples (will match - these contain control chars):
+   * - file\x00name (null byte)
+   * - path\x0d\x0a (CRLF)
+   * - text\x1bsequence (escape)
+   * 
+   * Invalid examples (won't match - these are clean):
+   * - normal-file_name.txt
+   * - path/to/file with spaces
+   * - UTF-8 文件名.md
+   */
+  CONTROL_CHARACTERS: /[\x00-\x1f\x7f]/,
+
+  /**
+   * Detects hidden files/directories that start with dots followed by slashes.
+   * Matches: Paths starting with one or more dots followed by / or \
+   * Note: This is used to prevent certain path constructions, not all hidden files
+   * 
+   * Valid examples (will match):
+   * - ./
+   * - ../
+   * - .hidden/
+   * - ..secret\
+   * 
+   * Invalid examples (won't match):
+   * - .gitignore (valid hidden file)
+   * - folder/.hidden (hidden file in folder)
+   * - normal/path
+   */
+  HIDDEN_FILE_WITH_SLASH: /^\.+[\/\\]/,
+
+  /**
+   * Detects multiple consecutive slashes or backslashes.
+   * Used for path normalization
+   * 
+   * Valid examples (will match - need normalization):
+   * - //
+   * - ///path
+   * - folder\\\\file
+   * - path//to///file
+   * 
+   * Invalid examples (won't match - already normalized):
+   * - /
+   * - path/to/file
+   * - folder\file
+   */
+  MULTIPLE_SLASHES: /[\/\\]{2,}/,
+
+  /**
+   * Detects leading slashes.
+   * Used for removing absolute path indicators
+   * 
+   * Valid examples (will match):
+   * - /
+   * - /path
+   * - //multiple
+   * - ///many/slashes
+   * 
+   * Invalid examples (won't match):
+   * - path/to/file
+   * - relative/path
+   * - file.txt
+   */
+  LEADING_SLASH: /^\/+/,
+
+  /**
+   * Detects trailing slashes.
+   * Used for path normalization
+   * 
+   * Valid examples (will match):
+   * - path/
+   * - folder//
+   * - directory///
+   * 
+   * Invalid examples (won't match):
+   * - path/to/file
+   * - file.txt
+   * - /absolute/path
+   */
+  TRAILING_SLASH: /\/+$/,
+
+  /**
+   * Matches all backslashes for conversion to forward slashes.
+   * Used for path normalization to ensure consistent path separators.
+   * 
+   * Valid examples (will match):
+   * - folder\file.txt
+   * - C:\Users\Documents
+   * - path\to\nested\file
+   * 
+   * Invalid examples (won't match):
+   * - path/to/file (no backslashes)
+   * - file.txt (no backslashes)
+   */
+  BACKSLASH: /\\/g,
 } as const;
 
 export const SUBSCRIPTION_EVENTS = {
