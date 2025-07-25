@@ -9,7 +9,8 @@ import {
   PATH_VALIDATION,
   ERROR_MESSAGES,
   TIMEOUTS,
-  REGEX_PATTERNS
+  REGEX_PATTERNS,
+  SUBSCRIPTION_EVENTS
 } from './constants.js';
 
 describe('Constants', () => {
@@ -174,6 +175,47 @@ describe('Constants', () => {
         expect('https://deep.sub.example.com').toMatch(pattern);
         expect('http://api.v2.example.com:8080').toMatch(pattern);
       });
+    });
+  });
+
+  describe('SUBSCRIPTION_EVENTS', () => {
+    it('should be defined and exported', () => {
+      expect(SUBSCRIPTION_EVENTS).toBeDefined();
+      expect(typeof SUBSCRIPTION_EVENTS).toBe('object');
+    });
+
+    it('should contain all expected event types', () => {
+      expect(SUBSCRIPTION_EVENTS.CACHE_INVALIDATED).toBeDefined();
+      expect(SUBSCRIPTION_EVENTS.FILE_CREATED).toBeDefined();
+      expect(SUBSCRIPTION_EVENTS.FILE_UPDATED).toBeDefined();
+      expect(SUBSCRIPTION_EVENTS.FILE_DELETED).toBeDefined();
+      expect(SUBSCRIPTION_EVENTS.DIRECTORY_CREATED).toBeDefined();
+      expect(SUBSCRIPTION_EVENTS.DIRECTORY_DELETED).toBeDefined();
+      expect(SUBSCRIPTION_EVENTS.TAG_ADDED).toBeDefined();
+      expect(SUBSCRIPTION_EVENTS.TAG_REMOVED).toBeDefined();
+    });
+
+    it('should have string values for all event types', () => {
+      Object.values(SUBSCRIPTION_EVENTS).forEach(event => {
+        expect(typeof event).toBe('string');
+        expect(event.length).toBeGreaterThan(0);
+      });
+    });
+
+    it('should have all uppercase keys', () => {
+      Object.keys(SUBSCRIPTION_EVENTS).forEach(key => {
+        expect(key).toMatch(/^[A-Z_]+$/);
+      });
+    });
+
+    it('should have exactly 8 event types', () => {
+      expect(Object.keys(SUBSCRIPTION_EVENTS).length).toBe(8);
+    });
+
+    it('should have unique values', () => {
+      const values = Object.values(SUBSCRIPTION_EVENTS);
+      const uniqueValues = new Set(values);
+      expect(uniqueValues.size).toBe(values.length);
     });
   });
 });

@@ -123,3 +123,29 @@ export const REGEX_PATTERNS = {
    */
   URL_VALIDATION: /^https?:\/\/(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)*[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?|localhost|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?::\d+)?(?:\/[^?#]*)?(?:\?[^#]*)?(?:#.*)?$/,
 } as const;
+
+export const SUBSCRIPTION_EVENTS = {
+  /** Event emitted when cache entries are invalidated */
+  CACHE_INVALIDATED: 'cache:invalidated',
+  
+  /** Event emitted when a new file is created in the vault */
+  FILE_CREATED: 'file:created',
+  
+  /** Event emitted when an existing file is updated in the vault */
+  FILE_UPDATED: 'file:updated',
+  
+  /** Event emitted when a file is deleted from the vault */
+  FILE_DELETED: 'file:deleted',
+  
+  /** Event emitted when a new directory is created in the vault */
+  DIRECTORY_CREATED: 'directory:created',
+  
+  /** Event emitted when a directory is deleted from the vault */
+  DIRECTORY_DELETED: 'directory:deleted',
+  
+  /** Event emitted when a tag is added to a file */
+  TAG_ADDED: 'tag:added',
+  
+  /** Event emitted when a tag is removed from a file */
+  TAG_REMOVED: 'tag:removed',
+} as const;
