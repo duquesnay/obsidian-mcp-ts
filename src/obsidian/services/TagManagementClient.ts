@@ -2,7 +2,7 @@ import axios, { AxiosInstance, AxiosError } from 'axios';
 import https from 'https';
 import { ObsidianError } from '../../types/errors.js';
 import { validatePath } from '../../utils/pathValidator.js';
-import { OBSIDIAN_DEFAULTS } from '../../constants.js';
+import { OBSIDIAN_DEFAULTS, TIMEOUTS } from '../../constants.js';
 import type { ITagManagementClient } from '../interfaces/ITagManagementClient.js';
 import type { ObsidianClientConfig } from '../ObsidianClient.js';
 
@@ -21,7 +21,7 @@ export class TagManagementClient implements ITagManagementClient {
 
     this.axiosInstance = axios.create({
       baseURL: `${protocol}://${host}:${port}`,
-      timeout: OBSIDIAN_DEFAULTS.TIMEOUT_MS,
+      timeout: TIMEOUTS.DEFAULT_REQUEST,
       headers: {
         'Authorization': `Bearer ${config.apiKey}`
       },

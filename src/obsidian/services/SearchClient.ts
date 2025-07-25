@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import https from 'https';
 import { ObsidianError } from '../../types/errors.js';
-import { OBSIDIAN_DEFAULTS } from '../../constants.js';
+import { OBSIDIAN_DEFAULTS, TIMEOUTS } from '../../constants.js';
 import type { ISearchClient } from '../interfaces/ISearchClient.js';
 import type {
   SimpleSearchResponse,
@@ -28,7 +28,7 @@ export class SearchClient implements ISearchClient {
 
     this.axiosInstance = axios.create({
       baseURL: `${protocol}://${host}:${port}`,
-      timeout: OBSIDIAN_DEFAULTS.TIMEOUT_MS,
+      timeout: TIMEOUTS.DEFAULT_REQUEST,
       headers: {
         'Authorization': `Bearer ${config.apiKey}`
       },
@@ -163,7 +163,7 @@ export class SearchClient implements ISearchClient {
         headers: {
           'Content-Type': 'application/json'
         },
-        timeout: 30000 // 30 second timeout for search operations
+        timeout: TIMEOUTS.SEARCH_OPERATIONS
       });
 
       const result = response.data;

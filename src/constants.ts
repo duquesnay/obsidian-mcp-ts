@@ -9,7 +9,7 @@ export const OBSIDIAN_DEFAULTS = {
   /** Default host for Obsidian Local REST API */
   HOST: '127.0.0.1',
   
-  /** Default timeout in milliseconds for API requests */
+  /** @deprecated Use TIMEOUTS.DEFAULT_REQUEST instead */
   TIMEOUT_MS: 6000,
   
   /** Default batch size for batch operations */
@@ -94,4 +94,15 @@ export const ERROR_MESSAGES = {
   FILE_NOT_FOUND: 'File does not exist in the vault',
   PERMISSION_DENIED: 'Permission denied. Verify your OBSIDIAN_API_KEY is correct',
   INVALID_PATH: 'Invalid file path provided',
+} as const;
+
+export const TIMEOUTS = {
+  /** Default timeout for API requests in milliseconds */
+  DEFAULT_REQUEST: 6000,
+  
+  /** Timeout for directory operations (move, copy) in milliseconds - 2 minutes */
+  DIRECTORY_OPERATIONS: 120000,
+  
+  /** Timeout for search operations in milliseconds - 30 seconds */
+  SEARCH_OPERATIONS: 30000,
 } as const;

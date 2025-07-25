@@ -2,7 +2,7 @@ import axios, { AxiosInstance, AxiosError } from 'axios';
 import https from 'https';
 import { ObsidianError } from '../../types/errors.js';
 import { validatePath } from '../../utils/pathValidator.js';
-import { OBSIDIAN_DEFAULTS } from '../../constants.js';
+import { OBSIDIAN_DEFAULTS, TIMEOUTS } from '../../constants.js';
 import type { IDirectoryOperationsClient } from '../interfaces/IDirectoryOperationsClient.js';
 import type { ObsidianClientConfig } from '../ObsidianClient.js';
 
@@ -21,7 +21,7 @@ export class DirectoryOperationsClient implements IDirectoryOperationsClient {
 
     this.axiosInstance = axios.create({
       baseURL: `${protocol}://${host}:${port}`,
-      timeout: OBSIDIAN_DEFAULTS.TIMEOUT_MS,
+      timeout: TIMEOUTS.DEFAULT_REQUEST,
       headers: {
         'Authorization': `Bearer ${config.apiKey}`
       },
@@ -197,7 +197,7 @@ export class DirectoryOperationsClient implements IDirectoryOperationsClient {
             'Target-Type': 'directory',
             'Target': 'path'
           },
-          timeout: 120000 // 2 minutes for directory operations
+          timeout: TIMEOUTS.DIRECTORY_OPERATIONS
         });
 
         const result = response.data;
@@ -251,7 +251,7 @@ export class DirectoryOperationsClient implements IDirectoryOperationsClient {
             'Target-Type': 'directory',
             'Overwrite': overwrite.toString()
           },
-          timeout: 120000 // 2 minutes for directory operations
+          timeout: TIMEOUTS.DIRECTORY_OPERATIONS
         });
 
         const result = response.data;

@@ -2,7 +2,7 @@ import axios, { AxiosInstance, AxiosError } from 'axios';
 import https from 'https';
 import { ObsidianError } from '../../types/errors.js';
 import { validatePath, validatePaths } from '../../utils/pathValidator.js';
-import { OBSIDIAN_DEFAULTS } from '../../constants.js';
+import { OBSIDIAN_DEFAULTS, TIMEOUTS } from '../../constants.js';
 import { BatchProcessor } from '../../utils/BatchProcessor.js';
 import type { IFileOperationsClient } from '../interfaces/IFileOperationsClient.js';
 import type { FileContentResponse, RecentChange } from '../../types/obsidian.js';
@@ -23,7 +23,7 @@ export class FileOperationsClient implements IFileOperationsClient {
 
     this.axiosInstance = axios.create({
       baseURL: `${protocol}://${host}:${port}`,
-      timeout: OBSIDIAN_DEFAULTS.TIMEOUT_MS,
+      timeout: TIMEOUTS.DEFAULT_REQUEST,
       headers: {
         'Authorization': `Bearer ${config.apiKey}`
       },

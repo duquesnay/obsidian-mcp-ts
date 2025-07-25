@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import https from 'https';
 import { ObsidianError } from '../../types/errors.js';
-import { OBSIDIAN_DEFAULTS } from '../../constants.js';
+import { OBSIDIAN_DEFAULTS, TIMEOUTS } from '../../constants.js';
 import type { IPeriodicNotesClient } from '../interfaces/IPeriodicNotesClient.js';
 import type { ObsidianClientConfig } from '../ObsidianClient.js';
 
@@ -20,7 +20,7 @@ export class PeriodicNotesClient implements IPeriodicNotesClient {
 
     this.axiosInstance = axios.create({
       baseURL: `${protocol}://${host}:${port}`,
-      timeout: OBSIDIAN_DEFAULTS.TIMEOUT_MS,
+      timeout: TIMEOUTS.DEFAULT_REQUEST,
       headers: {
         'Authorization': `Bearer ${config.apiKey}`
       },
