@@ -309,20 +309,20 @@ For each task:
   - [x] CQ10.7: Add unit tests for each type guard function (DONE - all type guards have tests)
   - [x] CQ10.8: Remove remaining any types from utility function parameters (DONE - replaced with proper types)
 
-- [ ] CQ11: Document complex regex patterns (Partial)
+- [x] CQ11: Document complex regex patterns ✅
   - [x] CQ11.1: Extract URL validation regex from ObsidianClient to named constant with comment (DONE - added REGEX_PATTERNS.URL_VALIDATION)
   - [x] CQ11.2: Extract path validation regex patterns to constants with explanatory comments (DONE - 10 patterns extracted)
   - [x] CQ11.3: Extract markdown heading regex patterns from editing tools to constants (DONE - MARKDOWN_HEADING pattern added)
-  - [ ] CQ11.4: Extract tag validation regex patterns to constants with documentation
-  - [ ] CQ11.5: Extract file extension patterns to constants with use case comments
-  - [ ] CQ11.6: Create REGEX_PATTERNS object in constants.ts to group all patterns
-  - [ ] CQ11.7: Add JSDoc comments explaining each regex pattern's purpose and examples
-  - [ ] CQ11.8: Update all regex usage to reference the named constants
+  - [x] CQ11.4: Extract tag validation regex patterns to constants with documentation
+  - [x] CQ11.5: Extract file extension patterns to constants with use case comments
+  - [x] CQ11.6: Create REGEX_PATTERNS object in constants.ts to group all patterns
+  - [x] CQ11.7: Add JSDoc comments explaining each regex pattern's purpose and examples
+  - [x] CQ11.8: Update all regex usage to reference the named constants
 
 ### Performance Features Integration (Lower Priority)
 - [ ] CQ12: Complete subscription system integration (Partial)
   - [x] CQ12.1: Define subscription event types enum in constants.ts (DONE - SUBSCRIPTION_EVENTS added)
-  - [ ] CQ12.2: Create NotificationManager class skeleton in src/utils/
+  - [x] CQ12.2: Create NotificationManager class skeleton in src/utils/ (DONE - extracted hardcoded number to constant)
   - [ ] CQ12.3: Add subscription hooks to LRUCache invalidation methods
   - [ ] CQ12.4: Create subscription interface for cache change events
   - [ ] CQ12.5: Implement event emitter pattern in NotificationManager
