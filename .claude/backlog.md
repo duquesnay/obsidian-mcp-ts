@@ -337,13 +337,13 @@ For each task:
   - [x] CQ13.3: Wrap getFileContent() method with deduplication logic (DONE - with tests)
   - [x] CQ13.4: Wrap searchVault() method with deduplication logic (DONE - with tests)
   - [x] CQ13.5: Create deduplication key generator for different request types (DONE - DeduplicationKeyGenerator created)
-  - [ ] CQ13.6: Add deduplication to batch read operations
+  - [⏳] CQ13.6: Add deduplication to batch read operations
   - [ ] CQ13.7: Add metrics logging for deduplication hit rate
   - [ ] CQ13.8: Create integration tests for concurrent duplicate requests
 
 - [ ] CQ14: Migrate to OptimizedBatchProcessor (Partial)
   - [x] CQ14.1: Replace BatchProcessor import with OptimizedBatchProcessor in ObsidianClient (DONE - with tests)
-  - [ ] CQ14.2: Update batchGetFileContents to use OptimizedBatchProcessor
+  - [⏳] CQ14.2: Update batchGetFileContents to use OptimizedBatchProcessor
   - [ ] CQ14.3: Update batch write operations to use OptimizedBatchProcessor
   - [ ] CQ14.4: Configure retry logic for batch operations in OptimizedBatchProcessor
   - [ ] CQ14.5: Add progress callback handling for large batch operations

@@ -5,6 +5,7 @@ import { FileOperationsClient } from './services/FileOperationsClient.js';
 import { DirectoryOperationsClient } from './services/DirectoryOperationsClient.js';
 import { SearchClient } from './services/SearchClient.js';
 import { RequestDeduplicator } from '../utils/RequestDeduplicator.js';
+import { DeduplicationKeyGenerator } from '../utils/deduplicationKeyGenerator.js';
 import type { IObsidianClient } from './interfaces/IObsidianClient.js';
 import type { IPeriodicNotesClient } from './interfaces/IPeriodicNotesClient.js';
 import type { ITagManagementClient } from './interfaces/ITagManagementClient.js';
@@ -148,6 +149,7 @@ export class ObsidianClient implements IObsidianClient {
   /**
    * Retrieves contents of multiple files in a single batch operation.
    * Results are concatenated with file headers and separators.
+   * Uses deduplication to avoid duplicate requests for the same file sets.
    *
    * @param filepaths - Array of file paths relative to the vault root
    * @returns A concatenated string with all file contents, including headers and error messages for failed files
@@ -171,7 +173,15 @@ export class ObsidianClient implements IObsidianClient {
    * // ---
    */
   async getBatchFileContents(filepaths: string[]): Promise<string> {
-    return this.getFileOperationsClient().getBatchFileContents(filepaths);
+    // Use deduplication for batch read operations
+    const key = DeduplicationKeyGenerator.generateKey('batch', {
+      operation: 'getBatchFileContents',
+      items: filepaths
+    });
+    
+    return this.requestDeduplicator.dedupe(key, () =>
+      this.getFileOperationsClient().getBatchFileContents(filepaths)
+    );
   }
 
   /**

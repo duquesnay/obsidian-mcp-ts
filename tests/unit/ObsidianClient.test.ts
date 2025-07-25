@@ -358,6 +358,29 @@ describe('ObsidianClient', () => {
       expect(result).toContain('# missing.md');
       expect(result).toContain('Error reading file:');
     });
+
+    it('should deduplicate concurrent batch read requests', async () => {
+      const files = ['file1.md', 'file2.md'];
+      const expectedContent = '# file1.md\n\nContent 1\n\n---\n\n# file2.md\n\nContent 2\n\n---';
+      
+      (mockAxiosInstance.get as any)
+        .mockResolvedValueOnce({ data: 'Content 1' })
+        .mockResolvedValueOnce({ data: 'Content 2' });
+
+      // Make concurrent requests with same file array
+      const promise1 = client.getBatchFileContents(files);
+      const promise2 = client.getBatchFileContents(files);
+      const promise3 = client.getBatchFileContents([...files]); // Same content, different array
+
+      const [result1, result2, result3] = await Promise.all([promise1, promise2, promise3]);
+
+      // All results should be identical (deduplicated)
+      expect(result1).toBe(result2);
+      expect(result2).toBe(result3);
+      
+      // Should only make 2 API calls (one per file) despite 3 batch requests
+      expect(mockAxiosInstance.get).toHaveBeenCalledTimes(2);
+    });
   });
 
   describe('search', () => {
