@@ -295,6 +295,50 @@ export const REGEX_PATTERNS = {
    * - file.txt (no backslashes)
    */
   BACKSLASH: /\\/g,
+
+  /**
+   * Matches markdown headings (levels 1-6).
+   * Captures:
+   * - Group 1: The hash symbols (1-6 of them)
+   * - Group 2: The heading text (must have non-whitespace content)
+   * 
+   * Valid examples:
+   * - # Heading 1
+   * - ## Heading 2  
+   * - ### Heading 3
+   * - #### Heading 4
+   * - ##### Heading 5
+   * - ###### Heading 6
+   * - ## Heading with `code` and **bold**
+   * - ### Heading with [links](url)
+   * 
+   * Invalid examples:
+   * - ####### Too many hashes (7+)
+   * - #No space after hash
+   * -  # Leading space before hash
+   * - Text before # the hash
+   * - # (just hash with no text)
+   * - ##\t (tab after hash instead of space)
+   */
+  MARKDOWN_HEADING: /^(#{1,6}) +(\S.*)$/,
+
+  /**
+   * Factory function to create a regex for a specific heading level.
+   * @param level - The heading level (1-6)
+   * @returns RegExp that matches only headings of the specified level
+   * @throws Error if level is not between 1 and 6
+   * 
+   * Examples:
+   * - MARKDOWN_HEADING_WITH_LEVEL(1) matches only # Heading
+   * - MARKDOWN_HEADING_WITH_LEVEL(2) matches only ## Heading
+   * - MARKDOWN_HEADING_WITH_LEVEL(3) matches only ### Heading
+   */
+  MARKDOWN_HEADING_WITH_LEVEL: (level: number): RegExp => {
+    if (level < 1 || level > 6) {
+      throw new Error(`Invalid heading level: ${level}. Must be between 1 and 6.`);
+    }
+    return new RegExp(`^#{${level}} +(\\S.*)$`);
+  },
 } as const;
 
 export const SUBSCRIPTION_EVENTS = {

@@ -1,7 +1,7 @@
 import { QueryStructureArgs } from './types/QueryStructureArgs.js';
 import { BaseTool, ToolResponse, ToolMetadata } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
-import { OBSIDIAN_DEFAULTS } from '../constants.js';
+import { OBSIDIAN_DEFAULTS, REGEX_PATTERNS } from '../constants.js';
 import { FILE_PATH_SCHEMA } from '../utils/validation.js';
 
 interface HeadingInfo {
@@ -151,7 +151,7 @@ export class QueryStructureTool extends BaseTool<QueryStructureArgs> {
     const headingStack: { text: string; level: number }[] = [];
     
     lines.forEach((line, index) => {
-      const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
+      const headingMatch = line.match(REGEX_PATTERNS.MARKDOWN_HEADING);
       if (headingMatch) {
         const level = headingMatch[1].length;
         const text = headingMatch[2].trim();
@@ -188,12 +188,12 @@ export class QueryStructureTool extends BaseTool<QueryStructureArgs> {
         
         // Check if heading has content (not immediately followed by another heading)
         const hasContent = index < lines.length - 1 && 
-          !lines[index + 1].match(/^#{1,6}\s+/);
+          !lines[index + 1].match(REGEX_PATTERNS.MARKDOWN_HEADING);
         
         // Count children (headings of greater level before next same/lower level)
         let childrenCount = 0;
         for (let i = index + 1; i < lines.length; i++) {
-          const nextMatch = lines[i].match(/^(#{1,6})\s+/);
+          const nextMatch = lines[i].match(REGEX_PATTERNS.MARKDOWN_HEADING);
           if (nextMatch) {
             const nextLevel = nextMatch[1].length;
             if (nextLevel <= level) break;
@@ -221,7 +221,7 @@ export class QueryStructureTool extends BaseTool<QueryStructureArgs> {
     
     lines.forEach((line, index) => {
       // Update current heading context
-      const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
+      const headingMatch = line.match(REGEX_PATTERNS.MARKDOWN_HEADING);
       if (headingMatch) {
         const level = headingMatch[1].length;
         const text = headingMatch[2].trim();
