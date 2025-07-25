@@ -386,6 +386,109 @@ describe('ObsidianClient', () => {
         limit: 1
       });
     });
+
+    it('should deduplicate concurrent search requests with same parameters', async () => {
+      const mockResults = [
+        { filename: 'test.md', content: 'Found text here' }
+      ];
+      
+      (mockAxiosInstance.post as any).mockResolvedValue({
+        data: mockResults
+      });
+
+      // Make multiple concurrent requests with same parameters
+      const promise1 = client.search('test query', 200);
+      const promise2 = client.search('test query', 200);
+      const promise3 = client.search('test query', 200);
+
+      const [result1, result2, result3] = await Promise.all([promise1, promise2, promise3]);
+
+      // Should only make one actual request
+      expect(mockAxiosInstance.post).toHaveBeenCalledTimes(1);
+      
+      // All results should be the same
+      expect(result1).toEqual(result2);
+      expect(result2).toEqual(result3);
+    });
+
+    it('should make separate requests for different queries', async () => {
+      const mockResults1 = [{ filename: 'test1.md', content: 'First query' }];
+      const mockResults2 = [{ filename: 'test2.md', content: 'Second query' }];
+      
+      (mockAxiosInstance.post as any)
+        .mockResolvedValueOnce({ data: mockResults1 })
+        .mockResolvedValueOnce({ data: mockResults2 });
+
+      // Make requests with different queries
+      const [result1, result2] = await Promise.all([
+        client.search('query1', 200),
+        client.search('query2', 200)
+      ]);
+
+      // Should make two separate requests
+      expect(mockAxiosInstance.post).toHaveBeenCalledTimes(2);
+      
+      // Results should be different
+      expect(result1).not.toEqual(result2);
+    });
+
+    it('should make separate requests for same query with different context lengths', async () => {
+      const mockResults1 = [{ filename: 'test.md', content: 'Short context' }];
+      const mockResults2 = [{ filename: 'test.md', content: 'Long context with more text' }];
+      
+      (mockAxiosInstance.post as any)
+        .mockResolvedValueOnce({ data: mockResults1 })
+        .mockResolvedValueOnce({ data: mockResults2 });
+
+      // Make requests with different context lengths
+      const [result1, result2] = await Promise.all([
+        client.search('test query', 100),
+        client.search('test query', 300)
+      ]);
+
+      // Should make two separate requests
+      expect(mockAxiosInstance.post).toHaveBeenCalledTimes(2);
+    });
+
+    it('should handle errors during deduplicated search requests', async () => {
+      const mockError = new Error('Search failed');
+      (mockAxiosInstance.post as any).mockRejectedValue(mockError);
+      vi.mocked(axios.isAxiosError).mockReturnValue(false);
+
+      // Make multiple concurrent requests
+      const promises = [
+        client.search('error query', 200),
+        client.search('error query', 200),
+        client.search('error query', 200)
+      ];
+
+      // All should reject with the same error
+      await expect(Promise.all(promises)).rejects.toThrow('Search failed');
+      
+      // Should only make one actual request
+      expect(mockAxiosInstance.post).toHaveBeenCalledTimes(1);
+    });
+
+    it('should correctly deduplicate searches with special characters', async () => {
+      const mockResults = [{ filename: 'test.md', content: 'Found text' }];
+      
+      (mockAxiosInstance.post as any).mockResolvedValue({ data: mockResults });
+
+      // Query with special characters that could break simple string concatenation
+      const specialQuery = 'search:with:colons and "quotes"';
+      
+      // Make multiple concurrent requests with same special query
+      const promises = [
+        client.search(specialQuery, 200),
+        client.search(specialQuery, 200)
+      ];
+
+      await Promise.all(promises);
+
+      // Should only make one actual request
+      expect(mockAxiosInstance.post).toHaveBeenCalledTimes(1);
+    });
+
   });
 
   describe('appendContent', () => {

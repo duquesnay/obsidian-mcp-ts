@@ -193,7 +193,14 @@ export class ObsidianClient implements IObsidianClient {
    * const page2 = await client.search('project', 100, 10, 10);
    */
   async search(query: string, contextLength: number = OBSIDIAN_DEFAULTS.CONTEXT_LENGTH, limit?: number, offset?: number): Promise<PaginatedSearchResponse | SimpleSearchResponse> {
-    return this.getSearchClient().search(query, contextLength, limit, offset);
+    // Create a unique key for deduplication based on all parameters
+    // Use JSON.stringify to handle special characters in query
+    const keyParams = { query, contextLength, limit, offset };
+    const key = `search:${JSON.stringify(keyParams)}`;
+    
+    return this.requestDeduplicator.dedupe(key, () =>
+      this.getSearchClient().search(query, contextLength, limit, offset)
+    );
   }
 
   /**
