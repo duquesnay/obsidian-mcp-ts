@@ -339,11 +339,7 @@ For each task:
 - [x] PF6: Make sure there is no mocks in integration tests - COMPLETED: Removed (tool as any).obsidianClient = client hack
 - [x] PF2: Replace readFileSync with async in configLoader.ts - COMPLETED: Analysis shows minimal benefit for small config files read once during initialization
 - [x] PF3: Add automatic cleanup for NotificationManager event listeners - COMPLETED: Added process exit cleanup and diagnostic tools
-- [x] PF4: Implement maxEntrySize limit for cache entries
-  - ✅ COMPLETED: Added maxEntrySize option to LRUCache with TDD approach
-  - Prevents memory bloat from large cached values
-  - Added comprehensive tests for string and object size checking
-  - Uses TextEncoder for accurate byte size calculation
+- [x] PF4: Implement maxEntrySize limit for cache entries - COMPLETED: Added maxEntrySize option to LRUCache with TDD approach
 - [ ] PF5: Add streaming/pagination for large vault operations
 
 ### Performance Features Integration (Lower Priority)
@@ -351,7 +347,7 @@ For each task:
   - [x] CQ12.1: Define subscription event types enum in constants.ts (DONE - SUBSCRIPTION_EVENTS added)
   - [x] CQ12.2: Create NotificationManager class skeleton in src/utils/ (DONE - extracted hardcoded number to constant)
   - [x] CQ12.3: Add subscription hooks to LRUCache invalidation methods (DONE - notifyInvalidation calls for delete, clear, expire, evict)
-  - [ ] CQ12.4: Create subscription interface for cache change events
+  - [⏳] CQ12.4: Create subscription interface for cache change events
   - [ ] CQ12.5: Implement event emitter pattern in NotificationManager
   - [ ] CQ12.6: Connect file write operations to trigger cache invalidation events
   - [ ] CQ12.7: Connect file delete operations to trigger cache invalidation events

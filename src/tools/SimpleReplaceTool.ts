@@ -68,6 +68,14 @@ export class SimpleReplaceTool extends BaseTool<SimpleReplaceArgs> {
       // Update the file
       await client.updateFile(filepath, newContent);
       
+      // Notify that file was updated
+      this.notifyFileOperation('update', filepath, {
+        operation: 'replace',
+        findLength: find.length,
+        replaceLength: replace.length,
+        contentLengthChange: replace.length - find.length
+      });
+      
       return this.formatResponse({
         success: true,
         message: `Successfully replaced "${find}" with "${replace}" in ${filepath}`,

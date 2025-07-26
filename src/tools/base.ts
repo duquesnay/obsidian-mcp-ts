@@ -5,6 +5,7 @@ import { isTestEnvironment } from '../utils/environment.js';
 import { SimplifiedError } from '../types/errors.js';
 import { ObsidianErrorHandler } from '../utils/ObsidianErrorHandler.js';
 import { hasHttpResponse, getErrorMessage } from '../utils/errorTypeGuards.js';
+import { NotificationManager } from '../utils/NotificationManager.js';
 
 // Type helper for defining tool argument types
 export type ToolArgs = Record<string, unknown>;
@@ -87,9 +88,11 @@ export interface ToolInterface<TArgs = Record<string, unknown>> {
 export abstract class BaseTool<TArgs = Record<string, unknown>> implements ToolInterface<TArgs> {
   protected obsidianClient: IObsidianClient | null = null;
   protected configLoader: ConfigLoader;
+  protected notificationManager: NotificationManager;
 
   constructor() {
     this.configLoader = ConfigLoader.getInstance();
+    this.notificationManager = NotificationManager.getInstance();
   }
 
   abstract name: string;
@@ -229,6 +232,92 @@ export abstract class BaseTool<TArgs = Record<string, unknown>> implements ToolI
 
     // Fall back to ObsidianErrorHandler for unhandled status codes
     return ObsidianErrorHandler.handleHttpError(error, this.name);
+  }
+
+  /**
+   * Notify that a file operation has occurred
+   * @param operation - The type of operation (create, update, delete)
+   * @param filePath - The file path affected
+   * @param metadata - Additional metadata about the operation
+   */
+  protected notifyFileOperation(
+    operation: 'create' | 'update' | 'delete',
+    filePath: string,
+    metadata?: Record<string, unknown>
+  ): void {
+    const operationMetadata = {
+      operation,
+      tool: this.name,
+      ...metadata
+    };
+
+    switch (operation) {
+      case 'create':
+        this.notificationManager.notifyFileCreated(filePath, operationMetadata);
+        break;
+      case 'update':
+        this.notificationManager.notifyFileUpdated(filePath, operationMetadata);
+        break;
+      case 'delete':
+        this.notificationManager.notifyFileDeleted(filePath, operationMetadata);
+        break;
+    }
+  }
+
+  /**
+   * Notify that a directory operation has occurred
+   * @param operation - The type of operation (create, delete)
+   * @param directoryPath - The directory path affected
+   * @param metadata - Additional metadata about the operation
+   */
+  protected notifyDirectoryOperation(
+    operation: 'create' | 'delete',
+    directoryPath: string,
+    metadata?: Record<string, unknown>
+  ): void {
+    const operationMetadata = {
+      operation,
+      tool: this.name,
+      ...metadata
+    };
+
+    switch (operation) {
+      case 'create':
+        this.notificationManager.notifyDirectoryCreated(directoryPath, operationMetadata);
+        break;
+      case 'delete':
+        this.notificationManager.notifyDirectoryDeleted(directoryPath, operationMetadata);
+        break;
+    }
+  }
+
+  /**
+   * Notify that tag operations have occurred
+   * @param operation - The type of operation (add, remove)
+   * @param filePath - The file path where the tag operation occurred
+   * @param tagName - The tag that was added or removed
+   * @param metadata - Additional metadata about the operation
+   */
+  protected notifyTagOperation(
+    operation: 'add' | 'remove',
+    filePath: string,
+    tagName: string,
+    metadata?: Record<string, unknown>
+  ): void {
+    const operationMetadata = {
+      operation,
+      tool: this.name,
+      ...metadata
+    };
+
+    switch (operation) {
+      case 'add':
+        this.notificationManager.notifyTagAdded(filePath, tagName, operationMetadata);
+        break;
+      case 'remove':
+        this.notificationManager.notifyTagRemoved(filePath, tagName, operationMetadata);
+        break;
+    }
   }
 
 }

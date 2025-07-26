@@ -59,6 +59,12 @@ export class AppendContentTool extends BaseTool<AppendContentArgs> {
         args.createIfNotExists !== false // Default to true
       );
       
+      // Notify that file was updated (or created if it didn't exist)
+      this.notifyFileOperation('update', args.filepath, {
+        contentLength: args.content.length,
+        createIfNotExists: args.createIfNotExists !== false
+      });
+      
       return this.formatResponse({ success: true, message: 'Content appended successfully' });
     } catch (error: unknown) {
       // Special case: 404 with createIfNotExists false

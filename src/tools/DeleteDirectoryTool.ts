@@ -52,6 +52,13 @@ export class DeleteDirectoryTool extends BaseTool<DeleteDirectoryArgs> {
       const client = this.getClient();
       const result = await client.deleteDirectory(cleanPath, args.recursive || false, args.permanent || false);
       
+      // Notify that directory was deleted
+      this.notifyDirectoryOperation('delete', cleanPath, {
+        recursive: args.recursive || false,
+        permanent: args.permanent || false,
+        filesDeleted: result.filesDeleted || 0
+      });
+      
       return this.formatResponse({ 
         success: true, 
         message: result.message || `Directory ${args.permanent ? 'permanently deleted' : 'moved to trash'}: ${cleanPath}`,

@@ -51,6 +51,13 @@ export class SimpleAppendTool extends BaseTool<SimpleAppendArgs> {
       // Use the existing append_content functionality
       await client.appendContent(filepath, content, create_file_if_missing);
       
+      // Notify that file was updated
+      this.notifyFileOperation('update', filepath, {
+        operation: 'append',
+        contentLength: content.length,
+        createFileIfMissing: create_file_if_missing
+      });
+      
       return this.formatResponse({
         success: true,
         message: `Successfully appended content to ${filepath}`,

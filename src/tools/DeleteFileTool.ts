@@ -44,6 +44,9 @@ export class DeleteFileTool extends BaseTool<DeleteFileArgs> {
       const client = this.getClient();
       await client.deleteFile(args.filepath);
       
+      // Notify that file was deleted
+      this.notifyFileOperation('delete', args.filepath);
+      
       return this.formatResponse({ success: true, message: 'File deleted successfully' });
     } catch (error: unknown) {
       // Use the new handleHttpError method with custom handlers
