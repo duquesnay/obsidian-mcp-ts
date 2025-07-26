@@ -252,4 +252,84 @@ describe('LRUCache', () => {
       });
     });
   });
+
+  describe('maxEntrySize enforcement', () => {
+    let limitedCache: LRUCache<string, string>;
+    
+    beforeEach(() => {
+      limitedCache = new LRUCache<string, string>({ 
+        maxSize: 3, 
+        ttl: 1000,
+        maxEntrySize: 100 // 100 bytes max per entry
+      });
+    });
+
+    it('should reject entries that exceed maxEntrySize', () => {
+      const smallValue = 'small';
+      const largeValue = 'x'.repeat(200); // 200 bytes, exceeds limit
+      
+      // Small value should be accepted
+      limitedCache.set('small-key', smallValue);
+      expect(limitedCache.get('small-key')).toBe(smallValue);
+      
+      // Large value should be rejected (not stored)
+      limitedCache.set('large-key', largeValue);
+      expect(limitedCache.get('large-key')).toBeUndefined();
+      expect(limitedCache.has('large-key')).toBe(false);
+    });
+
+    it('should allow entries at exactly the maxEntrySize limit', () => {
+      const exactValue = 'x'.repeat(100); // Exactly 100 bytes
+      
+      limitedCache.set('exact-key', exactValue);
+      expect(limitedCache.get('exact-key')).toBe(exactValue);
+    });
+
+    it('should work normally when maxEntrySize is not specified', () => {
+      const unlimitedCache = new LRUCache<string, string>({ 
+        maxSize: 3, 
+        ttl: 1000 
+        // No maxEntrySize specified
+      });
+      
+      const largeValue = 'x'.repeat(1000);
+      unlimitedCache.set('large-key', largeValue);
+      expect(unlimitedCache.get('large-key')).toBe(largeValue);
+    });
+
+    it('should handle non-string values by measuring JSON size', () => {
+      const objectCache = new LRUCache<string, object>({ 
+        maxSize: 3, 
+        ttl: 1000,
+        maxEntrySize: 50
+      });
+      
+      const smallObject = { name: 'test' }; // Small JSON
+      const largeObject = { 
+        data: 'x'.repeat(100),
+        moreData: 'y'.repeat(100) 
+      }; // Large JSON when serialized
+      
+      objectCache.set('small', smallObject);
+      expect(objectCache.get('small')).toEqual(smallObject);
+      
+      objectCache.set('large', largeObject);
+      expect(objectCache.get('large')).toBeUndefined();
+    });
+
+    it('should update cache stats correctly when entries are rejected', () => {
+      const largeValue = 'x'.repeat(200);
+      
+      // Try to set large value (should be rejected)
+      limitedCache.set('large-key', largeValue);
+      
+      // Try to get it (should be miss since it was never stored)
+      const result = limitedCache.get('large-key');
+      expect(result).toBeUndefined();
+      
+      const stats = limitedCache.getStats();
+      expect(stats.misses).toBe(1);
+      expect(stats.hits).toBe(0);
+    });
+  });
 });

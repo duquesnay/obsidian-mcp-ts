@@ -101,6 +101,9 @@ interface CacheOptions {
   
   /** Cache instance identifier for notification events */
   instanceId?: string;
+  
+  /** Maximum size in bytes for individual cache entries (optional) */
+  maxEntrySize?: number;
 }
 
 export interface CacheStats {
@@ -113,6 +116,7 @@ export interface CacheStats {
 export class LRUCache<K, V> {
   private maxSize: number;
   private ttl: number;
+  private maxEntrySize?: number;
   private cache: Map<K, CacheNode<K, V>>;
   private head: CacheNode<K, V> | null = null;
   private tail: CacheNode<K, V> | null = null;
@@ -125,6 +129,7 @@ export class LRUCache<K, V> {
   constructor(options: CacheOptions) {
     this.maxSize = options.maxSize;
     this.ttl = options.ttl;
+    this.maxEntrySize = options.maxEntrySize;
     this.cache = new Map();
     this.notificationManager = options.notificationManager;
     this.instanceId = options.instanceId;
@@ -174,6 +179,15 @@ export class LRUCache<K, V> {
    * cache.set('stable-data', data); // Uses default TTL
    */
   set(key: K, value: V, customTtl?: number): void {
+    // Check entry size limit if configured
+    if (this.maxEntrySize !== undefined) {
+      const entrySize = this.calculateEntrySize(value);
+      if (entrySize > this.maxEntrySize) {
+        // Silently reject entries that exceed the size limit
+        return;
+      }
+    }
+
     const existingNode = this.cache.get(key);
     const expiry = this.calculateExpiry(customTtl);
     
@@ -308,6 +322,25 @@ export class LRUCache<K, V> {
   private calculateExpiry(customTtl?: number): number {
     const ttl = customTtl !== undefined ? customTtl : this.ttl;
     return ttl > LRU_CACHE.NO_EXPIRATION ? Date.now() + ttl : LRU_CACHE.NO_EXPIRATION;
+  }
+
+  /**
+   * Calculate the size of a cache entry in bytes
+   * For strings, returns the byte length
+   * For other types, returns the JSON representation byte length
+   */
+  private calculateEntrySize(value: V): number {
+    if (typeof value === 'string') {
+      return new TextEncoder().encode(value).length;
+    }
+    
+    try {
+      const jsonString = JSON.stringify(value);
+      return new TextEncoder().encode(jsonString).length;
+    } catch (error) {
+      // If value is not serializable, estimate size as 0 (allow it)
+      return 0;
+    }
   }
 
   private moveToFront(node: CacheNode<K, V>): void {
