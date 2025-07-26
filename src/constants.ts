@@ -65,6 +65,9 @@ export const CACHE_DEFAULTS = {
 export const LRU_CACHE = {
   /** Value indicating no expiration for cache entries */
   NO_EXPIRATION: 0,
+  
+  /** Maximum cleanup interval in milliseconds (1 minute) */
+  MAX_CLEANUP_INTERVAL_MS: 60000,
 } as const;
 
 export const BATCH_PROCESSOR = {

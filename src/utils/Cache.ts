@@ -120,6 +120,7 @@ export class LRUCache<K, V> {
   private misses = 0;
   private notificationManager?: NotificationManager;
   private instanceId?: string;
+  private lastCleanupTime = 0;
 
   constructor(options: CacheOptions) {
     this.maxSize = options.maxSize;
@@ -174,11 +175,12 @@ export class LRUCache<K, V> {
    */
   set(key: K, value: V, customTtl?: number): void {
     const existingNode = this.cache.get(key);
+    const expiry = this.calculateExpiry(customTtl);
     
     if (existingNode) {
       // Update existing node
       existingNode.value = value;
-      existingNode.expires = this.calculateExpiry(customTtl);
+      existingNode.expires = expiry;
       this.moveToFront(existingNode);
       return;
     }
@@ -189,7 +191,7 @@ export class LRUCache<K, V> {
       value,
       prev: null,
       next: null,
-      expires: this.calculateExpiry(customTtl)
+      expires: expiry
     };
 
     this.cache.set(key, node);
@@ -242,8 +244,14 @@ export class LRUCache<K, V> {
    * Get cache size
    */
   size(): number {
-    // Clean up expired entries first
-    this.cleanupExpired();
+    // Only clean up if we have TTL entries and enough time has passed
+    const now = Date.now();
+    const cleanupInterval = Math.min(this.ttl / 4, LRU_CACHE.MAX_CLEANUP_INTERVAL_MS); // Cleanup every 1/4 TTL or max 1 minute
+    
+    if (this.ttl > LRU_CACHE.NO_EXPIRATION && 
+        (now - this.lastCleanupTime) > cleanupInterval) {
+      this.cleanupExpired();
+    }
     return this.cache.size;
   }
 
@@ -288,6 +296,9 @@ export class LRUCache<K, V> {
         this.notifyInvalidation(key, 'expire');
       }
     }
+    
+    // Update last cleanup time
+    this.lastCleanupTime = now;
   }
 
   private isExpired(node: CacheNode<K, V>): boolean {
