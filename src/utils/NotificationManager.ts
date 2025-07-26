@@ -57,6 +57,9 @@ export class NotificationManager extends EventEmitter {
     super();
     // Set max listeners higher than default to support multiple cache instances
     this.setMaxListeners(EVENT_EMITTER_DEFAULTS.MAX_LISTENERS);
+    
+    // Set up automatic cleanup on process exit to prevent memory leaks
+    this.setupProcessCleanup();
   }
   
   /**
@@ -251,6 +254,68 @@ export class NotificationManager extends EventEmitter {
         tagName
       }
     });
+  }
+  
+  /**
+   * Set up automatic cleanup on process exit to prevent memory leaks
+   */
+  private setupProcessCleanup(): void {
+    // Only set up cleanup in non-test environments to avoid interfering with tests
+    if (!process.env.NODE_ENV?.includes('test') && !process.env.VITEST) {
+      const cleanup = () => {
+        this.removeAllListeners();
+      };
+      
+      // Clean up on various exit scenarios
+      process.on('exit', cleanup);
+      process.on('SIGINT', cleanup);
+      process.on('SIGTERM', cleanup);
+      process.on('SIGQUIT', cleanup);
+      
+      // Clean up on uncaught exceptions (after logging)
+      process.on('uncaughtException', (error) => {
+        console.error('Uncaught Exception:', error);
+        cleanup();
+        process.exit(1);
+      });
+      
+      process.on('unhandledRejection', (reason, promise) => {
+        console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+        cleanup();
+        process.exit(1);
+      });
+    }
+  }
+  
+  /**
+   * Get diagnostic information about current listeners
+   * Useful for debugging memory leaks
+   */
+  getDiagnostics(): Record<string, unknown> {
+    const diagnostics: Record<string, unknown> = {
+      totalListeners: 0,
+      maxListeners: this.getMaxListeners(),
+      eventBreakdown: {} as Record<string, number>
+    };
+    
+    let totalListeners = 0;
+    const eventBreakdown: Record<string, number> = {};
+    
+    for (const eventName of this.eventNames()) {
+      const count = this.listenerCount(eventName);
+      eventBreakdown[String(eventName)] = count;
+      totalListeners += count;
+    }
+    
+    diagnostics.totalListeners = totalListeners;
+    diagnostics.eventBreakdown = eventBreakdown;
+    
+    // Warn if approaching max listeners
+    if (totalListeners > this.getMaxListeners() * 0.8) {
+      diagnostics.warning = `Approaching max listeners limit (${totalListeners}/${this.getMaxListeners()})`;
+    }
+    
+    return diagnostics;
   }
   
   /**
