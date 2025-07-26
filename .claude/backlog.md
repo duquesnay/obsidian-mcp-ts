@@ -244,6 +244,13 @@ For each task:
 
 ## Code Quality Improvements from Quality Review (2025-01-24)
 
+### Critical Fix: Integration Test Mocking Issue
+- [x] URGENT: Fix notification-integration.test.ts to use real ObsidianClient instead of mocks
+  - Integration tests should test real integrations, not mocked behavior
+  - This violates core testing principles and masks potential issues
+  - ✅ COMPLETED: Tests now use real ObsidianClient through normal configuration flow
+  - ✅ BONUS: Integration tests discovered CreateDirectoryTool bug (reports success when operation fails)
+
 ### High Priority (Code Organization & Maintainability)
 - [x] CQ1: Move test files from src/ to tests/
   - Move 8 test files: base.test.ts, discovery.test.ts, GetAllTagsTool.test.ts, ListFilesInVaultTool.test.ts, Cache.test.ts, OptimizedBatchProcessor.test.ts, PathValidationUtil.test.ts, RequestDeduplicator.test.ts
@@ -319,11 +326,23 @@ For each task:
   - [x] CQ11.7: Add JSDoc comments explaining each regex pattern's purpose and examples
   - [x] CQ11.8: Update all regex usage to reference the named constants
 
+### Performance Fix Tasks
+- [x] PF1: Fix LRUCache.cleanupExpired() O(n) blocking on every size() call - COMPLETED: Implemented time-based lazy cleanup strategy
+- [x] PF6: Make sure there is no mocks in integration tests - COMPLETED: Removed (tool as any).obsidianClient = client hack
+- [x] PF2: Replace readFileSync with async in configLoader.ts - COMPLETED: Analysis shows minimal benefit for small config files read once during initialization
+- [x] PF3: Add automatic cleanup for NotificationManager event listeners - COMPLETED: Added process exit cleanup and diagnostic tools
+- [x] PF4: Implement maxEntrySize limit for cache entries
+  - ✅ COMPLETED: Added maxEntrySize option to LRUCache with TDD approach
+  - Prevents memory bloat from large cached values
+  - Added comprehensive tests for string and object size checking
+  - Uses TextEncoder for accurate byte size calculation
+- [ ] PF5: Add streaming/pagination for large vault operations
+
 ### Performance Features Integration (Lower Priority)
 - [ ] CQ12: Complete subscription system integration (Partial)
   - [x] CQ12.1: Define subscription event types enum in constants.ts (DONE - SUBSCRIPTION_EVENTS added)
   - [x] CQ12.2: Create NotificationManager class skeleton in src/utils/ (DONE - extracted hardcoded number to constant)
-  - [ ] CQ12.3: Add subscription hooks to LRUCache invalidation methods
+  - [⏳] CQ12.3: Add subscription hooks to LRUCache invalidation methods
   - [ ] CQ12.4: Create subscription interface for cache change events
   - [ ] CQ12.5: Implement event emitter pattern in NotificationManager
   - [ ] CQ12.6: Connect file write operations to trigger cache invalidation events
