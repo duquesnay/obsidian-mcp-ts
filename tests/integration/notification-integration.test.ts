@@ -241,9 +241,12 @@ describe('Notification Integration with File Operations', () => {
       
       // Tools now use real ObsidianClient through normal configuration flow
       // No manual client injection needed - environment variables are set
-      await tool.executeTyped({
+      const result = await tool.executeTyped({
         directoryPath: testDir
       });
+      
+      // Note: This test currently fails due to underlying Obsidian REST API issues
+      // The directory creation API returns success but directory is not created
       
       expect(mockCallback).toHaveBeenCalledWith({
         path: testDir,
@@ -258,9 +261,9 @@ describe('Notification Integration with File Operations', () => {
       });
       
       // Verify directory was actually created 
-      const result = await client.checkPathExists(testDir);
-      expect(result.exists).toBe(true);
-      expect(result.type).toBe('directory');
+      const checkResult = await client.checkPathExists(testDir);
+      expect(checkResult.exists).toBe(true);
+      expect(checkResult.type).toBe('directory');
     });
 
     test('DeleteDirectoryTool should notify directory deleted event', async () => {

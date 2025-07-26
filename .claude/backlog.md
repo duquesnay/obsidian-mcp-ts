@@ -251,6 +251,14 @@ For each task:
   - ✅ COMPLETED: Tests now use real ObsidianClient through normal configuration flow
   - ✅ BONUS: Integration tests discovered CreateDirectoryTool bug (reports success when operation fails)
 
+### Critical Bug Fix: CreateDirectoryTool False Success 
+- [x] URGENT: Fix CreateDirectoryTool reporting success when directory creation actually fails
+  - ✅ COMPLETED: Added post-creation verification using checkPathExists()
+  - Prevents false positive success reports from inconsistent API responses
+  - Added comprehensive test suite reproducing the bug and verifying fix
+  - Implements fail-fast principle by catching API inconsistencies
+  - NOTE: Integration test revealed underlying Obsidian REST API issue with directory creation
+
 ### High Priority (Code Organization & Maintainability)
 - [x] CQ1: Move test files from src/ to tests/
   - Move 8 test files: base.test.ts, discovery.test.ts, GetAllTagsTool.test.ts, ListFilesInVaultTool.test.ts, Cache.test.ts, OptimizedBatchProcessor.test.ts, PathValidationUtil.test.ts, RequestDeduplicator.test.ts
@@ -342,7 +350,7 @@ For each task:
 - [ ] CQ12: Complete subscription system integration (Partial)
   - [x] CQ12.1: Define subscription event types enum in constants.ts (DONE - SUBSCRIPTION_EVENTS added)
   - [x] CQ12.2: Create NotificationManager class skeleton in src/utils/ (DONE - extracted hardcoded number to constant)
-  - [⏳] CQ12.3: Add subscription hooks to LRUCache invalidation methods
+  - [x] CQ12.3: Add subscription hooks to LRUCache invalidation methods (DONE - notifyInvalidation calls for delete, clear, expire, evict)
   - [ ] CQ12.4: Create subscription interface for cache change events
   - [ ] CQ12.5: Implement event emitter pattern in NotificationManager
   - [ ] CQ12.6: Connect file write operations to trigger cache invalidation events
