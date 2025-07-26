@@ -1,5 +1,9 @@
 import { LRU_CACHE } from '../constants.js';
 import type { NotificationManager } from './NotificationManager.js';
+import type { 
+  ICacheWithSubscriptions, 
+  ICacheSubscriptionManager 
+} from '../interfaces/subscription.js';
 
 /**
  * LRU (Least Recently Used) Cache with TTL support
@@ -104,6 +108,9 @@ interface CacheOptions {
   
   /** Maximum size in bytes for individual cache entries (optional) */
   maxEntrySize?: number;
+  
+  /** Optional subscription manager for cache events */
+  subscriptionManager?: ICacheSubscriptionManager;
 }
 
 export interface CacheStats {
@@ -113,7 +120,7 @@ export interface CacheStats {
   size: number;
 }
 
-export class LRUCache<K, V> {
+export class LRUCache<K, V> implements ICacheWithSubscriptions<K, V> {
   private maxSize: number;
   private ttl: number;
   private maxEntrySize?: number;
@@ -124,6 +131,8 @@ export class LRUCache<K, V> {
   private misses = 0;
   private notificationManager?: NotificationManager;
   private instanceId?: string;
+  private subscriptionManager?: ICacheSubscriptionManager;
+  private subscriptionEnabled = true;
   private lastCleanupTime = 0;
 
   constructor(options: CacheOptions) {
@@ -133,6 +142,7 @@ export class LRUCache<K, V> {
     this.cache = new Map();
     this.notificationManager = options.notificationManager;
     this.instanceId = options.instanceId;
+    this.subscriptionManager = options.subscriptionManager;
   }
 
   /**
@@ -395,5 +405,43 @@ export class LRUCache<K, V> {
         operation
       });
     }
+  }
+
+  // ICacheWithSubscriptions interface implementation
+
+  /**
+   * Set the subscription manager for this cache instance
+   */
+  setSubscriptionManager(manager: ICacheSubscriptionManager, instanceId: string): void {
+    this.subscriptionManager = manager;
+    this.instanceId = instanceId;
+  }
+
+  /**
+   * Get the current subscription manager
+   */
+  getSubscriptionManager(): ICacheSubscriptionManager | null {
+    return this.subscriptionManager || null;
+  }
+
+  /**
+   * Get the cache instance ID
+   */
+  getInstanceId(): string | null {
+    return this.instanceId || null;
+  }
+
+  /**
+   * Enable or disable subscription notifications
+   */
+  setSubscriptionEnabled(enabled: boolean): void {
+    this.subscriptionEnabled = enabled;
+  }
+
+  /**
+   * Check if subscription notifications are enabled
+   */
+  isSubscriptionEnabled(): boolean {
+    return this.subscriptionEnabled;
   }
 }
