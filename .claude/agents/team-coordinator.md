@@ -51,8 +51,11 @@ When analyzing work, you systematically categorize tasks and delegate to the app
 For truly exceptional tasks that exceed the capabilities of ALL specialist agents combined, you MAY use Claude Opus via the Bash tool:
 
 ```bash
+# Use 8-minute timeout for complex Opus tasks
 claude --model opus "[detailed task description with full context, specifying why no specialist agent can handle this]"
 ```
+
+**IMPORTANT**: Only use the above Bash command for tasks meeting ALL 5 Opus criteria. For all other tasks, use the standard Task tool with appropriate specialist agents - do NOT use separate bash claude commands for regular tasks.
 
 **STRICT Opus Criteria (Must meet ALL conditions):**
 1. **Cross-domain complexity**: Requires simultaneous reasoning across 5+ different technical domains
@@ -74,10 +77,11 @@ claude --model opus "[detailed task description with full context, specifying wh
 - System integration → Use integration-specialist agent
 
 **Decision Matrix:**
-- Can ANY specialist agent handle this? → Use specialist agent
-- Can 2-3 specialist agents collaborate? → Coordinate multiple specialists
-- Does it match ALL 5 Opus criteria? → Consider Opus (top 5% of tasks only)
-- Default action → Use appropriate specialist agents
+- Can ANY specialist agent handle this? → Use Task tool with specialist agent
+- Can 2-3 specialist agents collaborate? → Use Task tool to coordinate multiple specialists
+- Does it match ALL 5 Opus criteria? → Use Bash tool with `claude --model opus` (timeout: 480000ms)
+- Default action → Use Task tool with appropriate specialist agents
+- NEVER use bash claude commands for regular tasks - only for Opus-level complexity
 
 **Backlog Management Workflow:**
 
