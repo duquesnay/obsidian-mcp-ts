@@ -1,6 +1,13 @@
 import type { FileContentResponse, RecentChange } from '../../types/obsidian.js';
 
 /**
+ * Options for batch operations with progress tracking
+ */
+export interface BatchOperationOptions {
+  onProgress?: (completed: number, total: number) => void;
+}
+
+/**
  * Interface for file CRUD operations in Obsidian vault.
  */
 export interface IFileOperationsClient {
@@ -10,7 +17,7 @@ export interface IFileOperationsClient {
 
   // Read operations
   getFileContents(filepath: string, format?: 'content' | 'metadata' | 'frontmatter' | 'plain' | 'html'): Promise<FileContentResponse>;
-  getBatchFileContents(filepaths: string[]): Promise<string>;
+  getBatchFileContents(filepaths: string[], options?: BatchOperationOptions): Promise<string>;
 
   // Write operations
   createFile(filepath: string, content: string): Promise<void>;
@@ -58,8 +65,8 @@ export interface IFileOperationsClient {
   ): Promise<RecentChange[]>;
 
   // Batch write operations
-  batchCreateFiles(fileOperations: Array<{ filepath: string; content: string }>): Promise<Array<{ filepath: string; success: boolean; error?: string }>>;
-  batchUpdateFiles(fileOperations: Array<{ filepath: string; content: string }>): Promise<Array<{ filepath: string; success: boolean; error?: string }>>;
-  batchDeleteFiles(filepaths: string[]): Promise<Array<{ filepath: string; success: boolean; error?: string }>>;
-  batchCopyFiles(copyOperations: Array<{ sourcePath: string; destinationPath: string; overwrite?: boolean }>): Promise<Array<{ sourcePath: string; destinationPath: string; success: boolean; error?: string }>>;
+  batchCreateFiles(fileOperations: Array<{ filepath: string; content: string }>, options?: BatchOperationOptions): Promise<Array<{ filepath: string; success: boolean; error?: string }>>;
+  batchUpdateFiles(fileOperations: Array<{ filepath: string; content: string }>, options?: BatchOperationOptions): Promise<Array<{ filepath: string; success: boolean; error?: string }>>;
+  batchDeleteFiles(filepaths: string[], options?: BatchOperationOptions): Promise<Array<{ filepath: string; success: boolean; error?: string }>>;
+  batchCopyFiles(copyOperations: Array<{ sourcePath: string; destinationPath: string; overwrite?: boolean }>, options?: BatchOperationOptions): Promise<Array<{ sourcePath: string; destinationPath: string; success: boolean; error?: string }>>;
 }
