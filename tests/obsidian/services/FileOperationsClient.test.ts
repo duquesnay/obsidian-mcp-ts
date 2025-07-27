@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import axios, { AxiosInstance } from 'axios';
 import { FileOperationsClient } from '../../../src/obsidian/services/FileOperationsClient.js';
 import { ObsidianError } from '../../../src/types/errors.js';
+import { NotificationManager } from '../../../src/utils/NotificationManager.js';
+import { SUBSCRIPTION_EVENTS } from '../../../src/constants.js';
 import type { ObsidianClientConfig } from '../../../src/obsidian/ObsidianClient.js';
 
 vi.mock('axios');
@@ -208,6 +210,162 @@ describe('FileOperationsClient', () => {
       const result = await client.checkPathExists('missing');
 
       expect(result).toEqual({ exists: false, type: null });
+    });
+  });
+
+  describe('Cache Invalidation Notifications', () => {
+    let notificationManager: NotificationManager;
+    let notifyFileCreatedSpy: ReturnType<typeof vi.fn>;
+    let notifyFileUpdatedSpy: ReturnType<typeof vi.fn>;
+    let notifyFileDeletedSpy: ReturnType<typeof vi.fn>;
+    let notifyCacheInvalidationSpy: ReturnType<typeof vi.fn>;
+
+    beforeEach(() => {
+      // Reset and get fresh notification manager instance
+      NotificationManager.reset();
+      notificationManager = NotificationManager.getInstance();
+      
+      // Spy on notification methods
+      notifyFileCreatedSpy = vi.spyOn(notificationManager, 'notifyFileCreated');
+      notifyFileUpdatedSpy = vi.spyOn(notificationManager, 'notifyFileUpdated');
+      notifyFileDeletedSpy = vi.spyOn(notificationManager, 'notifyFileDeleted');
+      notifyCacheInvalidationSpy = vi.spyOn(notificationManager, 'notifyCacheInvalidation');
+    });
+
+    describe('createFile notifications', () => {
+      it('should trigger FILE_CREATED and CACHE_INVALIDATED events on successful file creation', async () => {
+        vi.mocked(mockAxiosInstance.put).mockResolvedValue({ data: {} });
+
+        await client.createFile('new.md', 'Content');
+
+        expect(notifyFileCreatedSpy).toHaveBeenCalledWith('new.md', expect.any(Object));
+        expect(notifyCacheInvalidationSpy).toHaveBeenCalledWith('new.md', expect.any(Object));
+      });
+
+      it('should not trigger notifications if file creation fails', async () => {
+        vi.mocked(mockAxiosInstance.put).mockRejectedValue(new Error('Creation failed'));
+
+        await expect(client.createFile('new.md', 'Content')).rejects.toThrow();
+
+        expect(notifyFileCreatedSpy).not.toHaveBeenCalled();
+        expect(notifyCacheInvalidationSpy).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('updateFile notifications', () => {
+      it('should trigger FILE_UPDATED and CACHE_INVALIDATED events on successful file update', async () => {
+        vi.mocked(mockAxiosInstance.put).mockResolvedValue({ data: {} });
+
+        await client.updateFile('existing.md', 'New Content');
+
+        expect(notifyFileUpdatedSpy).toHaveBeenCalledWith('existing.md', expect.any(Object));
+        expect(notifyCacheInvalidationSpy).toHaveBeenCalledWith('existing.md', expect.any(Object));
+      });
+    });
+
+    describe('deleteFile notifications', () => {
+      it('should trigger FILE_DELETED and CACHE_INVALIDATED events on successful file deletion', async () => {
+        vi.mocked(mockAxiosInstance.delete).mockResolvedValue({ data: {} });
+
+        await client.deleteFile('old.md');
+
+        expect(notifyFileDeletedSpy).toHaveBeenCalledWith('old.md', expect.any(Object));
+        expect(notifyCacheInvalidationSpy).toHaveBeenCalledWith('old.md', expect.any(Object));
+      });
+
+      it('should not trigger notifications if file deletion fails', async () => {
+        vi.mocked(mockAxiosInstance.delete).mockRejectedValue(new Error('Deletion failed'));
+
+        await expect(client.deleteFile('old.md')).rejects.toThrow();
+
+        expect(notifyFileDeletedSpy).not.toHaveBeenCalled();
+        expect(notifyCacheInvalidationSpy).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('appendContent notifications', () => {
+      it('should trigger FILE_UPDATED and CACHE_INVALIDATED events on successful append', async () => {
+        vi.mocked(mockAxiosInstance.post).mockResolvedValue({ data: {} });
+
+        await client.appendContent('test.md', 'Additional content');
+
+        expect(notifyFileUpdatedSpy).toHaveBeenCalledWith('test.md', expect.any(Object));
+        expect(notifyCacheInvalidationSpy).toHaveBeenCalledWith('test.md', expect.any(Object));
+      });
+    });
+
+    describe('patchContent notifications', () => {
+      it('should trigger FILE_UPDATED and CACHE_INVALIDATED events on successful patch', async () => {
+        vi.mocked(mockAxiosInstance.patch).mockResolvedValue({ data: {} });
+
+        await client.patchContent('test.md', 'New content', {
+          targetType: 'heading',
+          target: 'My Heading'
+        });
+
+        expect(notifyFileUpdatedSpy).toHaveBeenCalledWith('test.md', expect.any(Object));
+        expect(notifyCacheInvalidationSpy).toHaveBeenCalledWith('test.md', expect.any(Object));
+      });
+    });
+
+    describe('copyFile notifications', () => {
+      it('should trigger FILE_CREATED and CACHE_INVALIDATED events on successful copy', async () => {
+        // Mock source file read
+        vi.mocked(mockAxiosInstance.get).mockResolvedValueOnce({ data: 'Content' });
+        // Mock destination check (should not exist)
+        const notFoundError = Object.assign(new Error('Not found'), {
+          isAxiosError: true,
+          response: { status: 404, data: {} }
+        });
+        vi.mocked(mockAxiosInstance.get).mockRejectedValueOnce(notFoundError);
+        vi.mocked(axios.isAxiosError).mockReturnValue(true);
+        // Mock destination file creation
+        vi.mocked(mockAxiosInstance.put).mockResolvedValue({ data: {} });
+
+        await client.copyFile('source.md', 'dest.md');
+
+        expect(notifyFileCreatedSpy).toHaveBeenCalledWith('dest.md', expect.any(Object));
+        expect(notifyCacheInvalidationSpy).toHaveBeenCalledWith('dest.md', expect.any(Object));
+      });
+    });
+
+    describe('moveFile notifications', () => {
+      it('should trigger FILE_UPDATED and CACHE_INVALIDATED events on successful move', async () => {
+        vi.mocked(mockAxiosInstance.patch).mockResolvedValue({ data: {} });
+
+        await client.moveFile('old.md', 'new.md');
+
+        expect(notifyFileUpdatedSpy).toHaveBeenCalledWith('old.md', expect.any(Object));
+        expect(notifyCacheInvalidationSpy).toHaveBeenCalledWith('old.md', expect.any(Object));
+      });
+    });
+
+    describe('renameFile notifications', () => {
+      it('should trigger FILE_UPDATED and CACHE_INVALIDATED events on successful rename', async () => {
+        vi.mocked(mockAxiosInstance.patch).mockResolvedValue({ data: {} });
+
+        await client.renameFile('old.md', 'new.md');
+
+        expect(notifyFileUpdatedSpy).toHaveBeenCalledWith('old.md', expect.any(Object));
+        expect(notifyCacheInvalidationSpy).toHaveBeenCalledWith('old.md', expect.any(Object));
+      });
+    });
+
+    describe('notification error handling', () => {
+      it('should not fail file operations if notifications throw errors', async () => {
+        // Make notifications throw errors
+        notifyFileCreatedSpy.mockImplementation(() => {
+          throw new Error('Notification failed');
+        });
+        notifyCacheInvalidationSpy.mockImplementation(() => {
+          throw new Error('Cache invalidation failed');
+        });
+
+        vi.mocked(mockAxiosInstance.put).mockResolvedValue({ data: {} });
+
+        // File operation should still succeed despite notification errors
+        await expect(client.createFile('new.md', 'Content')).resolves.not.toThrow();
+      });
     });
   });
 });

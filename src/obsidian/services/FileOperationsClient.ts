@@ -4,6 +4,7 @@ import { ObsidianError } from '../../types/errors.js';
 import { validatePath, validatePaths } from '../../utils/pathValidator.js';
 import { OBSIDIAN_DEFAULTS, TIMEOUTS, BATCH_PROCESSOR } from '../../constants.js';
 import { OptimizedBatchProcessor } from '../../utils/OptimizedBatchProcessor.js';
+import { NotificationManager } from '../../utils/NotificationManager.js';
 import type { IFileOperationsClient } from '../interfaces/IFileOperationsClient.js';
 import type { FileContentResponse, RecentChange } from '../../types/obsidian.js';
 import type { ObsidianClientConfig } from '../ObsidianClient.js';
@@ -87,6 +88,18 @@ export class FileOperationsClient implements IFileOperationsClient {
     return context;
   }
 
+  /**
+   * Safely trigger notifications without breaking file operations if notifications fail
+   */
+  private safeNotify(notifyFn: () => void): void {
+    try {
+      notifyFn();
+    } catch (error) {
+      // Log notification errors but don't propagate them to avoid breaking file operations
+      console.warn('Notification failed:', error);
+    }
+  }
+
   async listFilesInVault(): Promise<string[]> {
     return this.safeCall(async () => {
       const response = await this.axiosInstance.get('/vault/');
@@ -144,11 +157,32 @@ export class FileOperationsClient implements IFileOperationsClient {
       await this.axiosInstance.put(`/vault/${encodedPath}`, content, {
         headers: { 'Content-Type': 'text/markdown' }
       });
+
+      // Trigger notifications after successful operation
+      const notificationManager = NotificationManager.getInstance();
+      this.safeNotify(() => {
+        notificationManager.notifyFileCreated(filepath, { operation: 'create', contentLength: content.length });
+        notificationManager.notifyCacheInvalidation(filepath, { reason: 'file-created' });
+      });
     });
   }
 
   async updateFile(filepath: string, content: string): Promise<void> {
-    return this.createFile(filepath, content);
+    validatePath(filepath, 'filepath');
+    const encodedPath = encodeURIComponent(filepath);
+
+    return this.safeCall(async () => {
+      await this.axiosInstance.put(`/vault/${encodedPath}`, content, {
+        headers: { 'Content-Type': 'text/markdown' }
+      });
+
+      // Trigger notifications after successful operation
+      const notificationManager = NotificationManager.getInstance();
+      this.safeNotify(() => {
+        notificationManager.notifyFileUpdated(filepath, { operation: 'update', contentLength: content.length });
+        notificationManager.notifyCacheInvalidation(filepath, { reason: 'file-updated' });
+      });
+    });
   }
 
   async deleteFile(filepath: string): Promise<void> {
@@ -157,6 +191,13 @@ export class FileOperationsClient implements IFileOperationsClient {
 
     return this.safeCall(async () => {
       await this.axiosInstance.delete(`/vault/${encodedPath}`);
+
+      // Trigger notifications after successful operation
+      const notificationManager = NotificationManager.getInstance();
+      this.safeNotify(() => {
+        notificationManager.notifyFileDeleted(filepath, { operation: 'delete' });
+        notificationManager.notifyCacheInvalidation(filepath, { reason: 'file-deleted' });
+      });
     });
   }
 
@@ -176,6 +217,13 @@ export class FileOperationsClient implements IFileOperationsClient {
             'Target-Type': 'file',
             'Target': 'name'
           }
+        });
+
+        // Trigger notifications after successful operation
+        const notificationManager = NotificationManager.getInstance();
+        this.safeNotify(() => {
+          notificationManager.notifyFileUpdated(oldPath, { operation: 'rename', newPath });
+          notificationManager.notifyCacheInvalidation(oldPath, { reason: 'file-renamed', newPath });
         });
       } catch (error) {
         if (axios.isAxiosError(error) && error.response?.status === 400) {
@@ -204,6 +252,13 @@ export class FileOperationsClient implements IFileOperationsClient {
             'Target-Type': 'file',
             'Target': 'path'
           }
+        });
+
+        // Trigger notifications after successful operation
+        const notificationManager = NotificationManager.getInstance();
+        this.safeNotify(() => {
+          notificationManager.notifyFileUpdated(sourcePath, { operation: 'move', destinationPath });
+          notificationManager.notifyCacheInvalidation(sourcePath, { reason: 'file-moved', destinationPath });
         });
       } catch (error) {
         if (axios.isAxiosError(error) && error.response?.status === 400) {
@@ -249,7 +304,17 @@ export class FileOperationsClient implements IFileOperationsClient {
       }
 
       // Create the new file at destination
-      await this.createFile(destinationPath, content);
+      const encodedDestPath = encodeURIComponent(destinationPath);
+      await this.axiosInstance.put(`/vault/${encodedDestPath}`, content, {
+        headers: { 'Content-Type': 'text/markdown' }
+      });
+
+      // Trigger notifications after successful operation (copy-specific)
+      const notificationManager = NotificationManager.getInstance();
+      this.safeNotify(() => {
+        notificationManager.notifyFileCreated(destinationPath, { operation: 'copy', sourcePath, contentLength: content.length });
+        notificationManager.notifyCacheInvalidation(destinationPath, { reason: 'file-copied', sourcePath });
+      });
     });
   }
 
@@ -290,6 +355,13 @@ export class FileOperationsClient implements IFileOperationsClient {
           headers: { 'Content-Type': 'text/markdown' }
         });
       }
+
+      // Trigger notifications after successful operation
+      const notificationManager = NotificationManager.getInstance();
+      this.safeNotify(() => {
+        notificationManager.notifyFileUpdated(filepath, { operation: 'append', contentLength: content.length, createIfNotExists });
+        notificationManager.notifyCacheInvalidation(filepath, { reason: 'file-appended' });
+      });
     });
   }
 
@@ -352,6 +424,19 @@ export class FileOperationsClient implements IFileOperationsClient {
         body,
         { headers }
       );
+
+      // Trigger notifications after successful operation
+      const notificationManager = NotificationManager.getInstance();
+      this.safeNotify(() => {
+        notificationManager.notifyFileUpdated(filepath, { 
+          operation: 'patch', 
+          targetType: options.targetType, 
+          target: options.target,
+          contentLength: content.length 
+        });
+        notificationManager.notifyCacheInvalidation(filepath, { reason: 'file-patched', targetType: options.targetType });
+      });
+
       return response.data;
     });
   }
