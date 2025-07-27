@@ -179,4 +179,149 @@ describe('RequestDeduplicator', () => {
       expect(requestFn).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('metrics', () => {
+    it('should track hit rate metrics', async () => {
+      const requestFn = vi.fn()
+        .mockResolvedValueOnce('result1')
+        .mockResolvedValueOnce('result2');
+
+      // Initial stats should be zero
+      const initialStats = deduplicator.getStats();
+      expect(initialStats).toEqual({
+        hits: 0,
+        misses: 0,
+        hitRate: 0,
+        totalRequests: 0,
+        averageResponseTime: 0,
+        activeRequests: 0
+      });
+
+      // First request - should be a miss
+      await deduplicator.dedupe('key1', requestFn);
+      
+      let stats = deduplicator.getStats();
+      expect(stats.hits).toBe(0);
+      expect(stats.misses).toBe(1);
+      expect(stats.hitRate).toBe(0);
+      expect(stats.totalRequests).toBe(1);
+
+      // Concurrent requests with same key - should be hits
+      const promise1 = deduplicator.dedupe('key2', () => requestFn());
+      const promise2 = deduplicator.dedupe('key2', () => requestFn());
+      const promise3 = deduplicator.dedupe('key2', () => requestFn());
+
+      await Promise.all([promise1, promise2, promise3]);
+
+      stats = deduplicator.getStats();
+      expect(stats.hits).toBe(2); // Two hits (promise2 and promise3)
+      expect(stats.misses).toBe(2); // Two misses (key1 and first key2 request)
+      expect(stats.hitRate).toBe(0.5); // 2 hits out of 4 total requests
+      expect(stats.totalRequests).toBe(4);
+    });
+
+    it('should track response times', async () => {
+      // Use real timers for this test
+      vi.useRealTimers();
+      
+      const requestFn = vi.fn(async () => {
+        // Simulate some processing time
+        await new Promise(resolve => setTimeout(resolve, 10));
+        return 'result';
+      });
+
+      await deduplicator.dedupe('key1', requestFn);
+
+      const stats = deduplicator.getStats();
+      expect(stats.averageResponseTime).toBeGreaterThan(0);
+      
+      // Switch back to fake timers
+      vi.useFakeTimers();
+    });
+
+    it('should reset metrics', async () => {
+      const requestFn = vi.fn().mockResolvedValue('result');
+
+      // Generate some metrics
+      await deduplicator.dedupe('key1', requestFn);
+      const promise1 = deduplicator.dedupe('key2', requestFn);
+      const promise2 = deduplicator.dedupe('key2', requestFn);
+      await Promise.all([promise1, promise2]);
+
+      // Should have some stats
+      let stats = deduplicator.getStats();
+      expect(stats.totalRequests).toBeGreaterThan(0);
+
+      // Reset and check
+      deduplicator.resetStats();
+      stats = deduplicator.getStats();
+      expect(stats).toEqual({
+        hits: 0,
+        misses: 0,
+        hitRate: 0,
+        totalRequests: 0,
+        averageResponseTime: 0,
+        activeRequests: 0
+      });
+    });
+
+    it('should track active requests', () => {
+      const requestFn = vi.fn(() => new Promise(() => {})); // Never resolves
+
+      expect(deduplicator.getStats().activeRequests).toBe(0);
+
+      deduplicator.dedupe('key1', requestFn);
+      expect(deduplicator.getStats().activeRequests).toBe(1);
+
+      deduplicator.dedupe('key2', requestFn);
+      expect(deduplicator.getStats().activeRequests).toBe(2);
+
+      // Same key should not increase active requests
+      deduplicator.dedupe('key1', requestFn);
+      expect(deduplicator.getStats().activeRequests).toBe(2);
+    });
+
+    it('should provide metrics logging when enabled', async () => {
+      const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+      const deduplicatorWithLogging = new RequestDeduplicator(1000, { enableMetricsLogging: true });
+      
+      const requestFn = vi.fn().mockResolvedValue('result');
+
+      // Make some requests to generate metrics
+      await deduplicatorWithLogging.dedupe('key1', requestFn);
+      const promise1 = deduplicatorWithLogging.dedupe('key2', requestFn);
+      const promise2 = deduplicatorWithLogging.dedupe('key2', requestFn);
+      await Promise.all([promise1, promise2]);
+
+      // Log metrics
+      deduplicatorWithLogging.logMetrics();
+
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining('RequestDeduplicator Metrics:')
+      );
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Hit Rate:')
+      );
+
+      consoleLogSpy.mockRestore();
+    });
+
+    it('should track metrics correctly with rapid concurrent requests', async () => {
+      const requestFn = vi.fn().mockResolvedValue('result');
+
+      // Make 10 rapid calls with same key - should result in 1 miss and 9 hits
+      const promises = Array(10).fill(null).map(() =>
+        deduplicator.dedupe('key1', requestFn)
+      );
+
+      await Promise.all(promises);
+
+      const stats = deduplicator.getStats();
+      expect(stats.hits).toBe(9); // 9 hits
+      expect(stats.misses).toBe(1); // 1 miss
+      expect(stats.hitRate).toBe(0.9); // 90% hit rate
+      expect(stats.totalRequests).toBe(10);
+      expect(requestFn).toHaveBeenCalledTimes(1); // Only executed once
+    });
+  });
 });
