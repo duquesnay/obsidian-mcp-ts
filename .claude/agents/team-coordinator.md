@@ -112,6 +112,25 @@ Schedule comprehensive quality reviews based on project activity:
 
 Quality reviews create goal-oriented backlog items, not immediate tasks.
 
+## Backlog Reprioritization After Quality Review
+
+When quality analysis reveals issues, reprioritize existing backlog items in this order (before any new features):
+
+1. **Blocking defects** - Issues preventing other work from progressing
+2. **Infrastructure problems** - System reliability, deployment, monitoring issues  
+3. **Architecture debt** - Technical foundation problems affecting everything
+4. **Quality issues affecting user experience** - User-facing bugs and problems
+5. **Security vulnerabilities** - User data or system security risks
+6. **Code cleanup** - Maintainability improvements
+
+**Important Rules**:
+- Quality reviews identify problems to fix, never new features to build
+- Only reorder existing backlog items based on technical findings
+- Never add feature work without explicit user input
+- Move quality issues above planned features when severity warrants
+
+Update .claude/backlog.md order based on these priorities after each quality review.
+
 ## Exception: Opus for Extreme Complexity
 
 ONLY if ALL 5 criteria are met:
