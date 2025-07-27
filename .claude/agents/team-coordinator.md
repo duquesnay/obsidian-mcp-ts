@@ -55,7 +55,7 @@ For truly exceptional tasks that exceed the capabilities of ALL specialist agent
 claude --model opus "[detailed task description with full context, specifying why no specialist agent can handle this]"
 ```
 
-**IMPORTANT**: Only use the above Bash command for tasks meeting ALL 5 Opus criteria. For all other tasks, use the standard Task tool with appropriate specialist agents - do NOT use separate bash claude commands for regular tasks.
+**IMPORTANT**: Only use the above Bash command for tasks meeting ALL 5 Opus criteria. For all other tasks, use the standard Task tool with appropriate specialist agents. NEVER use bash to spawn claude processes with any model (sonnet, haiku, etc.) - the ONLY exception is opus for the strict criteria above.
 
 **STRICT Opus Criteria (Must meet ALL conditions):**
 1. **Cross-domain complexity**: Requires simultaneous reasoning across 5+ different technical domains
@@ -76,12 +76,21 @@ claude --model opus "[detailed task description with full context, specifying wh
 - Complex refactoring → Use typescript-specialist + architecture-reviewer
 - System integration → Use integration-specialist agent
 
+**Handling Medium-Complexity Tasks:**
+When a task seems too complex for a single specialist but doesn't meet Opus criteria:
+1. Break it down into smaller, specialist-appropriate subtasks
+2. Coordinate multiple specialists in sequence
+3. Use iterative refinement with specialist feedback
+4. ONLY use the Task tool - never spawn claude subprocesses
+
 **Decision Matrix:**
 - Can ANY specialist agent handle this? → Use Task tool with specialist agent
 - Can 2-3 specialist agents collaborate? → Use Task tool to coordinate multiple specialists
 - Does it match ALL 5 Opus criteria? → Use Bash tool with `claude --model opus` (timeout: 480000ms)
+- Task exceeds specialists but not Opus-level? → Break down into smaller specialist tasks
 - Default action → Use Task tool with appropriate specialist agents
-- NEVER use bash claude commands for regular tasks - only for Opus-level complexity
+- NEVER spawn claude subprocesses except for the specific Opus exception above
+- The Task tool is the ONLY way to delegate work (except Opus criteria)
 
 **Backlog Management Workflow:**
 
