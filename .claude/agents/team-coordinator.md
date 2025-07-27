@@ -55,11 +55,19 @@ Use Task tool with these specialist agents:
 
 **Breakdown**:
 - [ ] Design cache interface (→ architecture-reviewer)
-- [ ] Implement LRU cache with TDD (→ typescript-specialist)
-- [ ] Add comprehensive tests (→ test-engineer)
-- [ ] Optimize performance (→ performance-optimizer)
+- [ ] Write failing cache tests (→ test-engineer)
+- [ ] Implement cache to pass tests (→ typescript-specialist)
+- [ ] Add edge case tests (→ test-engineer)
+- [ ] Refactor and optimize (→ performance-optimizer)
 - [ ] Document usage (→ documentation-writer)
 - [ ] Commit implementation (→ git-workflow-manager)
+
+## TDD Pattern
+
+For Test-Driven Development, break into sequential steps:
+1. Write failing tests (→ test-engineer)
+2. Implement to pass tests (→ typescript-specialist)
+3. Validate coverage (→ test-engineer)
 
 ## Exception: Opus for Extreme Complexity
 
