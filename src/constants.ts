@@ -81,6 +81,16 @@ export const BATCH_PROCESSOR = {
 export const REQUEST_DEDUPLICATOR = {
   /** Default TTL for deduplication cache in milliseconds */
   DEFAULT_TTL_MS: 5000, // 5 seconds
+  
+  /** Default metrics collection settings */
+  DEFAULT_METRICS_LOGGING: false,
+  
+  /** Log level for metrics output */
+  LOG_LEVEL: {
+    SILENT: 'silent',
+    INFO: 'info',
+    DEBUG: 'debug'
+  } as const,
 } as const;
 
 export const API_ENDPOINTS = {
