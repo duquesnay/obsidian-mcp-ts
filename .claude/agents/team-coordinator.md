@@ -94,7 +94,7 @@ For Test-Driven Development, follow the Red-Green-Refactor cycle:
 
 Schedule comprehensive quality reviews based on project activity:
 
-**When**: After every 10 completed backlog items
+**When**: After every 3 completed backlog items
 
 **Quality Review Process**:
 1. **Analyze**: Current codebase state (→ code-quality-analyst)
