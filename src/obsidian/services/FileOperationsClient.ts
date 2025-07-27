@@ -5,7 +5,7 @@ import { validatePath, validatePaths } from '../../utils/pathValidator.js';
 import { OBSIDIAN_DEFAULTS, TIMEOUTS, BATCH_PROCESSOR } from '../../constants.js';
 import { OptimizedBatchProcessor } from '../../utils/OptimizedBatchProcessor.js';
 import { NotificationManager } from '../../utils/NotificationManager.js';
-import type { IFileOperationsClient } from '../interfaces/IFileOperationsClient.js';
+import type { IFileOperationsClient, BatchOperationOptions } from '../interfaces/IFileOperationsClient.js';
 import type { FileContentResponse, RecentChange } from '../../types/obsidian.js';
 import type { ObsidianClientConfig } from '../ObsidianClient.js';
 
@@ -124,14 +124,21 @@ export class FileOperationsClient implements IFileOperationsClient {
     });
   }
 
-  async getBatchFileContents(filepaths: string[]): Promise<string> {
+  /**
+   * Get contents of multiple files concurrently using OptimizedBatchProcessor
+   * @param filepaths - Array of file paths to read
+   * @param options - Optional batch operation options including progress callback
+   * @returns Concatenated file contents with headers
+   */
+  async getBatchFileContents(filepaths: string[], options?: BatchOperationOptions): Promise<string> {
     validatePaths(filepaths, 'filepaths');
 
     // Use OptimizedBatchProcessor with retry capabilities
     const processor = new OptimizedBatchProcessor({
       maxConcurrency: OBSIDIAN_DEFAULTS.BATCH_SIZE,
       retryAttempts: BATCH_PROCESSOR.DEFAULT_RETRY_ATTEMPTS,
-      retryDelay: BATCH_PROCESSOR.DEFAULT_RETRY_DELAY_MS
+      retryDelay: BATCH_PROCESSOR.DEFAULT_RETRY_DELAY_MS,
+      onProgress: options?.onProgress
     });
     
     const results = await processor.process(
@@ -485,12 +492,13 @@ export class FileOperationsClient implements IFileOperationsClient {
   /**
    * Create multiple files concurrently using OptimizedBatchProcessor
    */
-  async batchCreateFiles(fileOperations: Array<{ filepath: string; content: string }>): Promise<Array<{ filepath: string; success: boolean; error?: string }>> {
+  async batchCreateFiles(fileOperations: Array<{ filepath: string; content: string }>, options?: BatchOperationOptions): Promise<Array<{ filepath: string; success: boolean; error?: string }>> {
     // Use OptimizedBatchProcessor with write-specific settings
     const processor = new OptimizedBatchProcessor({
       maxConcurrency: OBSIDIAN_DEFAULTS.BATCH_SIZE, // Conservative concurrency for write operations
       retryAttempts: BATCH_PROCESSOR.DEFAULT_RETRY_ATTEMPTS,
-      retryDelay: BATCH_PROCESSOR.DEFAULT_RETRY_DELAY_MS
+      retryDelay: BATCH_PROCESSOR.DEFAULT_RETRY_DELAY_MS,
+      onProgress: options?.onProgress
     });
 
     const results = await processor.process(
@@ -512,11 +520,12 @@ export class FileOperationsClient implements IFileOperationsClient {
   /**
    * Update multiple files concurrently using OptimizedBatchProcessor
    */
-  async batchUpdateFiles(fileOperations: Array<{ filepath: string; content: string }>): Promise<Array<{ filepath: string; success: boolean; error?: string }>> {
+  async batchUpdateFiles(fileOperations: Array<{ filepath: string; content: string }>, options?: BatchOperationOptions): Promise<Array<{ filepath: string; success: boolean; error?: string }>> {
     const processor = new OptimizedBatchProcessor({
       maxConcurrency: OBSIDIAN_DEFAULTS.BATCH_SIZE,
       retryAttempts: BATCH_PROCESSOR.DEFAULT_RETRY_ATTEMPTS,
-      retryDelay: BATCH_PROCESSOR.DEFAULT_RETRY_DELAY_MS
+      retryDelay: BATCH_PROCESSOR.DEFAULT_RETRY_DELAY_MS,
+      onProgress: options?.onProgress
     });
 
     const results = await processor.process(
@@ -536,12 +545,16 @@ export class FileOperationsClient implements IFileOperationsClient {
 
   /**
    * Delete multiple files concurrently using OptimizedBatchProcessor
+   * @param filepaths - Array of file paths to delete
+   * @param options - Optional batch operation options including progress callback
+   * @returns Array of operation results with success status
    */
-  async batchDeleteFiles(filepaths: string[]): Promise<Array<{ filepath: string; success: boolean; error?: string }>> {
+  async batchDeleteFiles(filepaths: string[], options?: BatchOperationOptions): Promise<Array<{ filepath: string; success: boolean; error?: string }>> {
     const processor = new OptimizedBatchProcessor({
       maxConcurrency: OBSIDIAN_DEFAULTS.BATCH_SIZE,
       retryAttempts: BATCH_PROCESSOR.DEFAULT_RETRY_ATTEMPTS,
-      retryDelay: BATCH_PROCESSOR.DEFAULT_RETRY_DELAY_MS
+      retryDelay: BATCH_PROCESSOR.DEFAULT_RETRY_DELAY_MS,
+      onProgress: options?.onProgress
     });
 
     const results = await processor.process(
@@ -561,12 +574,16 @@ export class FileOperationsClient implements IFileOperationsClient {
 
   /**
    * Copy multiple files concurrently using OptimizedBatchProcessor
+   * @param copyOperations - Array of copy operations with source and destination paths
+   * @param options - Optional batch operation options including progress callback
+   * @returns Array of operation results with success status
    */
-  async batchCopyFiles(copyOperations: Array<{ sourcePath: string; destinationPath: string; overwrite?: boolean }>): Promise<Array<{ sourcePath: string; destinationPath: string; success: boolean; error?: string }>> {
+  async batchCopyFiles(copyOperations: Array<{ sourcePath: string; destinationPath: string; overwrite?: boolean }>, options?: BatchOperationOptions): Promise<Array<{ sourcePath: string; destinationPath: string; success: boolean; error?: string }>> {
     const processor = new OptimizedBatchProcessor({
       maxConcurrency: OBSIDIAN_DEFAULTS.BATCH_SIZE,
       retryAttempts: BATCH_PROCESSOR.DEFAULT_RETRY_ATTEMPTS,
-      retryDelay: BATCH_PROCESSOR.DEFAULT_RETRY_DELAY_MS
+      retryDelay: BATCH_PROCESSOR.DEFAULT_RETRY_DELAY_MS,
+      onProgress: options?.onProgress
     });
 
     const results = await processor.process(
