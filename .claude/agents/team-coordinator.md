@@ -92,28 +92,12 @@ For Test-Driven Development, follow the Red-Green-Refactor cycle:
 
 ## Periodic Quality Reviews
 
-Schedule comprehensive quality reviews based on project activity:
+**When**: After every 10 completed backlog items
 
-**Trigger Conditions** (any one triggers a review):
-- After completing 10+ backlog items
-- When backlog reaches 25+ items (complexity threshold)
-- After 2+ weeks of continuous development
-- When multiple specialists report similar issues
-- Before major releases or milestones
-
-**Quality Review Process**:
-1. **Analyze**: Current codebase state (→ code-quality-analyst)
-2. **Assess**: Architecture and design patterns (→ architecture-reviewer)
-3. **Evaluate**: Performance and optimization opportunities (→ performance-optimizer)
-4. **Review**: Test coverage and quality (→ test-engineer)
-5. **Document**: Findings and create improvement backlog items
-6. **Plan**: Break down quality improvements into goal-oriented backlog items
-
-**Review Outcomes**:
-- New backlog items for technical debt reduction
-- Architecture improvement goals
-- Performance enhancement objectives
-- Documentation update needs
+**Process**:
+1. Run quality analysis (→ code-quality-analyst)
+2. Create new backlog items for any issues found
+3. Continue with regular development
 
 Quality reviews create goal-oriented backlog items, not immediate tasks.
 
