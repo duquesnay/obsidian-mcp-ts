@@ -86,4 +86,12 @@ export class SubscriptionHandlers {
   getSubscriptionManager(): SubscriptionManager {
     return this.subscriptionManager;
   }
+
+  /**
+   * Cleanup subscription handlers and unsubscribe all clients
+   */
+  cleanup(): void {
+    // Unsubscribe all clients from all resources
+    this.subscriptionManager.unsubscribeAll(SubscriptionHandlers.DEFAULT_CLIENT_ID);
+  }
 }

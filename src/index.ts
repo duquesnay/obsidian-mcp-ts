@@ -1,35 +1,9 @@
 #!/usr/bin/env node
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { 
-  ListResourcesRequestSchema, 
-  ReadResourceRequestSchema,
-  ListResourceTemplatesRequestSchema
-} from '@modelcontextprotocol/sdk/types.js';
 import { config } from 'dotenv';
-import { registerTools } from './tools/index.js';
-import { registerResources } from './resources/index.js';
-import { registerSubscriptions } from './subscriptions/index.js';
+import { createAndStartServer } from './server/ServerInitializer.js';
 
 // Load environment variables
 config();
-
-// Create server instance
-const server = new Server(
-  {
-    name: 'obsidian-mcp',
-    version: '0.3.0',
-    description: 'OBSIDIAN VAULT MCP - For Obsidian Notes Only. This server ONLY accesses notes within your Obsidian vault. For general filesystem access, use filesystem MCP servers.',
-  },
-  {
-    capabilities: {
-      tools: {},
-      resources: {
-        subscribe: true
-      },
-    },
-  }
-);
 
 // Start server
 async function main() {
@@ -39,18 +13,24 @@ async function main() {
     console.error('This server ONLY accesses notes within your Obsidian vault');
     console.error('For general filesystem access, use filesystem MCP servers');
     
-    // Register all tools
-    await registerTools(server);
+    // Create and start the server with subscription configuration
+    const server = await createAndStartServer();
     
-    // Register resources
-    await registerResources(server);
+    // Set up graceful shutdown
+    process.on('SIGINT', async () => {
+      console.error('Received SIGINT, shutting down gracefully...');
+      const { shutdownServer } = await import('./server/ServerInitializer.js');
+      await shutdownServer(server);
+      process.exit(0);
+    });
+
+    process.on('SIGTERM', async () => {
+      console.error('Received SIGTERM, shutting down gracefully...');
+      const { shutdownServer } = await import('./server/ServerInitializer.js');
+      await shutdownServer(server);
+      process.exit(0);
+    });
     
-    // Register subscription capabilities
-    await registerSubscriptions(server);
-    
-    // Create and connect transport
-    const transport = new StdioServerTransport();
-    await server.connect(transport);
   } catch (error) {
     console.error('Server startup error:', error);
     process.exit(1);

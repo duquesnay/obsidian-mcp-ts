@@ -103,4 +103,12 @@ export class SubscriptionManager {
       throw new Error(`Resource ${resourceUri} is not subscribable`);
     }
   }
+
+  /**
+   * Cleanup all subscriptions and resources
+   */
+  cleanup(): void {
+    this.clientSubscriptions.clear();
+    this.resourceSubscribers.clear();
+  }
 }
