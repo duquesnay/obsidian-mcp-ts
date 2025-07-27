@@ -52,7 +52,7 @@ For each task:
    - Mark the task as [x] in the backlog
    - Add completion notes if needed
    - Update the Progress Status section
-4. Team coordinator should dispatch all tasks
+4. Use team-coordinator agent to manage backlog items and dispatch implementation work to specialists
 
 ### Success Metrics
 - All tests passing after each change
@@ -179,37 +179,34 @@ For each task:
 
 ### Completed
 - [x] R1.1: List available resources
-- [x] R1.2: Read vault tags with counts ⚠️ **FIXED**: Now uses real ObsidianClient.getAllTags()
+- [x] R1.2: Read vault tags with counts (now uses real ObsidianClient.getAllTags())
 
 ### Priority 1: Core Resources (Foundation)
 - [x] R2.1: Integration tests for existing resources functionality
 - [x] R2.2: Documentation for resources feature
-- [x] R3.1: Vault statistics - Get file and note counts at vault://stats ⚠️ **FIXED**: Now uses real vault file counts
-- [x] R3.2: Recent changes - View recently modified notes at vault://recent ⚠️ **FIXED**: Now uses real ObsidianClient.getRecentChanges()
+- [x] R3.1: Vault statistics - Get file and note counts at vault://stats (now uses real vault file counts)
+- [x] R3.2: Recent changes - View recently modified notes at vault://recent (now uses real ObsidianClient.getRecentChanges())
 
 ### Priority 2: Dynamic Resources (Real Value)
 - [x] R4.1: Individual notes - Read any note by path at vault://note/{path}
 - [x] R4.2: Folder contents - Browse folders at vault://folder/{path}
-- [x] R5.1: Quality review and refactoring based on patterns found
-  - Implemented ResourceRegistry to eliminate if-else chain
-  - Created BaseResourceHandler to reduce code duplication
-  - Improved maintainability and extensibility
+- [x] R5.1: Quality review and refactoring based on patterns found (implemented ResourceRegistry to eliminate if-else chain, created BaseResourceHandler to reduce code duplication)
 
 ### Priority 3: Specialized Resources
 - [x] R6.1: Daily notes - Access periodic notes at vault://daily/{date}
 - [x] R6.2: Notes by tag - Find tagged notes at vault://tag/{tagname}
-- [x] R6.3: Vault structure - Full folder hierarchy at vault://structure ✅ **INTEGRATION TEST ADDED**
+- [x] R6.3: Vault structure - Full folder hierarchy at vault://structure
 
 ### Priority 4: Advanced Features
-- [x] R7.1: Resource caching for performance ✅ **INTEGRATION TEST ADDED**
-- [x] R7.2: Resource templates for discovery
-- [x] R8.1: Live updates - Subscribe to resource changes ✅ **INTEGRATION TEST ADDED**
+- [x] R7.1: Resource caching for performance
+- [x] R7.2: Resource templates for discovery (resource template system implemented for better discoverability)
+- [x] R8.1: Live updates - Subscribe to resource changes
 - [x] R8.2: Search results as resources - vault://search/{query}
 
 ### Priority 5: Polish
-- [x] R9.1: Optimize for large vaults (>10k notes) - Added pagination to list operations, summary mode for structure
-- [x] R9.2: Comprehensive error handling - Enhanced error handlers for network, validation, and service errors
-- [x] R9.3: Resource usage documentation - Created comprehensive RESOURCES.md guide with examples
+- [x] R9.1: Optimize for large vaults (>10k notes) (added pagination to list operations, summary mode for structure)
+- [x] R9.2: Comprehensive error handling (enhanced error handlers for network, validation, and service errors)
+- [x] R9.3: Resource usage documentation (created comprehensive RESOURCES.md guide with examples)
 
 
 ## Progress Status
@@ -219,158 +216,111 @@ For each task:
 **Completion Status**: 100% - All resource implementation tasks finished
 **Green Line Status**: ✅ All tests passing (671 tests)
 **High Priority TODOs**: ✅ All 3 completed
-**Medium Priority**: 4/4 completed ✅
-
+**Medium Priority**: 4/4 completed 
 ## Total Project Summary
 
-**Quality Improvement Tasks**: 63 (100% completed) ✅
-**Resource Tasks**: 18 (100% completed) ✅
-**Quality Check Tasks**: 11/14 completed (78%)
+**Quality Improvement Tasks**: 63 (100% completed) **Resource Tasks**: 18 (100% completed) **Quality Check Tasks**: 11/14 completed (78%)
 
 ---
 
 ## Future Work from Quality Check (2025-01-23)
 
 ### High Priority
-- [x] Q1.1: Address TODO in RecentChangesHandler.ts about content length parameter - Added TODO comment in ObsidianClient documenting API limitation
-- [x] Q1.2: Address TODO in AdvancedSearchTool.ts about JsonLogic query support - AdvancedSearchTool uses structured filters, not JsonLogic
-- [x] Q1.3: Address TODO in ComplexSearchTool.ts about JsonLogic implementation - Added JsonLogic validation to ensure proper query structure
+- [x] Q1.1: Address TODO in RecentChangesHandler.ts about content length parameter (added TODO comment in ObsidianClient documenting API limitation)
+- [x] Q1.2: Address TODO in AdvancedSearchTool.ts about JsonLogic query support (AdvancedSearchTool uses structured filters, not JsonLogic)
+- [x] Q1.3: Address TODO in ComplexSearchTool.ts about JsonLogic implementation (added JsonLogic validation to ensure proper query structure)
 
 ### Medium Priority
-- [x] Q2.1: Create shared error handling utility for resource handlers - Created ResourceErrorHandler with consistent error messages
-- [x] Q2.2: Extract common validation patterns into reusable functions - Created ResourceValidationUtil with URI extraction, date validation, etc.
-- [x] Q2.3: Replace remaining `any` types with specific interfaces - Replaced ~25 any types with proper interfaces
-- [x] Q2.4: Add stricter type checking for dynamic tool discovery - Added validation for tool classes and instances
+- [x] Q2.1: Create shared error handling utility for resource handlers (created ResourceErrorHandler with consistent error messages)
+- [x] Q2.2: Extract common validation patterns into reusable functions (created ResourceValidationUtil with URI extraction, date validation, etc.)
+- [x] Q2.3: Replace remaining `any` types with specific interfaces (replaced ~25 any types with proper interfaces)
+- [x] Q2.4: Add stricter type checking for dynamic tool discovery (added validation for tool classes and instances)
 
 ## Code Quality Improvements from Quality Review (2025-01-24)
 
 ### Critical Fix: Integration Test Mocking Issue
-- [x] URGENT: Fix notification-integration.test.ts to use real ObsidianClient instead of mocks
-  - Integration tests should test real integrations, not mocked behavior
-  - This violates core testing principles and masks potential issues
-  - ✅ COMPLETED: Tests now use real ObsidianClient through normal configuration flow
-  - ✅ BONUS: Integration tests discovered CreateDirectoryTool bug (reports success when operation fails)
+- [x] URGENT: Fix notification-integration.test.ts to use real ObsidianClient instead of mocks (tests now use real ObsidianClient through normal configuration flow)
+  - (discovered CreateDirectoryTool bug that reports success when operation fails)
 
 ### Critical Bug Fix: CreateDirectoryTool False Success 
-- [x] URGENT: Fix CreateDirectoryTool reporting success when directory creation actually fails
-  - ✅ COMPLETED: Added post-creation verification using checkPathExists()
-  - Prevents false positive success reports from inconsistent API responses
-  - Added comprehensive test suite reproducing the bug and verifying fix
-  - Implements fail-fast principle by catching API inconsistencies
-  - NOTE: Integration test revealed underlying Obsidian REST API issue with directory creation
+- [x] URGENT: Fix CreateDirectoryTool reporting success when directory creation actually fails (added post-creation verification using checkPathExists())
+  - (integration test revealed underlying Obsidian REST API issue with directory creation)
 
 ### High Priority (Code Organization & Maintainability)
-- [x] CQ1: Move test files from src/ to tests/
-  - Move 8 test files: base.test.ts, discovery.test.ts, GetAllTagsTool.test.ts, ListFilesInVaultTool.test.ts, Cache.test.ts, OptimizedBatchProcessor.test.ts, PathValidationUtil.test.ts, RequestDeduplicator.test.ts
-  - Update tsconfig to exclude test files from compilation
-  - Clean dist/ folder of compiled test files
+- [x] CQ1: Move test files from src/ to tests/ (moved 8 test files, updated tsconfig to exclude test files from compilation, cleaned dist/ folder)
 
 ### Medium Priority (Architectural Improvements - Do Early)
 - [x] CQ4.1: Extract IObsidianClient interface from ObsidianClient class
-- [x] CQ4.2: Create AND integrate FileOperationsClient (created and integrated)
-- [x] CQ4.3: Create AND integrate DirectoryOperationsClient (created and integrated)
-- [x] CQ4.4: Create AND integrate SearchClient (created and integrated)
-- [x] CQ4.5: Create AND integrate TagManagementClient (created and integrated)
-- [x] CQ4.6: Create AND integrate PeriodicNotesClient (created and integrated correctly)
+- [x] CQ4.2: Create AND integrate FileOperationsClient
+- [x] CQ4.3: Create AND integrate DirectoryOperationsClient
+- [x] CQ4.4: Create AND integrate SearchClient
+- [x] CQ4.5: Create AND integrate TagManagementClient
+- [x] CQ4.6: Create AND integrate PeriodicNotesClient
 - [x] CQ4.8: Update BaseTool to depend on interface instead of concrete class
 
 - [x] CQ5.1: Create EditStrategy interface and base class
-- [x] CQ5.2: Extract AND integrate AppendStrategy (must be used immediately)
-- [x] CQ5.3: Extract AND integrate FindReplaceStrategy (must be used immediately)
-- [x] CQ5.4: Extract AND integrate HeadingInsertStrategy (must be used immediately)
-- [x] CQ5.5: Extract AND integrate BatchEditStrategy (must be used immediately)
-- [x] CQ5.6: Extract AND integrate SectionEditStrategy ✅ (must be used immediately)
-- [x] CQ5.8: Clean up and optimize UnifiedEditTool ✅
-
-- [x] CQ6.1: ~~Create central schema fragments file~~ (already done in validation.ts with schema fragments)
-- [x] CQ6.2: ~~Extract common propertchemas~~ (already done: PATH_SCHEMA, CONTENT_SCHEMA, etc.)
-- [x] CQ6.4: Migrate remaining tools to use schema fragments from validation.ts ✅
-
-- [x] CQ7: Address TODO comments ✅
-  - ObsidianClient.ts line 31: "break apart, file is too long" ✅ (moved getRecentChanges to FileOperationsClient)
-  - Remove or address test file TODOs ✅
-  - Clean up technical debt markers ✅
-
+- [x] CQ5.2: Extract AND integrate AppendStrategy
+- [x] CQ5.3: Extract AND integrate FindReplaceStrategy
+- [x] CQ5.4: Extract AND integrate HeadingInsertStrategy
+- [x] CQ5.5: Extract AND integrate BatchEditStrategy
+- [x] CQ5.6: Extract AND integrate SectionEditStrategy
+- [x] CQ5.8: Clean up and optimize UnifiedEditTool 
+- [x] CQ6.1: Create central schema fragments file (already done in validation.ts with schema fragments)
+- [x] CQ6.2: Extract common property schemas (already done: PATH_SCHEMA, CONTENT_SCHEMA, etc.)
+- [x] CQ6.4: Migrate remaining tools to use schema fragments from validation.ts 
+- [x] CQ7: Address TODO comments (moved getRecentChanges to FileOperationsClient) 
 ### High Priority (Continued)
-- [x] CQ3: Create validation utilities for DRY
-  - Implement validateRequiredArgs() helper function
-  - Create reusable schema fragments (PATH_SCHEMA, PAGINATION_SCHEMA, etc.)
-  - Extract period validation to shared constant/function
-  - Reduce validation code duplication across 20+ tools
+- [x] CQ3: Create validation utilities for DRY (implemented validateRequiredArgs() helper function, created reusable schema fragments, extracted period validation, reduced validation code duplication)
 
-### High Priority (Type Errors - COMPLETED)
+### High Priority (Type Errors)
 - [x] Fix TypeScript type errors blocking the build (28 errors)
 
 ### Low Priority (Type Safety & Documentation)
-- [x] CQ8: Complete argument type extraction (COMPLETED - UnifiedEditArgs extracted)
+- [x] CQ8: Complete argument type extraction (UnifiedEditArgs extracted)
 
-- [x] CQ9: Extract remaining magic numbers to constants ✅
-  - [x] CQ9.1: Extract PATH_LENGTH_LIMIT (1000) from pathValidator.ts to constants.ts (DONE - extracted as PATH_VALIDATION.MAX_LENGTH)
-  - [x] CQ9.2: Search for numeric literals in BatchProcessor.ts and extract to named constants (DONE - no changes needed)
-  - [x] CQ9.3: Search for numeric literals in OptimizedBatchProcessor.ts and extract to named constants (DONE - extracted retry constants)
-  - [x] CQ9.4: Search for numeric literals in LRUCache.ts and extract to named constants (DONE - extracted LRU_CACHE.NO_EXPIRATION)
-  - [x] CQ9.5: Search for numeric literals in RequestDeduplicator.ts and extract to named constants (DONE - extracted DEFAULT_TTL_MS)
-  - [x] CQ9.6: Search for timeout values across all tool files and centralize in constants.ts (DONE - created TIMEOUTS constants)
-  - [x] CQ9.7: Search for retry count values across utilities and centralize in constants.ts (DONE - already centralized)
-  - [x] CQ9.8: Create validation to ensure no hardcoded numbers remain in utility files
+- [x] CQ9: Extract remaining magic numbers to constants (extracted PATH_VALIDATION.MAX_LENGTH, retry constants, LRU_CACHE.NO_EXPIRATION, DEFAULT_TTL_MS, TIMEOUTS constants)
 
-- [x] CQ10: Replace any types with proper type guards ✅
-  - [x] CQ10.1: Create hasResponse() type guard function in src/utils/typeGuards.ts (DONE - hasHttpResponse created)
-  - [x] CQ10.2: Create isToolResponse() type guard for MCP tool response validation (DONE - validates ToolResponse shape)
-  - [x] CQ10.3: Create isObsidianError() type guard for API error responses (DONE - validates AxiosError<ObsidianErrorData>)
-  - [x] CQ10.4: Replace any type usage in ObsidianErrorHandler with proper type guards (DONE during type fixes)
-  - [x] CQ10.5: Replace any type usage in error catch blocks across all tools (DONE during type fixes)
-  - [x] CQ10.6: Update BaseTool error handling to use new type guards (DONE - uses getErrorMessage and hasHttpResponse)
-  - [x] CQ10.7: Add unit tests for each type guard function (DONE - all type guards have tests)
-  - [x] CQ10.8: Remove remaining any types from utility function parameters (DONE - replaced with proper types)
+- [x] CQ10: Replace any types with proper type guards (created hasHttpResponse, isToolResponse, isObsidianError type guards with comprehensive tests)
 
-- [x] CQ11: Document complex regex patterns ✅
-  - [x] CQ11.1: Extract URL validation regex from ObsidianClient to named constant with comment (DONE - added REGEX_PATTERNS.URL_VALIDATION)
-  - [x] CQ11.2: Extract path validation regex patterns to constants with explanatory comments (DONE - 10 patterns extracted)
-  - [x] CQ11.3: Extract markdown heading regex patterns from editing tools to constants (DONE - MARKDOWN_HEADING pattern added)
-  - [x] CQ11.4: Extract tag validation regex patterns to constants with documentation
-  - [x] CQ11.5: Extract file extension patterns to constants with use case comments
-  - [x] CQ11.6: Create REGEX_PATTERNS object in constants.ts to group all patterns
-  - [x] CQ11.7: Add JSDoc comments explaining each regex pattern's purpose and examples
-  - [x] CQ11.8: Update all regex usage to reference the named constants
+- [x] CQ11: Document complex regex patterns (extracted URL validation, path validation, markdown heading patterns to REGEX_PATTERNS object with JSDoc comments)
 
 ### Performance Fix Tasks
-- [x] PF1: Fix LRUCache.cleanupExpired() O(n) blocking on every size() call - COMPLETED: Implemented time-based lazy cleanup strategy
-- [x] PF6: Make sure there is no mocks in integration tests - COMPLETED: Removed (tool as any).obsidianClient = client hack
-- [x] PF2: Replace readFileSync with async in configLoader.ts - COMPLETED: Analysis shows minimal benefit for small config files read once during initialization
-- [x] PF3: Add automatic cleanup for NotificationManager event listeners - COMPLETED: Added process exit cleanup and diagnostic tools
-- [x] PF4: Implement maxEntrySize limit for cache entries - COMPLETED: Added maxEntrySize option to LRUCache with TDD approach
-- [x] PF5: Add streaming/pagination for large vault operations ✅ **COMPLETED**: Pagination implemented across ListFilesInVaultTool, ListFilesInDirTool, GetAllTagsTool, SimpleSearchTool, and AdvancedSearchTool. OptimizedBatchProcessor includes streaming capabilities.
+- [x] PF1: Fix LRUCache.cleanupExpired() O(n) blocking on every size() call (implemented time-based lazy cleanup strategy)
+- [x] PF6: Make sure there is no mocks in integration tests (removed client hack)
+- [x] PF2: Replace readFileSync with async in configLoader.ts (analysis shows minimal benefit for small config files)
+- [x] PF3: Add automatic cleanup for NotificationManager event listeners (added process exit cleanup and diagnostic tools)
+- [x] PF4: Implement maxEntrySize limit for cache entries (added maxEntrySize option to LRUCache with TDD approach)
+- [x] PF5: Add streaming/pagination for large vault operations (pagination implemented across list tools, OptimizedBatchProcessor includes streaming capabilities)
 
 ### Performance Features Integration (Lower Priority)
 - [ ] CQ12: Complete subscription system integration (Partial)
-  - [x] CQ12.1: Define subscription event types enum in constants.ts (DONE - SUBSCRIPTION_EVENTS added)
-  - [x] CQ12.2: Create NotificationManager class skeleton in src/utils/ (DONE - extracted hardcoded number to constant)
-  - [x] CQ12.3: Add subscription hooks to LRUCache invalidation methods (DONE - notifyInvalidation calls for delete, clear, expire, evict)
-  - [x] CQ12.4: Create subscription interface for cache change events ✅ **COMPLETED**: Implemented comprehensive subscription system with type-safe interfaces, priority-based execution, advanced filtering, and full test coverage
-  - [x] CQ12.5: Implement event emitter pattern in NotificationManager ✅ **ALREADY COMPLETED**: NotificationManager already extends EventEmitter with full pattern implementation and comprehensive tests
-  - [x] CQ12.6: Connect file write operations to trigger cache invalidation events ✅ **COMPLETED**: Added NotificationManager integration to all file operations with comprehensive tests
-  - [x] CQ12.7: Connect file delete operations to trigger cache invalidation events ✅ **COMPLETED as part of CQ12.6**: deleteFile() already triggers FILE_DELETED and CACHE_INVALIDATED events
+  - [x] CQ12.1: Define subscription event types enum in constants.ts
+  - [x] CQ12.2: Create NotificationManager class skeleton in src/utils/
+  - [x] CQ12.3: Add subscription hooks to LRUCache invalidation methods
+  - [x] CQ12.4: Create subscription interface for cache change events (implemented comprehensive subscription system with type-safe interfaces, priority-based execution, advanced filtering)
+  - [x] CQ12.5: Implement event emitter pattern in NotificationManager (NotificationManager already extends EventEmitter with full pattern implementation)
+  - [x] CQ12.6: Connect file write operations to trigger cache invalidation events (added NotificationManager integration to all file operations)
+  - [x] CQ12.7: Connect file delete operations to trigger cache invalidation events (deleteFile() already triggers FILE_DELETED and CACHE_INVALIDATED events)
   - [x] CQ12.8: Add subscription configuration to server initialization
-  - [x] URGENT: Fix TypeScript build errors preventing compilation (includes argument type issues and module resolution problems) ✅ **COMPLETED**: Fixed 11 argument type interfaces to extend Record<string, unknown>, fixed type guards in deduplicationKeyGenerator.ts, fixed import extension. TypeScript compilation now succeeds and 1043 unit tests pass.
-  - [⏳] CQ12.9: Create unit tests for notification trigger scenarios
+  - [x] URGENT: Fix TypeScript build errors preventing compilation (fixed 11 argument type interfaces to extend Record<string, unknown>, fixed type guards in deduplicationKeyGenerator.ts, fixed import extension. TypeScript compilation now succeeds and 1043 unit tests pass)
+  - [x] CQ12.9: Create unit tests for notification trigger scenarios (comprehensive unit tests for notification trigger scenarios with 19 tests covering tag operations, directory operations, file operations, batch operations, error handling, cache invalidation, and subscription management)
 
-- [ ] CQ13: Integrate RequestDeduplicator (Partial)
-  - [x] CQ13.1: Add RequestDeduplicator instance to ObsidianClient constructor (DONE - added as private property)
-  - [x] CQ13.2: Wrap getVault() method with deduplication logic (DONE - with tests)
-  - [x] CQ13.3: Wrap getFileContent() method with deduplication logic (DONE - with tests)
-  - [x] CQ13.4: Wrap searchVault() method with deduplication logic (DONE - with tests)
-  - [x] CQ13.5: Create deduplication key generator for different request types (DONE - DeduplicationKeyGenerator created)
+- [x] CQ13: Integrate RequestDeduplicator
+  - [x] CQ13.1: Add RequestDeduplicator instance to ObsidianClient constructor
+  - [x] CQ13.2: Wrap getVault() method with deduplication logic 
+  - [x] CQ13.3: Wrap getFileContent() method with deduplication logic 
+  - [x] CQ13.4: Wrap searchVault() method with deduplication logic 
+  - [x] CQ13.5: Create deduplication key generator for different request types (DeduplicationKeyGenerator created)
   - [x] CQ13.6: Add deduplication to batch read operations
-  - [ ] CQ13.7: Add metrics logging for deduplication hit rate
-  - [ ] CQ13.8: Create integration tests for concurrent duplicate requests
+  - [x] CQ13.7: Add metrics logging for deduplication hit rate (added comprehensive metrics tracking with hit rate, timing, active requests, configurable logging, and reset functionality)
+  - [x] CQ13.8: Create integration tests for concurrent duplicate requests (9 integration tests covering concurrent requests, error propagation, timeout behavior, and real network timing)
 
 - [ ] CQ14: Migrate to OptimizedBatchProcessor (Partial)
-  - [x] CQ14.1: Replace BatchProcessor import with OptimizedBatchProcessor in ObsidianClient (DONE - with tests)
+  - [x] CQ14.1: Replace BatchProcessor import with OptimizedBatchProcessor in ObsidianClient
   - [x] CQ14.2: Update batchGetFileContents to use OptimizedBatchProcessor
-  - [ ] CQ14.3: Update batch write operations to use OptimizedBatchProcessor
-  - [ ] CQ14.4: Configure retry logic for batch operations in OptimizedBatchProcessor
-  - [ ] CQ14.5: Add progress callback handling for large batch operations
+  - [x] CQ14.3: Update batch write operations to use OptimizedBatchProcessor
+  - [x] CQ14.4: Configure retry logic for batch operations in OptimizedBatchProcessor
+  - [⏳] CQ14.5: Add progress callback handling for large batch operations
   - [ ] CQ14.6: Update error aggregation to use OptimizedBatchProcessor's error handling
   - [ ] CQ14.7: Add performance comparison tests between old and new processors
   - [ ] CQ14.8: Remove deprecated BatchProcessor once migration is complete
@@ -387,7 +337,7 @@ For each task:
   - [ ] Q3.1.8: Document benchmark results in performance.md
 
 - [ ] Q3.2: Create troubleshooting guide for common issues (Partial)
-  - [x] Q3.2.1: Create TROUBLESHOOTING.md file structure with sections (DONE - comprehensive guide created)
+  - [x] Q3.2.1: Create TROUBLESHOOTING.md file structure with sections
   - [ ] Q3.2.2: Document "API key not set" error with resolution steps
   - [ ] Q3.2.3: Document "Connection refused" error with Obsidian plugin checks
   - [ ] Q3.2.4: Document "Path not found" errors with encoding solutions
@@ -397,7 +347,7 @@ For each task:
   - [ ] Q3.2.8: Add examples of common misconfigurations with fixes
 
 - [ ] Q3.3: Document SSL verification rationale (disabled for local Obsidian access) (Partial)
-  - [x] Q3.3.1: Create SECURITY.md file for security-related documentation (DONE - comprehensive security documentation)
+  - [x] Q3.3.1: Create SECURITY.md file for security-related documentation
   - [ ] Q3.3.2: Document why SSL verification is disabled for local connections
   - [ ] Q3.3.3: Explain self-signed certificate challenges with Obsidian
   - [ ] Q3.3.4: Add security implications of disabled SSL verification
