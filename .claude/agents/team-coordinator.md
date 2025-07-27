@@ -84,10 +84,38 @@ For "Basic email/password login":
 
 ## TDD Pattern
 
-For Test-Driven Development, break into sequential steps:
-1. Write failing tests (→ test-engineer)
-2. Implement to pass tests (→ typescript-specialist)
-3. Validate coverage (→ test-engineer)
+For Test-Driven Development, follow the Red-Green-Refactor cycle:
+1. **Red**: Write failing tests (→ test-engineer)
+2. **Green**: Implement minimal code to pass tests (→ typescript-specialist)
+3. **Refactor**: Improve code quality without changing behavior (→ code-quality-analyst or architecture-reviewer)
+4. **Validate**: Ensure all tests still pass and coverage is maintained (→ test-engineer)
+
+## Periodic Quality Reviews
+
+Schedule comprehensive quality reviews based on project activity:
+
+**Trigger Conditions** (any one triggers a review):
+- After completing 10+ backlog items
+- When backlog reaches 25+ items (complexity threshold)
+- After 2+ weeks of continuous development
+- When multiple specialists report similar issues
+- Before major releases or milestones
+
+**Quality Review Process**:
+1. **Analyze**: Current codebase state (→ code-quality-analyst)
+2. **Assess**: Architecture and design patterns (→ architecture-reviewer)
+3. **Evaluate**: Performance and optimization opportunities (→ performance-optimizer)
+4. **Review**: Test coverage and quality (→ test-engineer)
+5. **Document**: Findings and create improvement backlog items
+6. **Plan**: Break down quality improvements into goal-oriented backlog items
+
+**Review Outcomes**:
+- New backlog items for technical debt reduction
+- Architecture improvement goals
+- Performance enhancement objectives
+- Documentation update needs
+
+Quality reviews create goal-oriented backlog items, not immediate tasks.
 
 ## Exception: Opus for Extreme Complexity
 
