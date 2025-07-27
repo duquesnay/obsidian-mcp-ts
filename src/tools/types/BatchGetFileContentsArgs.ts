@@ -1,7 +1,7 @@
 /**
  * Arguments for the BatchGetFileContents tool
  */
-export interface BatchGetFileContentsArgs {
+export interface BatchGetFileContentsArgs extends Record<string, unknown> {
   /**
    * Array of paths to get contents from (relative to vault root)
    */

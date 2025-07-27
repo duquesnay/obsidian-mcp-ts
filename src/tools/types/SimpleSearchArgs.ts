@@ -1,7 +1,7 @@
 /**
  * Arguments for SimpleSearchTool
  */
-export interface SimpleSearchArgs {
+export interface SimpleSearchArgs extends Record<string, unknown> {
   /** Search query */
   query: string;
   

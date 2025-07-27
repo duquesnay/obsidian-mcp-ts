@@ -1,7 +1,7 @@
 /**
  * Arguments for the ManageFileTags tool
  */
-export interface ManageFileTagsArgs {
+export interface ManageFileTagsArgs extends Record<string, unknown> {
   /**
    * Path to the file to modify (relative to vault root)
    */

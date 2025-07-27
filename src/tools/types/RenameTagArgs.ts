@@ -1,7 +1,7 @@
 /**
  * Arguments for the RenameTag tool
  */
-export interface RenameTagArgs {
+export interface RenameTagArgs extends Record<string, unknown> {
   /**
    * The current tag name to rename (with or without # prefix)
    */

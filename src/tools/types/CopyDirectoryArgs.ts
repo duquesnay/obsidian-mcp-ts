@@ -1,7 +1,7 @@
 /**
  * Arguments for the CopyDirectory tool
  */
-export interface CopyDirectoryArgs {
+export interface CopyDirectoryArgs extends Record<string, unknown> {
   /**
    * Path of the directory to copy (relative to vault root)
    */

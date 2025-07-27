@@ -1,7 +1,7 @@
 /**
  * Arguments for the DeleteDirectory tool
  */
-export interface DeleteDirectoryArgs {
+export interface DeleteDirectoryArgs extends Record<string, unknown> {
   /**
    * Path of the directory to delete (relative to vault root)
    */

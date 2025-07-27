@@ -56,4 +56,10 @@ export interface IFileOperationsClient {
     offset?: number,
     contentLength?: number
   ): Promise<RecentChange[]>;
+
+  // Batch write operations
+  batchCreateFiles(fileOperations: Array<{ filepath: string; content: string }>): Promise<Array<{ filepath: string; success: boolean; error?: string }>>;
+  batchUpdateFiles(fileOperations: Array<{ filepath: string; content: string }>): Promise<Array<{ filepath: string; success: boolean; error?: string }>>;
+  batchDeleteFiles(filepaths: string[]): Promise<Array<{ filepath: string; success: boolean; error?: string }>>;
+  batchCopyFiles(copyOperations: Array<{ sourcePath: string; destinationPath: string; overwrite?: boolean }>): Promise<Array<{ sourcePath: string; destinationPath: string; success: boolean; error?: string }>>;
 }

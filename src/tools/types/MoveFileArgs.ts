@@ -1,7 +1,7 @@
 /**
  * Arguments for the MoveFile tool
  */
-export interface MoveFileArgs {
+export interface MoveFileArgs extends Record<string, unknown> {
   /**
    * Current path of the file to move (relative to vault root)
    */

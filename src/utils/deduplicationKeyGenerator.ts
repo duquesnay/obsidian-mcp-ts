@@ -1,5 +1,5 @@
 import { createHash } from 'crypto';
-import { DEDUPLICATION_DEFAULTS } from '../constants';
+import { DEDUPLICATION_DEFAULTS } from '../constants.js';
 
 export type RequestType = 'vault-list' | 'file-content' | 'search' | 'batch' | string;
 
@@ -111,7 +111,9 @@ export class DeduplicationKeyGenerator {
     
     if (parameters.filepath) {
       // Encode problematic characters that might interfere with key parsing
-      const encodedPath = parameters.filepath.replace(/\|/g, '%7C');
+      const encodedPath = typeof parameters.filepath === 'string' 
+        ? parameters.filepath.replace(/\|/g, '%7C') 
+        : String(parameters.filepath);
       key += `:${encodedPath}`;
     }
 
@@ -142,7 +144,7 @@ export class DeduplicationKeyGenerator {
   private static generateBatchKey(parameters: RequestParameters): string {
     const operation = parameters.operation || 'unknown';
     const items = parameters.items || [];
-    const hash = this.generateBatchHash(items);
+    const hash = this.generateBatchHash(Array.isArray(items) ? items : []);
     
     return `batch:${operation}:${hash}`;
   }

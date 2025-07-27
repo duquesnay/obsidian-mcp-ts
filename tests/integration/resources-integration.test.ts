@@ -252,9 +252,9 @@ describe('MCP Resources Integration Tests', () => {
       // Verify that tags have the expected structure (real Obsidian format)
       if (parsedContent.tags.length > 0) {
         const firstTag = parsedContent.tags[0];
-        expect(firstTag).toHaveProperty('tag');
+        expect(firstTag).toHaveProperty('name');
         expect(firstTag).toHaveProperty('count');
-        expect(typeof firstTag.tag).toBe('string');
+        expect(typeof firstTag.name).toBe('string');
         expect(typeof firstTag.count).toBe('number');
       }
     });

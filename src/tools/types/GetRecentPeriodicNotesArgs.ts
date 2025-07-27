@@ -3,7 +3,7 @@ import { PeriodType } from '../../utils/validation.js';
 /**
  * Arguments for the GetRecentPeriodicNotes tool
  */
-export interface GetRecentPeriodicNotesArgs {
+export interface GetRecentPeriodicNotesArgs extends Record<string, unknown> {
   /**
    * The type of periodic notes to retrieve
    */

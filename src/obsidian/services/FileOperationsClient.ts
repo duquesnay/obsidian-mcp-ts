@@ -479,4 +479,109 @@ export class FileOperationsClient implements IFileOperationsClient {
       }));
     });
   }
+
+  // Batch write operations using OptimizedBatchProcessor
+
+  /**
+   * Create multiple files concurrently using OptimizedBatchProcessor
+   */
+  async batchCreateFiles(fileOperations: Array<{ filepath: string; content: string }>): Promise<Array<{ filepath: string; success: boolean; error?: string }>> {
+    // Use OptimizedBatchProcessor with write-specific settings
+    const processor = new OptimizedBatchProcessor({
+      maxConcurrency: OBSIDIAN_DEFAULTS.BATCH_SIZE, // Conservative concurrency for write operations
+      retryAttempts: BATCH_PROCESSOR.DEFAULT_RETRY_ATTEMPTS,
+      retryDelay: BATCH_PROCESSOR.DEFAULT_RETRY_DELAY_MS
+    });
+
+    const results = await processor.process(
+      fileOperations,
+      async (operation) => {
+        await this.createFile(operation.filepath, operation.content);
+        return operation.filepath;
+      }
+    );
+
+    // Format results for consistency
+    return results.map((result, index) => ({
+      filepath: fileOperations[index].filepath,
+      success: !result.error,
+      error: result.error?.message
+    }));
+  }
+
+  /**
+   * Update multiple files concurrently using OptimizedBatchProcessor
+   */
+  async batchUpdateFiles(fileOperations: Array<{ filepath: string; content: string }>): Promise<Array<{ filepath: string; success: boolean; error?: string }>> {
+    const processor = new OptimizedBatchProcessor({
+      maxConcurrency: OBSIDIAN_DEFAULTS.BATCH_SIZE,
+      retryAttempts: BATCH_PROCESSOR.DEFAULT_RETRY_ATTEMPTS,
+      retryDelay: BATCH_PROCESSOR.DEFAULT_RETRY_DELAY_MS
+    });
+
+    const results = await processor.process(
+      fileOperations,
+      async (operation) => {
+        await this.updateFile(operation.filepath, operation.content);
+        return operation.filepath;
+      }
+    );
+
+    return results.map((result, index) => ({
+      filepath: fileOperations[index].filepath,
+      success: !result.error,
+      error: result.error?.message
+    }));
+  }
+
+  /**
+   * Delete multiple files concurrently using OptimizedBatchProcessor
+   */
+  async batchDeleteFiles(filepaths: string[]): Promise<Array<{ filepath: string; success: boolean; error?: string }>> {
+    const processor = new OptimizedBatchProcessor({
+      maxConcurrency: OBSIDIAN_DEFAULTS.BATCH_SIZE,
+      retryAttempts: BATCH_PROCESSOR.DEFAULT_RETRY_ATTEMPTS,
+      retryDelay: BATCH_PROCESSOR.DEFAULT_RETRY_DELAY_MS
+    });
+
+    const results = await processor.process(
+      filepaths,
+      async (filepath) => {
+        await this.deleteFile(filepath);
+        return filepath;
+      }
+    );
+
+    return results.map((result, index) => ({
+      filepath: filepaths[index],
+      success: !result.error,
+      error: result.error?.message
+    }));
+  }
+
+  /**
+   * Copy multiple files concurrently using OptimizedBatchProcessor
+   */
+  async batchCopyFiles(copyOperations: Array<{ sourcePath: string; destinationPath: string; overwrite?: boolean }>): Promise<Array<{ sourcePath: string; destinationPath: string; success: boolean; error?: string }>> {
+    const processor = new OptimizedBatchProcessor({
+      maxConcurrency: OBSIDIAN_DEFAULTS.BATCH_SIZE,
+      retryAttempts: BATCH_PROCESSOR.DEFAULT_RETRY_ATTEMPTS,
+      retryDelay: BATCH_PROCESSOR.DEFAULT_RETRY_DELAY_MS
+    });
+
+    const results = await processor.process(
+      copyOperations,
+      async (operation) => {
+        await this.copyFile(operation.sourcePath, operation.destinationPath, operation.overwrite ?? false);
+        return operation;
+      }
+    );
+
+    return results.map((result, index) => ({
+      sourcePath: copyOperations[index].sourcePath,
+      destinationPath: copyOperations[index].destinationPath,
+      success: !result.error,
+      error: result.error?.message
+    }));
+  }
 }
