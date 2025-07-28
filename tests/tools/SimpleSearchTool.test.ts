@@ -72,8 +72,8 @@ describe('SimpleSearchTool', () => {
         offset 
       });
 
-      // Assert - should use full mode when contextLength > default
-      expect(mockHandleRequest).toHaveBeenCalledWith(`vault://search/${encodeURIComponent(query)}?mode=full`);
+      // Assert - should use full mode when contextLength > default and include pagination params
+      expect(mockHandleRequest).toHaveBeenCalledWith(`vault://search/${encodeURIComponent(query)}?mode=full&limit=25&offset=10`);
       expect(result.type).toBe('text');
     });
 

@@ -24,6 +24,9 @@ export const OBSIDIAN_DEFAULTS = {
   /** Default search limit for simple search */
   DEFAULT_SEARCH_LIMIT: 50,
   
+  /** Default search limit for resource search (more expensive) */
+  DEFAULT_RESOURCE_SEARCH_LIMIT: 10,
+  
   /** Maximum search results for simple search */
   MAX_SEARCH_RESULTS: 200,
   

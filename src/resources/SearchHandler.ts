@@ -5,12 +5,25 @@ import { OBSIDIAN_DEFAULTS } from '../constants.js';
 
 export class SearchHandler extends BaseResourceHandler {
   async handleRequest(uri: string, server?: any): Promise<any> {
-    const { query, contextLength, limit, offset } = this.extractSearchParams(uri);
+    const { query, contextLength, limit, offset, token } = this.extractSearchParams(uri);
     
     const client = this.getObsidianClient(server);
     
     try {
-      const searchResults = await client.search(query, contextLength, limit, offset);
+      // Handle continuation token if provided
+      let actualOffset = offset;
+      if (token && !offset) {
+        try {
+          const decoded = JSON.parse(atob(token));
+          if (decoded.type === 'search' && decoded.query === query) {
+            actualOffset = decoded.offset;
+          }
+        } catch (e) {
+          // Invalid token, ignore and use provided offset
+        }
+      }
+      
+      const searchResults = await client.search(query, contextLength, limit, actualOffset);
       
       // If we're in preview mode (contextLength is defined), truncate contexts
       let processedResults = searchResults.results;
@@ -18,18 +31,25 @@ export class SearchHandler extends BaseResourceHandler {
         processedResults = this.truncateContexts(searchResults.results, contextLength);
       }
       
-      return {
+      const response: any = {
         query,
         results: processedResults,
         totalResults: searchResults.totalResults,
         hasMore: searchResults.hasMore
       };
+      
+      // Include continuation token if available
+      if (searchResults.continuationToken) {
+        response.continuationToken = searchResults.continuationToken;
+      }
+      
+      return response;
     } catch (error: unknown) {
       ResourceErrorHandler.handle(error, 'Search results', query);
     }
   }
   
-  private extractSearchParams(uri: string): { query: string; contextLength?: number; limit?: number; offset?: number } {
+  private extractSearchParams(uri: string): { query: string; contextLength?: number; limit?: number; offset?: number; token?: string } {
     const prefix = 'vault://search/';
     
     // Extract the part after vault://search/
@@ -69,7 +89,15 @@ export class SearchHandler extends BaseResourceHandler {
       contextLength = OBSIDIAN_DEFAULTS.CONTEXT_LENGTH;
     }
     
-    return { query, contextLength };
+    // Extract pagination parameters
+    const limitParam = urlParams.get('limit');
+    const offsetParam = urlParams.get('offset');
+    const token = urlParams.get('token');
+    
+    const limit = limitParam ? parseInt(limitParam, 10) : undefined;
+    const offset = offsetParam ? parseInt(offsetParam, 10) : undefined;
+    
+    return { query, contextLength, limit, offset, token };
   }
   
   private truncateContexts(results: any[], maxLength: number): any[] {

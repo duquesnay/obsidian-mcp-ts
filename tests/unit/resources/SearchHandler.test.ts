@@ -84,6 +84,122 @@ describe('SearchHandler', () => {
         .rejects.toThrow('Search API failed');
     });
 
+    describe('Pagination support', () => {
+      it('should support limit parameter for pagination', async () => {
+        const searchResults = {
+          results: [
+            { filename: 'note1.md', score: 0.95 },
+            { filename: 'note2.md', score: 0.85 },
+            { filename: 'note3.md', score: 0.75 }
+          ],
+          totalResults: 3,
+          hasMore: false
+        };
+        
+        mockClient.search.mockResolvedValue(searchResults);
+
+        const result = await handler.handleRequest('vault://search/test?limit=2', mockServer);
+
+        expect(mockClient.search).toHaveBeenCalledWith('test', 100, 2, undefined);
+        expect(result.query).toBe('test');
+      });
+
+      it('should support offset parameter for pagination', async () => {
+        const searchResults = {
+          results: [
+            { filename: 'note2.md', score: 0.85 },
+            { filename: 'note3.md', score: 0.75 }
+          ],
+          totalResults: 3,
+          hasMore: true
+        };
+        
+        mockClient.search.mockResolvedValue(searchResults);
+
+        const result = await handler.handleRequest('vault://search/test?offset=1', mockServer);
+
+        expect(mockClient.search).toHaveBeenCalledWith('test', 100, undefined, 1);
+        expect(result.query).toBe('test');
+      });
+
+      it('should support both limit and offset parameters', async () => {
+        const searchResults = {
+          results: [
+            { filename: 'note3.md', score: 0.75 }
+          ],
+          totalResults: 5,
+          hasMore: true
+        };
+        
+        mockClient.search.mockResolvedValue(searchResults);
+
+        const result = await handler.handleRequest('vault://search/test?limit=1&offset=2', mockServer);
+
+        expect(mockClient.search).toHaveBeenCalledWith('test', 100, 1, 2);
+        expect(result.query).toBe('test');
+      });
+
+      it('should use default limit for search results when not specified', async () => {
+        const searchResults = {
+          results: Array.from({ length: 15 }, (_, i) => ({ 
+            filename: `note${i + 1}.md`, 
+            score: 1.0 - (i * 0.05)
+          })),
+          totalResults: 15,
+          hasMore: false
+        };
+        
+        mockClient.search.mockResolvedValue(searchResults);
+
+        const result = await handler.handleRequest('vault://search/test', mockServer);
+
+        // Default search limit should be 10 for expensive search results
+        expect(mockClient.search).toHaveBeenCalledWith('test', 100, undefined, undefined);
+      });
+
+      it('should include pagination metadata in response', async () => {
+        const searchResults = {
+          results: [{ filename: 'note1.md', score: 0.95 }],
+          totalResults: 20,
+          hasMore: true,
+          offset: 5,
+          limit: 1
+        };
+        
+        mockClient.search.mockResolvedValue(searchResults);
+
+        const result = await handler.handleRequest('vault://search/test?limit=1&offset=5', mockServer);
+
+        expect(result).toEqual({
+          query: 'test',
+          results: searchResults.results,
+          totalResults: 20,
+          hasMore: true
+        });
+      });
+
+      it('should handle continuation tokens for consistent ordering', async () => {
+        const searchResults = {
+          results: [{ filename: 'note1.md', score: 0.95 }],
+          totalResults: 10,
+          hasMore: true,
+          continuationToken: 'eyJ0eXBlIjoic2VhcmNoIiwib2Zmc2V0IjoxfQ=='
+        };
+        
+        mockClient.search.mockResolvedValue(searchResults);
+
+        const result = await handler.handleRequest('vault://search/test?token=eyJ0eXBlIjoic2VhcmNoIiwib2Zmc2V0IjoxfQ==', mockServer);
+
+        expect(result).toEqual({
+          query: 'test',
+          results: searchResults.results,
+          totalResults: 10,
+          hasMore: true,
+          continuationToken: 'eyJ0eXBlIjoic2VhcmNoIiwib2Zmc2V0IjoxfQ=='
+        });
+      });
+    });
+
     describe('Mode parameter support', () => {
       it('should default to preview mode (100-character context)', async () => {
         const searchResults = {

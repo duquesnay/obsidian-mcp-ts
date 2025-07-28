@@ -46,7 +46,8 @@ describe('SearchClient', () => {
         totalResults: 2,
         hasMore: false,
         offset: 0,
-        limit: 2
+        limit: 10, // Default limit for resource search
+        continuationToken: undefined
       });
       expect(mockAxiosInstance.post).toHaveBeenCalledWith(
         '/search/simple/',
@@ -84,6 +85,65 @@ describe('SearchClient', () => {
       const result = await client.search('query');
 
       expect(result).toEqual(singleResult);
+    });
+
+    it('should support relevance scoring in results', async () => {
+      const mockResults = [
+        { path: 'file1.md', score: 0.95, matches: ['match1'] },
+        { path: 'file2.md', score: 0.85, matches: ['match2'] },
+        { path: 'file3.md', score: 0.75, matches: ['match3'] }
+      ];
+      vi.mocked(mockAxiosInstance.post).mockResolvedValue({
+        data: mockResults
+      });
+
+      const result = await client.search('query', 100, 10, 0);
+
+      expect(result.results).toEqual(mockResults);
+      expect(result.results[0].score).toBe(0.95);
+      expect(result.results[1].score).toBe(0.85);
+      expect(result.results[2].score).toBe(0.75);
+    });
+
+    it('should generate continuation tokens for consistent pagination', async () => {
+      const mockResults = [
+        { path: 'file1.md', score: 0.9 },
+        { path: 'file2.md', score: 0.8 }
+      ];
+      vi.mocked(mockAxiosInstance.post).mockResolvedValue({
+        data: mockResults
+      });
+
+      const result = await client.search('test query', 100, 2, 0);
+
+      expect(result).toHaveProperty('continuationToken');
+      if (result.continuationToken) {
+        const decoded = JSON.parse(atob(result.continuationToken));
+        expect(decoded).toEqual({
+          type: 'search',
+          query: 'test query',
+          offset: 2,
+          contextLength: 100
+        });
+      }
+    });
+
+    it('should use default limit of 10 for search results', async () => {
+      const mockResults = Array(15).fill(null).map((_, i) => ({
+        path: `file${i}.md`,
+        score: 1.0 - (i * 0.05),
+        matches: [`match${i}`]
+      }));
+      vi.mocked(mockAxiosInstance.post).mockResolvedValue({
+        data: mockResults
+      });
+
+      const result = await client.search('query');
+
+      expect(result.results).toHaveLength(10); // Default limit for search
+      expect(result.totalResults).toBe(15);
+      expect(result.hasMore).toBe(true);
+      expect(result.limit).toBe(10);
     });
   });
 

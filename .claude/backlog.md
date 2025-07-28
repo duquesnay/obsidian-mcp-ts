@@ -166,23 +166,23 @@ For each task:
   - [x] Add comprehensive tests for pagination behavior
   - [x] Document pagination parameters and usage
   
-- [ ] RPS1.2: Implement pagination for vault://recent resource
-  - Extend pagination system to vault://recent resource
-  - Default limit=20 recent items per page
-  - Include modification dates and continuation tokens
-  - Optimize for time-based pagination (chronological ordering)
-  - Update GetRecentChangesTool to handle paginated responses
-  - Add comprehensive tests for time-based pagination
-  - Update documentation with pagination examples
+- [x] RPS1.2: Implement pagination for vault://recent resource
+  - [x] Extend pagination system to vault://recent resource
+  - [x] Default limit=20 recent items per page
+  - [x] Include modification dates and continuation tokens
+  - [x] Optimize for time-based pagination (chronological ordering)
+  - [x] Update GetRecentChangesTool to handle paginated responses
+  - [x] Add comprehensive tests for time-based pagination
+  - [x] Update documentation with pagination examples
   
-- [ ] RPS1.3: Implement pagination for vault://folder/{path} resource
-  - Extend pagination system to vault://folder/{path} resource
-  - Default limit=50 items per page
-  - Handle nested folder pagination efficiently
-  - Include directory metadata and item counts
-  - Update ListFilesInDirTool to handle paginated responses
-  - Add comprehensive tests for folder pagination
-  - Update documentation with folder pagination examples
+- [x] RPS1.3: Implement pagination for vault://folder/{path} resource
+  - [x] Extend pagination system to vault://folder/{path} resource
+  - [x] Default limit=50 items per page
+  - [x] Handle nested folder pagination efficiently
+  - [x] Include directory metadata and item counts
+  - [x] Update ListFilesInDirTool to handle paginated responses
+  - [x] Add comprehensive tests for folder pagination
+  - [x] Update documentation with folder pagination examples
   
 - [ ] RPS1.4: Implement pagination for vault://search/{query} resource
   - Extend pagination system to vault://search/{query} resource
