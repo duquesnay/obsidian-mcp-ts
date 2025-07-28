@@ -24,8 +24,8 @@ describe('LRUCacheBenchmark', () => {
   });
 
   describe('Benchmark Scenarios', () => {
-    it('should run sequential access benchmark with high hit rate', () => {
-      const result = (benchmark as any).benchmarkSequentialAccess();
+    it('should run sequential access benchmark with high hit rate', async () => {
+      const result = await (benchmark as any).benchmarkSequentialAccess();
       
       expect(result.name).toBe('Sequential Access (High Hit Rate)');
       expect(result.totalOperations).toBeGreaterThan(0);
@@ -33,8 +33,8 @@ describe('LRUCacheBenchmark', () => {
       expect(result.hitRate).toBeGreaterThan(0.9); // Should have > 90% hit rate
     });
 
-    it('should run random access benchmark with lower hit rate', () => {
-      const result = (benchmark as any).benchmarkRandomAccessLargeDataset();
+    it('should run random access benchmark with lower hit rate', async () => {
+      const result = await (benchmark as any).benchmarkRandomAccessLargeDataset();
       
       expect(result.name).toBe('Random Access (Large Dataset)');
       expect(result.totalOperations).toBeGreaterThan(0);
@@ -42,35 +42,35 @@ describe('LRUCacheBenchmark', () => {
       expect(result.hitRate).toBeLessThan(0.5); // Should have < 50% hit rate due to large dataset
     });
 
-    it('should run TTL expiration benchmark', () => {
+    it('should run TTL expiration benchmark', async () => {
       // Use real timing for TTL test
       performanceNowSpy.mockRestore();
       
-      const result = (benchmark as any).benchmarkWithTTLExpiration();
+      const result = await (benchmark as any).benchmarkWithTTLExpiration();
       
       expect(result.name).toBe('TTL Expiration Impact');
       expect(result.totalOperations).toBeGreaterThan(0);
       expect(result.misses).toBeGreaterThan(0); // Should have misses due to TTL expiration
     });
 
-    it('should run optimal working set benchmark', () => {
-      const result = (benchmark as any).benchmarkOptimalWorkingSet();
+    it('should run optimal working set benchmark', async () => {
+      const result = await (benchmark as any).benchmarkOptimalWorkingSet();
       
       expect(result.name).toBe('Optimal Working Set');
       expect(result.totalOperations).toBeGreaterThan(0);
       expect(result.hitRate).toBeGreaterThan(0.8); // Should have > 80% hit rate with Pareto access
     });
 
-    it('should run cache thrashing benchmark', () => {
-      const result = (benchmark as any).benchmarkCacheThrashing();
+    it('should run cache thrashing benchmark', async () => {
+      const result = await (benchmark as any).benchmarkCacheThrashing();
       
       expect(result.name).toBe('Cache Thrashing (Worst Case)');
       expect(result.totalOperations).toBeGreaterThan(0);
       expect(result.hitRate).toBeLessThan(0.1); // Should have very low hit rate
     });
 
-    it('should run file metadata caching benchmark', () => {
-      const result = (benchmark as any).benchmarkFileMetadataCaching();
+    it('should run file metadata caching benchmark', async () => {
+      const result = await (benchmark as any).benchmarkFileMetadataCaching();
       
       expect(result.name).toBe('File Metadata Caching');
       expect(result.totalOperations).toBeGreaterThan(0);
@@ -83,20 +83,20 @@ describe('LRUCacheBenchmark', () => {
   });
 
   describe('Result Calculation', () => {
-    it('should calculate correct operations per second', () => {
-      const result = (benchmark as any).benchmarkSequentialAccess();
+    it('should calculate correct operations per second', async () => {
+      const result = await (benchmark as any).benchmarkSequentialAccess();
       
       expect(result.opsPerSecond).toBe(result.totalOperations / result.duration * 1000);
     });
 
-    it('should calculate correct average operation time', () => {
-      const result = (benchmark as any).benchmarkSequentialAccess();
+    it('should calculate correct average operation time', async () => {
+      const result = await (benchmark as any).benchmarkSequentialAccess();
       
       expect(result.averageOperationTime).toBe(result.duration / result.totalOperations);
     });
 
-    it('should calculate correct hit rate', () => {
-      const result = (benchmark as any).benchmarkSequentialAccess();
+    it('should calculate correct hit rate', async () => {
+      const result = await (benchmark as any).benchmarkSequentialAccess();
       
       const expectedHitRate = result.hits / (result.hits + result.misses);
       expect(result.hitRate).toBeCloseTo(expectedHitRate, 5);
@@ -133,9 +133,9 @@ describe('LRUCacheBenchmark', () => {
   });
 
   describe('Edge Cases', () => {
-    it('should handle empty cache operations', () => {
+    it('should handle empty cache operations', async () => {
       // Test with a cache that has no operations
-      const mockRunScenario = vi.spyOn(benchmark as any, 'runScenario').mockReturnValue({
+      const mockRunScenario = vi.spyOn(benchmark as any, 'runScenario').mockResolvedValue({
         name: 'Empty Test',
         totalOperations: 0,
         duration: 0,
@@ -146,7 +146,7 @@ describe('LRUCacheBenchmark', () => {
         averageOperationTime: 0
       });
 
-      const result = (benchmark as any).benchmarkSequentialAccess();
+      const result = await (benchmark as any).benchmarkSequentialAccess();
       
       expect(result.totalOperations).toBe(0);
       expect(result.hitRate).toBe(0);

@@ -1,17 +1,8 @@
 import { LRUCache } from '../utils/Cache.js';
 import { performance } from 'perf_hooks';
 import { LRU_CACHE } from '../constants.js';
-
-interface BenchmarkResult {
-  name: string;
-  totalOperations: number;
-  duration: number;
-  opsPerSecond: number;
-  hits: number;
-  misses: number;
-  hitRate: number;
-  averageOperationTime: number;
-}
+import { MemoryTracker } from './utils/MemoryTracker.js';
+import { CacheBenchmarkResult } from './utils/BenchmarkTypes.js';
 
 interface CacheBenchmarkConfig {
   cacheSize: number;
@@ -21,16 +12,16 @@ interface CacheBenchmarkConfig {
 }
 
 class LRUCacheBenchmark {
-  private results: BenchmarkResult[] = [];
+  private results: CacheBenchmarkResult[] = [];
 
   /**
-   * Run a benchmark scenario and collect results
+   * Run a benchmark scenario and collect results with memory tracking
    */
-  private runScenario(
+  private async runScenario(
     name: string, 
     config: CacheBenchmarkConfig,
-    scenario: (cache: LRUCache<string, any>) => void
-  ): BenchmarkResult {
+    scenario: (cache: LRUCache<string, any>) => void | Promise<void>
+  ): Promise<CacheBenchmarkResult> {
     const cache = new LRUCache<string, any>({
       maxSize: config.cacheSize,
       ttl: config.ttl
@@ -39,10 +30,15 @@ class LRUCacheBenchmark {
     // Reset stats before benchmark
     cache.resetStats();
 
+    // Track memory and performance
+    const tracker = new MemoryTracker();
+    tracker.start();
+
     const startTime = performance.now();
-    scenario(cache);
+    await scenario(cache);
     const endTime = performance.now();
 
+    const memoryResult = tracker.stop();
     const stats = cache.getStats();
     const duration = endTime - startTime;
 
@@ -54,14 +50,15 @@ class LRUCacheBenchmark {
       hits: stats.hits,
       misses: stats.misses,
       hitRate: stats.hitRate,
-      averageOperationTime: duration / (stats.hits + stats.misses)
+      averageOperationTime: duration / (stats.hits + stats.misses),
+      memory: memoryResult
     };
   }
 
   /**
    * Benchmark sequential access pattern (best case for LRU)
    */
-  benchmarkSequentialAccess(): BenchmarkResult {
+  async benchmarkSequentialAccess(): Promise<CacheBenchmarkResult> {
     const config: CacheBenchmarkConfig = {
       cacheSize: 1000,
       ttl: LRU_CACHE.NO_EXPIRATION,
@@ -86,7 +83,7 @@ class LRUCacheBenchmark {
   /**
    * Benchmark random access pattern with working set larger than cache
    */
-  benchmarkRandomAccessLargeDataset(): BenchmarkResult {
+  async benchmarkRandomAccessLargeDataset(): Promise<CacheBenchmarkResult> {
     const config: CacheBenchmarkConfig = {
       cacheSize: 100,
       ttl: LRU_CACHE.NO_EXPIRATION,
@@ -112,7 +109,7 @@ class LRUCacheBenchmark {
   /**
    * Benchmark with TTL expiration affecting hit rate
    */
-  benchmarkWithTTLExpiration(): BenchmarkResult {
+  async benchmarkWithTTLExpiration(): Promise<CacheBenchmarkResult> {
     const config: CacheBenchmarkConfig = {
       cacheSize: 500,
       ttl: 100, // 100ms TTL
@@ -146,7 +143,7 @@ class LRUCacheBenchmark {
   /**
    * Benchmark working set that fits perfectly in cache (best case)
    */
-  benchmarkOptimalWorkingSet(): BenchmarkResult {
+  async benchmarkOptimalWorkingSet(): Promise<CacheBenchmarkResult> {
     const config: CacheBenchmarkConfig = {
       cacheSize: 500,
       ttl: LRU_CACHE.NO_EXPIRATION,
@@ -176,7 +173,7 @@ class LRUCacheBenchmark {
   /**
    * Benchmark cache thrashing scenario (worst case)
    */
-  benchmarkCacheThrashing(): BenchmarkResult {
+  async benchmarkCacheThrashing(): Promise<CacheBenchmarkResult> {
     const config: CacheBenchmarkConfig = {
       cacheSize: 50,
       ttl: LRU_CACHE.NO_EXPIRATION,
@@ -201,7 +198,7 @@ class LRUCacheBenchmark {
   /**
    * Benchmark real-world file metadata caching scenario
    */
-  benchmarkFileMetadataCaching(): BenchmarkResult {
+  async benchmarkFileMetadataCaching(): Promise<CacheBenchmarkResult> {
     const config: CacheBenchmarkConfig = {
       cacheSize: 200,
       ttl: 60000, // 1 minute TTL
@@ -246,12 +243,12 @@ class LRUCacheBenchmark {
     console.log('=' . repeat(80));
 
     // Run benchmarks
-    this.results.push(this.benchmarkSequentialAccess());
-    this.results.push(this.benchmarkOptimalWorkingSet());
-    this.results.push(this.benchmarkFileMetadataCaching());
-    this.results.push(this.benchmarkRandomAccessLargeDataset());
-    this.results.push(this.benchmarkWithTTLExpiration());
-    this.results.push(this.benchmarkCacheThrashing());
+    this.results.push(await this.benchmarkSequentialAccess());
+    this.results.push(await this.benchmarkOptimalWorkingSet());
+    this.results.push(await this.benchmarkFileMetadataCaching());
+    this.results.push(await this.benchmarkRandomAccessLargeDataset());
+    this.results.push(await this.benchmarkWithTTLExpiration());
+    this.results.push(await this.benchmarkCacheThrashing());
 
     // Display results
     this.displayResults();
@@ -271,6 +268,11 @@ class LRUCacheBenchmark {
       console.log(`Cache Misses: ${result.misses.toLocaleString()}`);
       console.log(`Hit Rate: ${(result.hitRate * 100).toFixed(2)}%`);
       console.log(`Avg Op Time: ${(result.averageOperationTime * 1000).toFixed(3)}µs`);
+      
+      // Display memory metrics if available
+      if (result.memory) {
+        console.log('\n' + MemoryTracker.formatResult(result.memory));
+      }
       console.log();
     }
   }
@@ -301,12 +303,33 @@ class LRUCacheBenchmark {
     const avgOpsPerSec = this.results.reduce((sum, r) => sum + r.opsPerSecond, 0) / this.results.length;
     console.log(`- Average throughput: ${avgOpsPerSec.toFixed(0).toLocaleString()} ops/sec`);
     
+    // Memory efficiency analysis
+    console.log('\n💾 Memory Efficiency:');
+    const memoryEfficiencyResults = this.results
+      .filter(r => r.memory)
+      .map(r => ({
+        name: r.name,
+        bytesPerOp: r.memory!.delta.heapUsed / r.totalOperations,
+        peakUsage: r.memory!.peak.heapUsed
+      }))
+      .sort((a, b) => a.bytesPerOp - b.bytesPerOp);
+    
+    if (memoryEfficiencyResults.length > 0) {
+      const mostEfficient = memoryEfficiencyResults[0];
+      const leastEfficient = memoryEfficiencyResults[memoryEfficiencyResults.length - 1];
+      
+      console.log(`- Most memory efficient: ${mostEfficient.name} (${mostEfficient.bytesPerOp.toFixed(2)} bytes/op)`);
+      console.log(`- Least memory efficient: ${leastEfficient.name} (${leastEfficient.bytesPerOp.toFixed(2)} bytes/op)`);
+      console.log(`- Peak memory usage: ${MemoryTracker.formatBytes(Math.max(...memoryEfficiencyResults.map(r => r.peakUsage)))}`);
+    }
+    
     // Cache efficiency recommendations
     console.log('\n🎯 Cache Tuning Recommendations:');
     console.log('- For sequential access patterns: Large cache with no TTL works best');
     console.log('- For random access: Cache size should match working set size');
     console.log('- For time-sensitive data: Balance TTL with access frequency');
     console.log('- For large datasets: Focus on caching hot data (80/20 rule)');
+    console.log('- Monitor memory usage: Peak usage should stay within acceptable limits');
   }
 }
 
