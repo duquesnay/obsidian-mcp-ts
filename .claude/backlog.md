@@ -361,11 +361,45 @@ a**Last Updated**: 2025-01-27
   - [ ] Q3.3.7: Add references to Obsidian Local REST API security model
   - [ ] Q3.3.8: Include alternative security measures for production use
 
-### Resource Discovery Enhancement (High Priority - Quick Win)
+### Resource Discovery Enhancement (High Priority - Quick Win) ✅ COMPLETED
 - [x] RD1: Update GetAllTagsTool description to mention vault://tags resource (5min cache)
 - [x] RD2: Update GetRecentChangesTool description to mention vault://recent resource (30s cache)
 - [x] RD3: Update GetFileContentsTool description to mention vault://note/{path} resource (2min cache)
 - [x] RD4: Update SimpleSearchTool description to mention vault://search/{query} resource (1min cache)
 - [x] RD5: Update ListFilesInVaultTool description to mention vault://structure resource (5min cache)
 - [x] RD6: Update ListFilesInDirTool description to mention vault://folder/{path} resource (2min cache)
+
+---
+
+## Tool-Resource Integration (High Priority - Performance Enhancement)
+
+### Problem Analysis
+Research confirmed that Claude Desktop shows resources as "connected" in Settings > Integrations but never actually uses them:
+- Claude Desktop only calls `resources/list` but never `resources/templates/list` for dynamic resources
+- Resources appear in submenu but Claude prefers web search over using registered resources
+- This is a known limitation with active GitHub issues in both TypeScript SDK (#686) and Python SDK (#263)
+- Dynamic resources like `vault://note/{path}` are invisible to Claude Desktop
+
+### Solution: Internal Resource Integration
+Tools will use resources internally for caching benefits while maintaining full backward compatibility.
+
+### High Priority - Tool Performance Enhancement
+- [ ] TRI1: Update GetAllTagsTool to use vault://tags resource internally (5min cache vs fresh API call)
+- [ ] TRI2: Update GetRecentChangesTool to use vault://recent resource internally (30s cache vs fresh API call)  
+- [ ] TRI3: Update GetFileContentsTool to use vault://note/{path} resource internally (2min cache vs fresh API call)
+- [ ] TRI4: Update SimpleSearchTool to use vault://search/{query} resource internally (1min cache vs fresh API call)
+- [ ] TRI5: Update ListFilesInVaultTool to use vault://structure resource internally (5min cache vs fresh API call)
+- [ ] TRI6: Update ListFilesInDirTool to use vault://folder/{path} resource internally (2min cache vs fresh API call)
+
+### Medium Priority - Documentation & Testing
+- [ ] TRI7: Update tool descriptions to mention performance improvements from internal caching
+- [ ] TRI8: Add integration tests verifying tools get cached responses
+- [ ] TRI9: Update README explaining the internal resource optimization
+- [ ] TRI10: Document Claude Desktop resource limitation for future reference
+
+### Benefits
+- **Performance**: Significant speed improvements from caching (5min static, 2min dynamic, 30s recent)
+- **Backward Compatible**: All existing tool interfaces preserved
+- **Future Ready**: Resources remain available when Claude Desktop fixes the limitation
+- **Transparent**: Users get benefits without changing their usage patterns
 
