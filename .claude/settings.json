@@ -3,7 +3,6 @@
     "PostToolUse": [
       {
         "matcher": "Bash",
-        "input_filter": "git commit",
         "hooks": [
           {
             "type": "command",

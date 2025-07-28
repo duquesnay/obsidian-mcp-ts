@@ -280,4 +280,127 @@ describe('VaultStructureHandler', () => {
       expect(data.message).toContain('6000 files');
     });
   });
+
+  describe('pagination', () => {
+    const mockFiles = Array.from({ length: 100 }, (_, i) => `file${i}.md`);
+
+    const createMockServer = () => ({
+      obsidianClient: {
+        listFilesInVault: vi.fn().mockResolvedValue(mockFiles)
+      }
+    });
+
+    it('should support pagination with limit and offset parameters', async () => {
+      const server = createMockServer();
+      const handler = new VaultStructureHandler();
+      const result = await handler.execute('vault://structure?limit=10&offset=5', server);
+      
+      const data = JSON.parse(result.contents[0].text);
+      expect(data).toHaveProperty('paginatedFiles');
+      expect(data).toHaveProperty('totalFiles', 100);
+      expect(data).toHaveProperty('hasMore');
+      expect(data).toHaveProperty('limit', 10);
+      expect(data).toHaveProperty('offset', 5);
+      expect(data.paginatedFiles).toHaveLength(10);
+      expect(data.paginatedFiles[0]).toBe('file5.md');
+      expect(data.paginatedFiles[9]).toBe('file14.md');
+      expect(data.hasMore).toBe(true);
+    });
+
+    it('should default to limit=50 when no limit specified', async () => {
+      const server = createMockServer();
+      const handler = new VaultStructureHandler();
+      const result = await handler.execute('vault://structure', server);
+      
+      const data = JSON.parse(result.contents[0].text);
+      expect(data).toHaveProperty('limit', 50);
+      expect(data).toHaveProperty('offset', 0);
+      expect(data.paginatedFiles).toHaveLength(50);
+    });
+
+    it('should handle offset beyond total files', async () => {
+      const server = createMockServer();
+      const handler = new VaultStructureHandler();
+      const result = await handler.execute('vault://structure?offset=150', server);
+      
+      const data = JSON.parse(result.contents[0].text);
+      expect(data.paginatedFiles).toHaveLength(0);
+      expect(data.hasMore).toBe(false);
+      expect(data.totalFiles).toBe(100);
+    });
+
+    it('should include nextUri when there are more results', async () => {
+      const server = createMockServer();
+      const handler = new VaultStructureHandler();
+      const result = await handler.execute('vault://structure?limit=20&offset=10', server);
+      
+      const data = JSON.parse(result.contents[0].text);
+      expect(data).toHaveProperty('nextUri', 'vault://structure?limit=20&offset=30');
+      expect(data.hasMore).toBe(true);
+    });
+
+    it('should not include nextUri when there are no more results', async () => {
+      const server = createMockServer();
+      const handler = new VaultStructureHandler();
+      const result = await handler.execute('vault://structure?limit=20&offset=90', server);
+      
+      const data = JSON.parse(result.contents[0].text);
+      expect(data.nextUri).toBeUndefined();
+      expect(data.hasMore).toBe(false);
+      expect(data.paginatedFiles).toHaveLength(10); // Only 10 files left from offset 90
+    });
+
+    it('should support legacy mode with unlimited results', async () => {
+      const server = createMockServer();
+      const handler = new VaultStructureHandler();
+      const result = await handler.execute('vault://structure?legacy=true', server);
+      
+      const data = JSON.parse(result.contents[0].text);
+      expect(data).not.toHaveProperty('paginatedFiles');
+      expect(data).not.toHaveProperty('hasMore');
+      expect(data).not.toHaveProperty('nextUri');
+      expect(data).toHaveProperty('structure'); // Should have full structure
+      expect(data.totalFiles).toBe(100);
+    });
+
+    it('should work with folders and nested files in pagination', async () => {
+      const mockNestedFiles = [
+        'file1.md',
+        'folder1/file2.md',
+        'folder1/subfolder1/file3.md',
+        'folder2/file4.md',
+        'file5.md'
+      ];
+      
+      const server = {
+        obsidianClient: {
+          listFilesInVault: vi.fn().mockResolvedValue(mockNestedFiles)
+        }
+      };
+      
+      const handler = new VaultStructureHandler();
+      const result = await handler.execute('vault://structure?limit=3&offset=1', server);
+      
+      const data = JSON.parse(result.contents[0].text);
+      expect(data.paginatedFiles).toEqual([
+        'folder1/file2.md',
+        'folder1/subfolder1/file3.md',
+        'folder2/file4.md'
+      ]);
+      expect(data.totalFiles).toBe(5);
+      expect(data.hasMore).toBe(true);
+    });
+
+    it('should preserve other query parameters with pagination', async () => {
+      const server = createMockServer();
+      const handler = new VaultStructureHandler();
+      const result = await handler.execute('vault://structure?mode=preview&limit=10&offset=5', server);
+      
+      const data = JSON.parse(result.contents[0].text);
+      expect(data.mode).toBe('preview');
+      expect(data).toHaveProperty('paginatedFiles');
+      expect(data.limit).toBe(10);
+      expect(data.offset).toBe(5);
+    });
+  });
 });
