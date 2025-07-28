@@ -39,11 +39,30 @@ export { RecentChangesHandler as RecentHandler } from './RecentChangesHandler.js
 
 export class NoteHandler extends BaseResourceHandler {
   async handleRequest(uri: string, server?: any): Promise<any> {
-    const path = this.extractPath(uri, 'vault://note/');
+    // Parse query parameters for mode first
+    const url = new URL(uri, 'vault://');
+    const modeParam = url.searchParams.get('mode') || 'preview';
+    
+    // Extract path without query parameters
+    const uriWithoutQuery = uri.split('?')[0];
+    const path = this.extractPath(uriWithoutQuery, 'vault://note/');
     const client = this.getObsidianClient(server);
     
+    // Validate mode parameter (default to preview for invalid modes)
+    const validModes = ['preview', 'full'];
+    const mode = validModes.includes(modeParam) ? modeParam : 'preview';
+    
     try {
-      return await client.getFileContents(path);
+      const content = await client.getFileContents(path);
+      
+      if (mode === 'full') {
+        // Return full content as markdown text (backward compatibility)
+        return content;
+      } else {
+        // Return preview mode as JSON with frontmatter, preview, and statistics
+        const { NoteContentProcessor } = await import('../utils/NoteContentProcessor.js');
+        return NoteContentProcessor.processForPreview(content as string);
+      }
     } catch (error: unknown) {
       ResourceErrorHandler.handle(error, 'Note', path);
     }

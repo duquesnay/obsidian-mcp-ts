@@ -69,7 +69,7 @@ describe('Resource Handlers', () => {
   });
   
   describe('createNoteHandler', () => {
-    it('should fetch note content using ObsidianClient', async () => {
+    it('should fetch note content in preview mode by default', async () => {
       const mockGetFileContents = vi.fn().mockResolvedValue('# Test Note\n\nContent');
       const mockServer = {
         obsidianClient: {
@@ -82,10 +82,40 @@ describe('Resource Handlers', () => {
       
       expect(mockGetFileContents).toHaveBeenCalledWith('Daily/2024-01-01.md');
       expect(result.contents).toHaveLength(1);
+      expect(result.contents[0].uri).toBe('vault://note/Daily/2024-01-01.md');
+      expect(result.contents[0].mimeType).toBe('application/json');
+      
+      const data = JSON.parse(result.contents[0].text);
+      expect(data).toMatchObject({
+        mode: 'preview',
+        frontmatter: null,
+        preview: '# Test Note\n\nContent',
+        statistics: {
+          wordCount: 4,
+          characterCount: 20,
+          headingCount: 1,
+          headings: ['Test Note']
+        }
+      });
+    });
+
+    it('should return full content when mode=full is specified', async () => {
+      const mockGetFileContents = vi.fn().mockResolvedValue('# Full Test Note\n\nComplete content');
+      const mockServer = {
+        obsidianClient: {
+          getFileContents: mockGetFileContents
+        }
+      };
+      
+      const handler = createNoteHandler();
+      const result = await handler('vault://note/test.md?mode=full', mockServer);
+      
+      expect(mockGetFileContents).toHaveBeenCalledWith('test.md');
+      expect(result.contents).toHaveLength(1);
       expect(result.contents[0]).toMatchObject({
-        uri: 'vault://note/Daily/2024-01-01.md',
+        uri: 'vault://note/test.md?mode=full',
         mimeType: 'text/markdown',
-        text: '# Test Note\n\nContent'
+        text: '# Full Test Note\n\nComplete content'
       });
     });
     
