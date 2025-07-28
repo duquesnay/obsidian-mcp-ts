@@ -5,6 +5,14 @@
 ### Overview
 This backlog decomposes quality improvement recommendations into fine-grained, incremental tasks. Each task must be implemented using the Task tool to launch a sub-agent.
 
+### Available Agents
+See `.claude/agents/README.md` for the complete list of specialized agents and their capabilities. Key agents include:
+- **typescript-specialist**: Type system expertise
+- **test-engineer**: TDD methodology  
+- **code-quality-analyst**: Code smell detection
+- **architecture-reviewer**: SOLID principles
+- **team-coordinator**: Multi-agent orchestration
+
 ### Orchestration Rules
 1. **MANDATORY**: Use the Task tool to create a sub-agent for EACH backlog item
 2. **NEVER** implement tasks directly - always delegate to sub-agents
@@ -211,8 +219,8 @@ For each task:
 
 ## Progress Status
 
-**Last Updated**: 2025-01-24
-**Current Priority**: ✅ All tasks completed!
+a**Last Updated**: 2025-01-27
+**Current Priority**: [⏳] Periodic Code Quality Review and Remaining Backlog Completion (2025-01-27)
 **Completion Status**: 100% - All resource implementation tasks finished
 **Green Line Status**: ✅ All tests passing (671 tests)
 **High Priority TODOs**: ✅ All 3 completed
@@ -291,6 +299,9 @@ For each task:
 - [x] PF3: Add automatic cleanup for NotificationManager event listeners (added process exit cleanup and diagnostic tools)
 - [x] PF4: Implement maxEntrySize limit for cache entries (added maxEntrySize option to LRUCache with TDD approach)
 - [x] PF5: Add streaming/pagination for large vault operations (pagination implemented across list tools, OptimizedBatchProcessor includes streaming capabilities)
+
+### Critical Bug Fix
+- [⏳] CRITICAL: Fix cache invalidation test failure - getAllTags cache not invalidating on file creation
 
 ### Performance Features Integration (Lower Priority)
 - [ ] CQ12: Complete subscription system integration (Partial)
