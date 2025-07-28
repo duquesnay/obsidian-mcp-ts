@@ -3,9 +3,19 @@ import { GetFileMetadataTool } from '../../src/tools/GetFileMetadataTool.js';
 import { GetFileFrontmatterTool } from '../../src/tools/GetFileFrontmatterTool.js';
 import { GetFileFormattedTool } from '../../src/tools/GetFileFormattedTool.js';
 import { GetFileContentsTool } from '../../src/tools/GetFileContentsTool.js';
+import { defaultCachedHandlers } from '../../src/resources/CachedConcreteHandlers.js';
 
 // Mock ObsidianClient
 vi.mock('../../src/obsidian/ObsidianClient.js');
+
+// Mock CachedConcreteHandlers
+vi.mock('../../src/resources/CachedConcreteHandlers.js', () => ({
+  defaultCachedHandlers: {
+    note: {
+      handleRequest: vi.fn()
+    }
+  }
+}));
 
 describe('Content Negotiation Tools', () => {
   let mockClient: any;
@@ -170,13 +180,15 @@ describe('Content Negotiation Tools', () => {
       expect(tool.inputSchema.properties.format.enum).toEqual(['content', 'metadata', 'frontmatter', 'plain', 'html']);
     });
 
-    it('should call getFileContents without format by default', async () => {
+    it('should use cached resource handler without format by default', async () => {
       const mockContent = '# Test\n\nDefault content';
-      mockClient.getFileContents.mockResolvedValue(mockContent);
+      // Mock the resource handler since no format means we use the cached handler
+      vi.mocked(defaultCachedHandlers.note.handleRequest).mockResolvedValue(mockContent);
 
       const result = await tool.execute({ filepath: 'test.md' });
 
-      expect(mockClient.getFileContents).toHaveBeenCalledWith('test.md', undefined);
+      expect(defaultCachedHandlers.note.handleRequest).toHaveBeenCalledWith('vault://note/test.md');
+      expect(mockClient.getFileContents).not.toHaveBeenCalled();
       expect(result.type).toBe('text');
       expect(result.text).toBe(mockContent);
     });

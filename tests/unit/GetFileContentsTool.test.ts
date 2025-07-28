@@ -2,10 +2,20 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { GetFileContentsTool } from '../../src/tools/GetFileContentsTool.js';
 import { ObsidianClient } from '../../src/obsidian/ObsidianClient.js';
 import { PathValidationUtil } from '../../src/utils/PathValidationUtil.js';
+import { defaultCachedHandlers } from '../../src/resources/CachedConcreteHandlers.js';
 
 // Mock ObsidianClient
 vi.mock('../../src/obsidian/ObsidianClient.js', () => ({
   ObsidianClient: vi.fn()
+}));
+
+// Mock CachedConcreteHandlers
+vi.mock('../../src/resources/CachedConcreteHandlers.js', () => ({
+  defaultCachedHandlers: {
+    note: {
+      handleRequest: vi.fn()
+    }
+  }
 }));
 
 // Path validation is now done by PathValidationUtil internally
@@ -34,13 +44,14 @@ describe('GetFileContentsTool', () => {
       };
 
       const mockContent = '# Example Note\n\nThis is content.';
-      vi.mocked(mockClient.getFileContents!).mockResolvedValue(mockContent);
+      // Use resource handler mock for default format (no format specified)
+      vi.mocked(defaultCachedHandlers.note.handleRequest).mockResolvedValue(mockContent);
 
       const result = await tool.execute(args);
       
       // For string content, the result.text contains the raw string
       expect(result.text).toBe(mockContent);
-      expect(mockClient.getFileContents).toHaveBeenCalledWith('notes/example.md', undefined);
+      expect(defaultCachedHandlers.note.handleRequest).toHaveBeenCalledWith('vault://note/notes/example.md');
     });
 
     it('should get file contents with specified format', async () => {
@@ -97,7 +108,8 @@ describe('GetFileContentsTool', () => {
       };
 
       const largeContent = 'a'.repeat(10000) + '\n\n' + 'b'.repeat(10000);
-      vi.mocked(mockClient.getFileContents!).mockResolvedValue(largeContent);
+      // Use resource handler mock for default format (no format specified)
+      vi.mocked(defaultCachedHandlers.note.handleRequest).mockResolvedValue(largeContent);
 
       const result = await tool.execute(args);
       
@@ -152,7 +164,8 @@ describe('GetFileContentsTool', () => {
 
       const error = new Error('File not found');
       (error as any).response = { status: 404 };
-      vi.mocked(mockClient.getFileContents!).mockRejectedValue(error);
+      // Use resource handler mock for default format (no format specified)
+      vi.mocked(defaultCachedHandlers.note.handleRequest).mockRejectedValue(error);
 
       const result = await tool.execute(args);
       const response = JSON.parse(result.text);
@@ -169,7 +182,8 @@ describe('GetFileContentsTool', () => {
 
       const error = new Error('Permission denied');
       (error as any).response = { status: 403 };
-      vi.mocked(mockClient.getFileContents!).mockRejectedValue(error);
+      // Use resource handler mock for default format (no format specified)
+      vi.mocked(defaultCachedHandlers.note.handleRequest).mockRejectedValue(error);
 
       const result = await tool.execute(args);
       const response = JSON.parse(result.text);
@@ -184,7 +198,8 @@ describe('GetFileContentsTool', () => {
       };
 
       const error = new Error('Request timeout');
-      vi.mocked(mockClient.getFileContents!).mockRejectedValue(error);
+      // Use resource handler mock for default format (no format specified)
+      vi.mocked(defaultCachedHandlers.note.handleRequest).mockRejectedValue(error);
 
       const result = await tool.execute(args);
       const response = JSON.parse(result.text);
@@ -216,14 +231,15 @@ describe('GetFileContentsTool', () => {
         filepath: 'test/file.md'
       };
 
-      vi.mocked(mockClient.getFileContents!).mockResolvedValue('Test content');
+      // Use resource handler mock for default format (no format specified)
+      vi.mocked(defaultCachedHandlers.note.handleRequest).mockResolvedValue('Test content');
 
       const result = await tool.execute(args);
       
       // Verify the tool executes successfully with a valid path
       expect(result.type).toBe('text');
       expect(result.text).toBe('Test content');
-      expect(mockClient.getFileContents).toHaveBeenCalled();
+      expect(defaultCachedHandlers.note.handleRequest).toHaveBeenCalled();
     });
 
     it('should handle path validation errors', async () => {
@@ -246,7 +262,8 @@ describe('GetFileContentsTool', () => {
       };
 
       const mockContent = 'Simple markdown content';
-      vi.mocked(mockClient.getFileContents!).mockResolvedValue(mockContent);
+      // Use resource handler mock for default format (no format specified)
+      vi.mocked(defaultCachedHandlers.note.handleRequest).mockResolvedValue(mockContent);
 
       const result = await tool.execute(args);
       
@@ -283,7 +300,8 @@ describe('GetFileContentsTool', () => {
         filepath: 'empty.md'
       };
 
-      vi.mocked(mockClient.getFileContents!).mockResolvedValue('');
+      // Use resource handler mock for default format (no format specified)
+      vi.mocked(defaultCachedHandlers.note.handleRequest).mockResolvedValue('');
 
       const result = await tool.execute(args);
       
@@ -297,7 +315,8 @@ describe('GetFileContentsTool', () => {
       };
 
       const specialContent = 'Content with "quotes", \\backslashes, and 🚀 emojis';
-      vi.mocked(mockClient.getFileContents!).mockResolvedValue(specialContent);
+      // Use resource handler mock for default format (no format specified)
+      vi.mocked(defaultCachedHandlers.note.handleRequest).mockResolvedValue(specialContent);
 
       const result = await tool.execute(args);
       
@@ -312,7 +331,8 @@ describe('GetFileContentsTool', () => {
         filepath: 'test.md'
       };
 
-      vi.mocked(mockClient.getFileContents!).mockResolvedValue('test content');
+      // Use resource handler mock for default format (no format specified)
+      vi.mocked(defaultCachedHandlers.note.handleRequest).mockResolvedValue('test content');
 
       const result = await tool.execute(args);
       
@@ -360,7 +380,8 @@ Content for section 2
 ### Subsection
 Nested content`;
 
-      vi.mocked(mockClient.getFileContents!).mockResolvedValue(structuredContent);
+      // Use resource handler mock for default format (no format specified)
+      vi.mocked(defaultCachedHandlers.note.handleRequest).mockResolvedValue(structuredContent);
 
       const result = await tool.execute(args);
       
@@ -369,6 +390,49 @@ Nested content`;
       expect(result.text).toContain('# Document Title');
       expect(result.text).toContain('## Section 1');
       expect(result.text).toContain('### Subsection');
+    });
+  });
+
+  describe('resource handler integration', () => {
+    it('should use cached resource handler instead of direct client call', async () => {
+      const args = {
+        filepath: 'test/example.md'
+      };
+
+      const mockContent = '# Test Note\n\nTest content';
+      vi.mocked(defaultCachedHandlers.note.handleRequest).mockResolvedValue(mockContent);
+
+      const result = await tool.execute(args);
+      
+      // Verify that the cached resource handler was called with the correct URI
+      expect(defaultCachedHandlers.note.handleRequest).toHaveBeenCalledWith('vault://note/test/example.md');
+      
+      // Verify that the direct client method was NOT called
+      expect(mockClient.getFileContents).not.toHaveBeenCalled();
+      
+      // Verify the result is correct
+      expect(result.text).toBe(mockContent);
+    });
+
+    it('should use direct client call when format parameter is specified', async () => {
+      const args = {
+        filepath: 'test/example.md',
+        format: 'plain' as const
+      };
+
+      const mockContent = 'Test content without markdown';
+      vi.mocked(mockClient.getFileContents!).mockResolvedValue(mockContent);
+
+      const result = await tool.execute(args);
+      
+      // Verify that the direct client method was called (format parameter handling)
+      expect(mockClient.getFileContents).toHaveBeenCalledWith('test/example.md', 'plain');
+      
+      // Verify that the cached resource handler was NOT called when format is specified
+      expect(defaultCachedHandlers.note.handleRequest).not.toHaveBeenCalled();
+      
+      // Verify the result is correct
+      expect(result.text).toBe(mockContent);
     });
   });
 
