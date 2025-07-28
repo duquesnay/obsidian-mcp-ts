@@ -2,15 +2,23 @@ import { GetRecentChangesArgs } from './types/GetRecentChangesArgs.js';
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
 import { PAGINATION_SCHEMA } from '../utils/validation.js';
+import { defaultCachedHandlers } from '../resources/CachedConcreteHandlers.js';
+import { RecentChange } from '../types/obsidian.js';
+
+// Interface for vault notes from the resource cache
+interface VaultNote {
+  path: string;
+  modifiedAt: string; // ISO date string
+}
 
 export class GetRecentChangesTool extends BaseTool<GetRecentChangesArgs> {
   name = 'obsidian_get_recent_changes';
-  description = 'Get recently modified files in the vault. For better performance, consider using the vault://recent resource which provides cached results (30 seconds cache).';
+  description = 'Get recently modified files in the vault. Uses vault://recent resource internally with 30 second caching for optimal performance.';
   
   metadata: ToolMetadata = {
     category: 'file-operations',
     keywords: ['recent', 'changes', 'modified', 'files', 'history'],
-    version: '1.0.0'
+    version: '1.1.0'
   };
   
   inputSchema = {
@@ -36,17 +44,64 @@ export class GetRecentChangesTool extends BaseTool<GetRecentChangesArgs> {
 
   async executeTyped(args: GetRecentChangesArgs): Promise<ToolResponse> {
     try {
-      const client = this.getClient();
-      const result = await client.getRecentChanges(
-        args.directory,
-        args.limit,
-        args.offset,
-        args.contentLength
-      );
+      // Use cached resource handler for 30-second caching performance benefit
+      const resourceData = await defaultCachedHandlers.recent.handleRequest('vault://recent');
+      let notes: VaultNote[] = resourceData.notes;
       
-      return this.formatResponse(result);
+      // Apply directory filtering if requested
+      if (args.directory) {
+        notes = this.filterNotesByDirectory(notes, args.directory);
+      }
+      
+      // Determine if pagination is needed
+      if (this.isPaginationRequested(args, notes.length)) {
+        return this.createPaginatedResponse(notes, args);
+      }
+      
+      // Return backward-compatible format for non-paginated response
+      const recentChanges = this.convertToRecentChangesFormat(notes);
+      return this.formatResponse(recentChanges);
     } catch (error) {
       return this.handleError(error);
     }
+  }
+
+  private filterNotesByDirectory(notes: VaultNote[], directory: string): VaultNote[] {
+    const dirPrefix = directory.endsWith('/') ? directory : `${directory}/`;
+    return notes.filter(note => note.path.startsWith(dirPrefix));
+  }
+
+  private isPaginationRequested(args: GetRecentChangesArgs, totalNotes: number): boolean {
+    const hasOffset = args.offset !== undefined && args.offset > 0;
+    const hasLimitLessThanTotal = args.limit !== undefined && args.limit < totalNotes;
+    return hasOffset || hasLimitLessThanTotal;
+  }
+
+  private createPaginatedResponse(notes: VaultNote[], args: GetRecentChangesArgs): ToolResponse {
+    const totalNotes = notes.length;
+    const limit = args.limit || totalNotes;
+    const offset = args.offset || 0;
+    
+    const paginatedNotes = notes.slice(offset, offset + limit);
+    const hasMore = offset + limit < totalNotes;
+    
+    return this.formatResponse({
+      notes: paginatedNotes,
+      totalNotes,
+      hasMore,
+      limit,
+      offset,
+      nextOffset: hasMore ? offset + limit : undefined
+    });
+  }
+
+  private convertToRecentChangesFormat(notes: VaultNote[]): RecentChange[] {
+    // Convert resource format { path, modifiedAt } to RecentChange[] format
+    // for backward compatibility with existing client code
+    return notes.map(note => ({
+      path: note.path,
+      mtime: new Date(note.modifiedAt).getTime(),
+      content: undefined // Content preview not available from cached resource
+    }));
   }
 }
