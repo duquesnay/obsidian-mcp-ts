@@ -2,10 +2,11 @@ import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { GetAllTagsArgs } from './types/GetAllTagsArgs.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
 import { PAGINATION_SCHEMA } from '../utils/validation.js';
+import { defaultCachedHandlers } from '../resources/CachedConcreteHandlers.js';
 
 export class GetAllTagsTool extends BaseTool<GetAllTagsArgs> {
   name = 'obsidian_get_all_tags';
-  description = 'List all unique tags in the vault with their usage counts. Includes both inline tags (#tag) and frontmatter tags. For better performance, consider using the vault://tags resource which is cached for 5 minutes.';
+  description = 'List all unique tags in the vault with their usage counts. Includes both inline tags (#tag) and frontmatter tags. Uses vault://tags resource internally with 5-minute caching for optimal performance.';
   
   metadata: ToolMetadata = {
     category: 'tags',
@@ -38,8 +39,9 @@ export class GetAllTagsTool extends BaseTool<GetAllTagsArgs> {
 
   async executeTyped(args: GetAllTagsArgs): Promise<ToolResponse> {
     try {
-      const client = this.getClient();
-      let tags = await client.getAllTags();
+      // Use cached resource handler instead of direct client call for better performance
+      const resourceData = await defaultCachedHandlers.tags.handleRequest('vault://tags');
+      let tags = resourceData.tags;
       
       // Apply sorting if requested
       if (args.sortBy) {

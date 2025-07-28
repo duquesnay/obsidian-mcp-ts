@@ -1,10 +1,12 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { GetAllTagsTool } from '../../src/tools/GetAllTagsTool.js';
 import { ObsidianClient } from '../../src/obsidian/ObsidianClient.js';
+import { defaultCachedHandlers } from '../../src/resources/CachedConcreteHandlers.js';
 
 describe('GetAllTagsTool', () => {
   let tool: GetAllTagsTool;
   let mockClient: any;
+  let originalHandleRequest: any;
 
   beforeEach(() => {
     tool = new GetAllTagsTool();
@@ -12,14 +14,23 @@ describe('GetAllTagsTool', () => {
       getAllTags: vi.fn()
     };
     tool.getClient = vi.fn().mockReturnValue(mockClient);
+    
+    // Store original handler for later restoration
+    originalHandleRequest = defaultCachedHandlers.tags.handleRequest;
+  });
+
+  afterEach(() => {
+    // Restore original handler
+    defaultCachedHandlers.tags.handleRequest = originalHandleRequest;
   });
 
   describe('Tool description', () => {
-    it('should mention the vault://tags resource alternative', () => {
+    it('should mention the vault://tags resource and internal usage', () => {
       const tool = new GetAllTagsTool();
       
       expect(tool.description).toContain('vault://tags');
-      expect(tool.description).toContain('5 minutes');
+      expect(tool.description).toContain('internally');
+      expect(tool.description).toContain('5-minute caching');
       expect(tool.description).toContain('performance');
     });
   });
@@ -33,7 +44,8 @@ describe('GetAllTagsTool', () => {
         count: Math.floor(Math.random() * 100) + 1
       }));
       
-      mockClient.getAllTags.mockResolvedValue(allTags);
+      // Mock the cached handler instead of client
+      defaultCachedHandlers.tags.handleRequest = vi.fn().mockResolvedValue({ tags: allTags });
 
       // Test with pagination parameters
       const result = await tool.executeTyped({ 
@@ -55,7 +67,7 @@ describe('GetAllTagsTool', () => {
         { name: 'tag2', count: 3 },
         { name: 'tag3', count: 1 }
       ];
-      mockClient.getAllTags.mockResolvedValue(tags);
+      defaultCachedHandlers.tags.handleRequest = vi.fn().mockResolvedValue({ tags });
 
       const result = await tool.executeTyped({});
 
@@ -73,7 +85,7 @@ describe('GetAllTagsTool', () => {
         { name: 'tag2', count: 10 },
         { name: 'tag3', count: 1 }
       ];
-      mockClient.getAllTags.mockResolvedValue(tags);
+      defaultCachedHandlers.tags.handleRequest = vi.fn().mockResolvedValue({ tags });
 
       const result = await tool.executeTyped({ 
         sortBy: 'count',
@@ -93,7 +105,7 @@ describe('GetAllTagsTool', () => {
         { name: 'alpha', count: 10 },
         { name: 'gamma', count: 1 }
       ];
-      mockClient.getAllTags.mockResolvedValue(tags);
+      defaultCachedHandlers.tags.handleRequest = vi.fn().mockResolvedValue({ tags });
 
       const result = await tool.executeTyped({ 
         sortBy: 'name',
@@ -112,7 +124,7 @@ describe('GetAllTagsTool', () => {
         name: `tag-${i}`,
         count: 100 - i // Decreasing count
       }));
-      mockClient.getAllTags.mockResolvedValue(tags);
+      defaultCachedHandlers.tags.handleRequest = vi.fn().mockResolvedValue({ tags });
 
       const result = await tool.executeTyped({ 
         sortBy: 'count',
@@ -126,6 +138,32 @@ describe('GetAllTagsTool', () => {
       expect(data.tags).toHaveLength(10);
       expect(data.tags[0].count).toBe(95); // Should start from 6th highest
       expect(data.hasMore).toBe(true);
+    });
+  });
+
+  describe('Resource integration (TRI1)', () => {
+    it('should use vault://tags resource internally for caching', async () => {
+      // Mock the cached handler to return data
+      const mockTags = [
+        { name: 'project', count: 5 },
+        { name: 'meeting', count: 3 }
+      ];
+      
+      // Mock the cached handler directly  
+      const mockHandleRequest = vi.fn().mockResolvedValue({ tags: mockTags });
+      vi.spyOn(defaultCachedHandlers.tags, 'handleRequest').mockImplementation(mockHandleRequest);
+
+      const result = await tool.executeTyped({});
+
+      // Verify the cached handler was called instead of direct client call
+      expect(mockHandleRequest).toHaveBeenCalledWith('vault://tags');
+      expect(mockClient.getAllTags).not.toHaveBeenCalled();
+      
+      // Verify the result is processed correctly
+      expect(result.type).toBe('text');
+      const data = JSON.parse(result.text);
+      expect(data.tags).toEqual(mockTags);
+      expect(data.totalTags).toBe(2);
     });
   });
 });
