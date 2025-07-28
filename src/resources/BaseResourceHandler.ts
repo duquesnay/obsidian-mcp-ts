@@ -4,6 +4,7 @@ import { ConfigLoader } from '../utils/configLoader.js';
 import { ResourceHandler } from './types.js';
 import { ResourceErrorHandler } from '../utils/ResourceErrorHandler.js';
 import { ResourceValidationUtil } from '../utils/ResourceValidationUtil.js';
+import { ResponseModeSystem, ResponseMode, ResponseContent, ModeResponse } from '../utils/ResponseModeSystem.js';
 
 // Extend Server type to include obsidianClient for testing
 interface ServerWithClient {
@@ -87,5 +88,50 @@ export abstract class BaseResourceHandler {
    */
   protected handleError(error: any, resourceType: string, path: string): never {
     ResourceErrorHandler.handleApiError(error, resourceType, path);
+  }
+
+  // Response Mode System Integration
+
+  /**
+   * Extract response mode from URI query parameters using ResponseModeSystem
+   */
+  protected extractModeFromUri(uri: string): ResponseMode {
+    return ResponseModeSystem.extractModeFromUri(uri);
+  }
+
+  /**
+   * Process content based on response mode using ResponseModeSystem
+   */
+  protected processResponseContent(content: ResponseContent, mode: ResponseMode): string {
+    return ResponseModeSystem.processContent(content, mode);
+  }
+
+  /**
+   * Create optimized summary response with optional caching
+   */
+  protected createSummaryResponse(content: string, cacheKey?: string): string {
+    return ResponseModeSystem.createSummary(content, cacheKey);
+  }
+
+  /**
+   * Create optimized preview response with optional caching
+   */
+  protected createPreviewResponse(content: string, cacheKey?: string): string {
+    return ResponseModeSystem.createPreview(content, cacheKey);
+  }
+
+  /**
+   * Format a response with mode information as JSON
+   */
+  protected formatModeResponse(uri: string, content: ResponseContent, mode: ResponseMode): ReadResourceResult {
+    const modeResponse = ResponseModeSystem.createModeResponse(content, mode);
+    return this.formatJsonResponse(uri, modeResponse);
+  }
+
+  /**
+   * Create a structured mode response object
+   */
+  protected createModeResponse(content: ResponseContent, mode: ResponseMode): ModeResponse {
+    return ResponseModeSystem.createModeResponse(content, mode);
   }
 }
