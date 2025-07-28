@@ -151,9 +151,14 @@ describe('Resource Handlers', () => {
       expect(result.contents).toHaveLength(1);
       
       const data = JSON.parse(result.contents[0].text);
+      // New folder handler returns summary mode by default
       expect(data).toEqual({
         path: 'Projects',
-        items: ['Note1.md', 'Subfolder']
+        mode: 'summary',
+        fileCount: 2,
+        files: [],
+        folders: [],
+        message: 'Use ?mode=full for complete file listings'
       });
     });
     

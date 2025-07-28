@@ -69,20 +69,123 @@ export class NoteHandler extends BaseResourceHandler {
   }
 }
 
+/**
+ * Response modes for vault://folder/{path} resource
+ * 
+ * - summary: Default mode. Returns file/folder counts and metadata without content listings (optimal performance)
+ * - full: Returns complete file listings (backward compatibility mode)
+ * 
+ * Usage:
+ * - vault://folder/path (defaults to summary)
+ * - vault://folder/path?mode=summary
+ * - vault://folder/path?mode=full
+ */
+type FolderResponseMode = 'summary' | 'full';
+
+const FOLDER_RESPONSE_MODES: Record<string, FolderResponseMode> = {
+  SUMMARY: 'summary',
+  FULL: 'full'
+} as const;
+
+interface FolderSummaryResponse {
+  path: string;
+  mode: 'summary';
+  fileCount: number;
+  files: string[];  // Empty in summary mode
+  folders: string[];
+  message: string;
+}
+
+interface FolderFullResponse {
+  path: string;
+  mode: 'full';
+  items: string[];
+}
+
+type FolderResponse = FolderSummaryResponse | FolderFullResponse;
+
 export class FolderHandler extends BaseResourceHandler {
-  async handleRequest(uri: string, server?: any): Promise<any> {
-    const path = this.extractPath(uri, 'vault://folder/');
+  async handleRequest(uri: string, server?: any): Promise<FolderResponse> {
+    // Parse query parameters for mode
+    const url = new URL(uri, 'vault://');
+    const modeParam = url.searchParams.get('mode') || FOLDER_RESPONSE_MODES.SUMMARY;
+    
+    // Extract path without query parameters
+    const uriWithoutQuery = uri.split('?')[0];
+    const path = this.extractPath(uriWithoutQuery, 'vault://folder/');
     const client = this.getObsidianClient(server);
+    
+    // Validate and set mode (default to summary for invalid modes)
+    const validModes: FolderResponseMode[] = Object.values(FOLDER_RESPONSE_MODES);
+    const mode: FolderResponseMode = validModes.includes(modeParam as FolderResponseMode) 
+      ? (modeParam as FolderResponseMode) 
+      : FOLDER_RESPONSE_MODES.SUMMARY;
     
     try {
       const items = await client.listFilesInDir(path);
+      
+      if (mode === FOLDER_RESPONSE_MODES.FULL) {
+        // Return full mode (backward compatibility)
+        return {
+          path: path,
+          mode: 'full',
+          items: items
+        };
+      }
+      
+      // Return summary mode (default)
+      const { fileCount, folders } = this.analyzeFolderStructure(items, path);
+      
       return {
         path: path,
-        items: items
+        mode: 'summary',
+        fileCount: fileCount,
+        files: [], // Empty in summary mode
+        folders: folders,
+        message: 'Use ?mode=full for complete file listings'
       };
     } catch (error: unknown) {
       ResourceErrorHandler.handle(error, 'Folder', path);
     }
+  }
+  
+  private analyzeFolderStructure(items: string[], basePath: string): { fileCount: number; folders: string[] } {
+    const folders = new Set<string>();
+    let fileCount = 0;
+    
+    // Normalize base path for comparison
+    const normalizedBasePath = basePath === '' ? '' : `${basePath}/`;
+    
+    for (const item of items) {
+      let relativePath: string;
+      
+      // Check if the item is a full path that starts with the base path
+      if (normalizedBasePath !== '' && item.startsWith(normalizedBasePath)) {
+        relativePath = item.substring(normalizedBasePath.length);
+      } else if (normalizedBasePath === '' || !item.includes('/')) {
+        // For root folder or simple filenames (like in some tests)
+        relativePath = item;
+      } else {
+        // Skip items that don't belong to this folder
+        continue;
+      }
+      
+      // If there's a slash in the relative path, it's in a subdirectory
+      const slashIndex = relativePath.indexOf('/');
+      if (slashIndex === -1) {
+        // Direct file in this folder
+        fileCount++;
+      } else {
+        // File in a subdirectory, record the folder name
+        const folderName = relativePath.substring(0, slashIndex);
+        folders.add(folderName);
+      }
+    }
+    
+    return {
+      fileCount,
+      folders: Array.from(folders).sort()
+    };
   }
 }
 

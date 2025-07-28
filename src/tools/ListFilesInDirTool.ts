@@ -43,34 +43,62 @@ export class ListFilesInDirTool extends BaseTool<ListFilesInDirArgs> {
       PathValidationUtil.validate(args.dirpath, 'dirpath', { type: PathValidationType.DIRECTORY });
       
       try {
-        // Use cached resource handler instead of direct client call for better performance
+        // Use cached resource handler with summary mode (default) for better performance
         const resourceData = await defaultCachedHandlers.folder.handleRequest(`vault://folder/${args.dirpath}`);
-        const files = resourceData.items;
         
-        // Handle pagination
-        const totalCount = files.length;
-        const isPaginated = args.limit !== undefined || args.offset !== undefined;
-        
-        if (isPaginated) {
-          const limit = Math.min(args.limit || totalCount, OBSIDIAN_DEFAULTS.MAX_LIST_LIMIT);
-          const offset = args.offset || 0;
+        // Handle different response modes from the resource
+        if (resourceData.mode === 'summary') {
+          // Summary mode: return metadata without full file listings
+          const result = {
+            path: resourceData.path,
+            mode: resourceData.mode,
+            fileCount: resourceData.fileCount,
+            folders: resourceData.folders,
+            message: resourceData.message
+          };
           
-          const paginatedFiles = files.slice(offset, offset + limit);
-          const hasMore = offset + limit < totalCount;
+          // Handle pagination if requested (though summary mode doesn't have files to paginate)
+          if (args.limit !== undefined || args.offset !== undefined) {
+            return this.formatResponse({
+              ...result,
+              totalCount: resourceData.fileCount,
+              hasMore: false,
+              limit: args.limit || resourceData.fileCount,
+              offset: args.offset || 0,
+              nextOffset: undefined
+            });
+          }
           
-          return this.formatResponse({
-            files: paginatedFiles,
-            totalCount,
-            hasMore,
-            limit,
-            offset,
-            nextOffset: hasMore ? offset + limit : undefined,
-            message: `Showing ${paginatedFiles.length} of ${totalCount} files in ${args.dirpath}`
-          });
+          return this.formatResponse(result);
+        } else {
+          // Full mode: handle as before for backward compatibility
+          const files = resourceData.items;
+          
+          // Handle pagination
+          const totalCount = files.length;
+          const isPaginated = args.limit !== undefined || args.offset !== undefined;
+          
+          if (isPaginated) {
+            const limit = Math.min(args.limit || totalCount, OBSIDIAN_DEFAULTS.MAX_LIST_LIMIT);
+            const offset = args.offset || 0;
+            
+            const paginatedFiles = files.slice(offset, offset + limit);
+            const hasMore = offset + limit < totalCount;
+            
+            return this.formatResponse({
+              files: paginatedFiles,
+              totalCount,
+              hasMore,
+              limit,
+              offset,
+              nextOffset: hasMore ? offset + limit : undefined,
+              message: `Showing ${paginatedFiles.length} of ${totalCount} files in ${args.dirpath}`
+            });
+          }
+          
+          // Non-paginated response
+          return this.formatResponse(files);
         }
-        
-        // Non-paginated response
-        return this.formatResponse(files);
       } catch (error: unknown) {
         // If we get a 404 error, check if it's an empty directory
         const errorMessage = getErrorMessage(error);

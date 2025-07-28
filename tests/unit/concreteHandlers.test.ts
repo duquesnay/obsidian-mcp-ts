@@ -290,9 +290,14 @@ All content should be preserved.`;
       
       expect(mockListFilesInDir).toHaveBeenCalledWith('test');
       const data = JSON.parse(result.contents[0].text);
+      // New folder handler returns summary mode by default
       expect(data).toEqual({
         path: 'test',
-        items: ['file1.md', 'file2.md']
+        mode: 'summary',
+        fileCount: 2,
+        files: [],
+        folders: [],
+        message: 'Use ?mode=full for complete file listings'
       });
     });
     

@@ -90,7 +90,7 @@ export async function registerResources(server: ServerWithClient): Promise<void>
   registry.registerResource({
     uri: 'vault://folder/{path}',
     name: 'Folder',
-    description: 'Browse folder contents (cached 2min per folder) - e.g., vault://folder/Projects',
+    description: 'Browse folder contents (cached 2min per folder) - e.g., vault://folder/Projects. Returns summary by default, use ?mode=full for complete listings.',
     mimeType: 'application/json'
   }, createCachedFolderHandler());
   
@@ -126,7 +126,7 @@ export async function registerResources(server: ServerWithClient): Promise<void>
   registry.registerResourceTemplate({
     name: 'Folder',
     uriTemplate: 'vault://folder/{path}',
-    description: 'Browse folder contents - e.g., vault://folder/Projects or vault://folder/Daily. Returns list of files and subfolders within the specified path.',
+    description: 'Browse folder contents - e.g., vault://folder/Projects or vault://folder/Daily. Returns summary with file counts and folder lists by default. Use ?mode=full for complete file listings.',
     mimeType: 'application/json'
   });
   
@@ -223,7 +223,7 @@ export async function registerUncachedResources(server: ServerWithClient): Promi
   registry.registerResource({
     uri: 'vault://folder/{path}',
     name: 'Folder',
-    description: 'Browse folder contents (e.g., vault://folder/Projects)',
+    description: 'Browse folder contents (e.g., vault://folder/Projects). Returns summary by default, use ?mode=full for complete listings.',
     mimeType: 'application/json'
   }, createFolderHandler());
   
