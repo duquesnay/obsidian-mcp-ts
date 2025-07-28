@@ -128,13 +128,13 @@ For each task:
   - [x] Add comprehensive tests for all modes
   - [x] Update documentation with new resource mode
   
-- [ ] RSM1.6: Optimize vault://tags for conversation use with response modes
-  - Extend mode parameter system to vault://tags resource
-  - Add metadata about tag usage patterns (already reasonable size)
-  - Include top tags by frequency with usage statistics
-  - Update GetAllTagsTool to use optimized response
-  - Add comprehensive tests for all modes
-  - Update documentation with new resource mode
+- [x] RSM1.6: Optimize vault://tags for conversation use with response modes
+  - [x] Extend mode parameter system to vault://tags resource
+  - [x] Add metadata about tag usage patterns (already reasonable size)
+  - [x] Include top tags by frequency with usage statistics
+  - [x] Update GetAllTagsTool to use optimized response
+  - [x] Add comprehensive tests for all modes
+  - [x] Update documentation with new resource mode
   
 - [ ] RSM1.7: Extract and optimize response mode system architecture
   - Extract common mode parameter handling into BaseResourceHandler
