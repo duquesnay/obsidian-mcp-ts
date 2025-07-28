@@ -7,7 +7,7 @@ This backlog decomposes quality improvement recommendations into fine-grained, i
 
 ### Available Agents
 See `.claude/agents/README.md` for the complete list of specialized agents and their capabilities. Key agents include:
-- **typescript-specialist**: Type system expertise
+- **developer**: Primary coding partner
 - **test-engineer**: TDD methodology  
 - **code-quality-analyst**: Code smell detection
 - **architecture-reviewer**: SOLID principles
@@ -384,7 +384,7 @@ Research confirmed that Claude Desktop shows resources as "connected" in Setting
 Tools will use resources internally for caching benefits while maintaining full backward compatibility.
 
 ### High Priority - Tool Performance Enhancement
-- [ ] TRI1: Update GetAllTagsTool to use vault://tags resource internally (5min cache vs fresh API call)
+- [x] TRI1: Update GetAllTagsTool to use vault://tags resource internally (5min cache vs fresh API call)
 - [ ] TRI2: Update GetRecentChangesTool to use vault://recent resource internally (30s cache vs fresh API call)  
 - [ ] TRI3: Update GetFileContentsTool to use vault://note/{path} resource internally (2min cache vs fresh API call)
 - [ ] TRI4: Update SimpleSearchTool to use vault://search/{query} resource internally (1min cache vs fresh API call)

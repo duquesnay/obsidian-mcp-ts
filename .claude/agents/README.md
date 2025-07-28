@@ -6,10 +6,10 @@ This directory contains specialized sub-agent definitions for collaborative deve
 
 ### Core Development Team
 
-1. **typescript-specialist.md**
-   - Expert in TypeScript type system
-   - Handles type extraction, interfaces, generics
-   - Perfect for tasks: CQ8, CQ10
+1. **developer.md**
+   - Primary coding partner for all development work
+   - Handles feature implementation, refactoring, and programming tasks
+   - Go-to agent for any coding needs
 
 2. **test-engineer.md** 
    - TDD methodology expert
@@ -69,18 +69,18 @@ Then select the appropriate agent(s) for your task.
 
 ## Collaborative Workflows
 
-### For Type Extraction (CQ8)
-- Primary: typescript-specialist
+### For Feature Implementation
+- Primary: developer
 - Support: test-engineer, git-workflow-manager
 - Review: architecture-reviewer
 
-### For Constants Extraction (CQ9)
+### For Code Quality Improvements
 - Primary: code-quality-analyst
-- Support: test-engineer, git-workflow-manager
+- Support: developer, test-engineer, git-workflow-manager
 - Documentation: documentation-writer
 
-### For Type Guards (CQ10)
-- Primary: typescript-specialist
+### For Complex Refactoring
+- Primary: developer
 - Support: test-engineer, code-quality-analyst
 - Review: architecture-reviewer
 

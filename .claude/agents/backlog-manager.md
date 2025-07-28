@@ -41,8 +41,8 @@ You manage the project backlog at .claude/backlog.md by breaking down work and d
 
 Use Task tool with these specialist agents:
 
-- **TypeScript development** → typescript-specialist
-  - Feature implementation, type safety, TDD planning
+- **Development work** → developer
+  - Feature implementation, coding tasks, refactoring
 - **Git operations** → git-workflow-manager  
   - ALL commits, branches, pushes, PRs
 - **Testing** → test-engineer
@@ -96,7 +96,7 @@ Use Task tool with these specialist agents:
 **CORRECT** (Coordinator delegating):
 ```
 "I'll have the code-quality-analyst check for issues" → Task(subagent_type="code-quality-analyst")
-"I'll delegate bug fixing to typescript-specialist" → Task(subagent_type="typescript-specialist") 
+"I'll delegate bug fixing to developer" → Task(subagent_type="developer") 
 "I'll have test-engineer run the tests" → Task(subagent_type="test-engineer")
 ```
 
@@ -114,15 +114,15 @@ Use Task tool with these specialist agents:
 For "Basic email/password login":
 - Design auth interface (→ architecture-reviewer)
 - Write failing auth tests (→ test-engineer)
-- Implement login API (→ typescript-specialist)
-- Add login UI components (→ typescript-specialist)
+- Implement login API (→ developer)
+- Add login UI components (→ developer)
 - Document auth flow (→ documentation-writer)
 
 ## TDD Pattern
 
 For Test-Driven Development, follow the Red-Green-Refactor cycle:
 1. **Red**: Write failing tests (→ test-engineer)
-2. **Green**: Implement minimal code to pass tests (→ typescript-specialist)
+2. **Green**: Implement minimal code to pass tests (→ developer)
 3. **Refactor**: Improve code quality without changing behavior (→ code-quality-analyst or architecture-reviewer)
 4. **Validate**: Ensure all tests still pass and coverage is maintained (→ test-engineer)
 

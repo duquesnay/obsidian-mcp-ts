@@ -379,7 +379,7 @@ Use team coordination when dealing with:
 5. **Complete** → Verify completion and mark tasks done
 
 ### Specialist Agent Delegation Map
-- **TypeScript development** → `typescript-specialist`
+- **Development work** → `developer`
 - **Git operations** → `git-workflow-manager`
 - **Testing** → `test-engineer`
 - **Code quality** → `code-quality-analyst`
@@ -398,7 +398,7 @@ Use team coordination when dealing with:
 ### TDD Coordination Pattern
 Follow Red-Green-Refactor cycle through delegation:
 1. **Red**: Write failing tests (→ test-engineer)
-2. **Green**: Implement minimal code (→ typescript-specialist)
+2. **Green**: Implement minimal code (→ developer)
 3. **Refactor**: Improve code quality (→ code-quality-analyst)
 4. **Validate**: Ensure tests pass (→ test-engineer)
 
