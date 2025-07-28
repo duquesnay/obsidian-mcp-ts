@@ -8,7 +8,7 @@ import { defaultCachedHandlers } from '../resources/CachedConcreteHandlers.js';
 
 export class ListFilesInDirTool extends BaseTool<ListFilesInDirArgs> {
   name = 'obsidian_list_files_in_dir';
-  description = 'List notes and folders in a specific Obsidian vault directory (vault-only - NOT general filesystem access). Uses vault://folder/{path} resource internally with 2-minute caching for optimal performance.';
+  description = 'List notes and folders in a specific Obsidian vault directory (vault-only - NOT general filesystem access). Uses vault://folder/{path} resource internally with 2-minute caching for optimal performance. Supports pagination with default limit of 50 items per page for efficient browsing of large directories.';
   
   metadata: ToolMetadata = {
     category: 'file-operations',
@@ -43,12 +43,29 @@ export class ListFilesInDirTool extends BaseTool<ListFilesInDirArgs> {
       PathValidationUtil.validate(args.dirpath, 'dirpath', { type: PathValidationType.DIRECTORY });
       
       try {
-        // Use cached resource handler with summary mode (default) for better performance
-        const resourceData = await defaultCachedHandlers.folder.handleRequest(`vault://folder/${args.dirpath}`);
+        // Build the resource URI with pagination parameters if needed
+        const isPaginationRequested = args.limit !== undefined || args.offset !== undefined;
+        let resourceUri = `vault://folder/${args.dirpath}`;
+        
+        if (isPaginationRequested) {
+          const params = new URLSearchParams();
+          if (args.limit !== undefined) {
+            params.set('limit', args.limit.toString());
+          }
+          if (args.offset !== undefined) {
+            params.set('offset', args.offset.toString());
+          }
+          // Force full mode when pagination is requested to get file listings
+          params.set('mode', 'full');
+          resourceUri += `?${params.toString()}`;
+        }
+        
+        // Use cached resource handler
+        const resourceData = await defaultCachedHandlers.folder.handleRequest(resourceUri);
         
         // Handle different response modes from the resource
         if (resourceData.mode === 'summary') {
-          // Summary mode: return metadata without full file listings
+          // Summary mode response handling
           const result = {
             path: resourceData.path,
             mode: resourceData.mode,
@@ -57,8 +74,21 @@ export class ListFilesInDirTool extends BaseTool<ListFilesInDirArgs> {
             message: resourceData.message
           };
           
-          // Handle pagination if requested (though summary mode doesn't have files to paginate)
-          if (args.limit !== undefined || args.offset !== undefined) {
+          // If resource returned pagination info (paginated summary mode)
+          if (resourceData.pagination) {
+            return this.formatResponse({
+              ...result,
+              files: resourceData.files,
+              totalCount: resourceData.pagination.totalItems,
+              hasMore: resourceData.pagination.hasMore,
+              limit: resourceData.pagination.limit,
+              offset: resourceData.pagination.offset,
+              nextOffset: resourceData.pagination.nextOffset
+            });
+          }
+          
+          // Handle non-paginated summary mode with client-side pagination fallback
+          if (isPaginationRequested) {
             return this.formatResponse({
               ...result,
               totalCount: resourceData.fileCount,
@@ -71,14 +101,26 @@ export class ListFilesInDirTool extends BaseTool<ListFilesInDirArgs> {
           
           return this.formatResponse(result);
         } else {
-          // Full mode: handle as before for backward compatibility
+          // Full mode response handling
           const files = resourceData.items;
           
-          // Handle pagination
-          const totalCount = files.length;
-          const isPaginated = args.limit !== undefined || args.offset !== undefined;
+          // If resource returned pagination info, use it
+          if (resourceData.pagination) {
+            return this.formatResponse({
+              files: files,
+              totalCount: resourceData.pagination.totalItems,
+              hasMore: resourceData.pagination.hasMore,
+              limit: resourceData.pagination.limit,
+              offset: resourceData.pagination.offset,
+              nextOffset: resourceData.pagination.nextOffset,
+              message: `Showing ${files.length} of ${resourceData.pagination.totalItems} files in ${args.dirpath}`
+            });
+          }
           
-          if (isPaginated) {
+          // Fallback to client-side pagination (backward compatibility)
+          const totalCount = files.length;
+          
+          if (isPaginationRequested) {
             const limit = Math.min(args.limit || totalCount, OBSIDIAN_DEFAULTS.MAX_LIST_LIMIT);
             const offset = args.offset || 0;
             
