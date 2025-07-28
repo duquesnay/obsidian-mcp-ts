@@ -1,16 +1,43 @@
 import { BaseResourceHandler } from './BaseResourceHandler.js';
 import { ResourceErrorHandler } from '../utils/ResourceErrorHandler.js';
 
+/**
+ * Response modes for vault://structure resource
+ * 
+ * - summary: Default mode. Returns minimal structure with file/folder counts (optimal performance)
+ * - preview: Returns folder structure with file counts but no individual file names
+ * - full: Returns complete hierarchical structure with all files and folders
+ * 
+ * Large vaults (>5000 files) automatically use summary mode for performance.
+ * 
+ * Usage:
+ * - vault://structure (defaults to summary)
+ * - vault://structure?mode=preview
+ * - vault://structure?mode=full
+ */
+type ResponseMode = 'summary' | 'preview' | 'full';
+
+const RESPONSE_MODES: Record<string, ResponseMode> = {
+  SUMMARY: 'summary',
+  PREVIEW: 'preview', 
+  FULL: 'full'
+} as const;
+
 interface FolderStructure {
   files: string[];
   folders: { [key: string]: FolderStructure };
 }
 
+interface PreviewFolderStructure {
+  fileCount: number;
+  folders: { [key: string]: PreviewFolderStructure };
+}
+
 interface VaultStructureResponse {
-  structure: FolderStructure;
+  structure: FolderStructure | PreviewFolderStructure;
   totalFiles: number;
   totalFolders: number;
-  mode?: string;
+  mode: ResponseMode;
   message?: string;
 }
 
@@ -23,57 +50,108 @@ export class VaultStructureHandler extends BaseResourceHandler {
     try {
       // Parse query parameters for mode
       const url = new URL(uri, 'vault://');
-      const mode = url.searchParams.get('mode') || 'full';
+      const modeParam = url.searchParams.get('mode') || RESPONSE_MODES.SUMMARY;
       const maxDepth = parseInt(url.searchParams.get('maxDepth') || '0') || 0;
+      
+      // Validate and set mode (default to summary for invalid modes)
+      const validModes: ResponseMode[] = Object.values(RESPONSE_MODES);
+      const mode: ResponseMode = validModes.includes(modeParam as ResponseMode) 
+        ? (modeParam as ResponseMode) 
+        : RESPONSE_MODES.SUMMARY;
       
       // Get all files in the vault
       const allFiles = await client.listFilesInVault();
       const totalFiles = allFiles.length;
       
-      // For large vaults, default to summary mode unless explicitly requested
+      // For large vaults, force summary mode for performance
       const isLargeVault = totalFiles > VaultStructureHandler.LARGE_VAULT_THRESHOLD;
-      const effectiveMode = isLargeVault && mode === 'full' ? 'summary' : mode;
+      const effectiveMode: ResponseMode = isLargeVault && mode === RESPONSE_MODES.FULL ? RESPONSE_MODES.SUMMARY : mode;
       
-      if (effectiveMode === 'summary') {
-        // Return summary without building full structure
-        const folderSet = new Set<string>();
-        for (const filePath of allFiles) {
-          const parts = filePath.split('/');
-          for (let i = 1; i <= parts.length - 1; i++) {
-            folderSet.add(parts.slice(0, i).join('/'));
-          }
+      // Calculate total folders
+      const folderSet = new Set<string>();
+      for (const filePath of allFiles) {
+        const parts = filePath.split('/');
+        for (let i = 1; i <= parts.length - 1; i++) {
+          folderSet.add(parts.slice(0, i).join('/'));
         }
-        
+      }
+      const totalFolders = folderSet.size;
+      
+      if (effectiveMode === RESPONSE_MODES.SUMMARY) {
         return {
           structure: {
             files: [],
             folders: { '...': { files: [`${totalFiles} files in vault`], folders: {} } }
           },
           totalFiles,
-          totalFolders: folderSet.size,
-          mode: 'summary',
+          totalFolders,
+          mode: RESPONSE_MODES.SUMMARY,
           message: `Vault contains ${totalFiles} files. Use ?mode=full for complete structure.`
         };
       }
       
-      // Build hierarchical structure with optional depth limit
+      if (effectiveMode === RESPONSE_MODES.PREVIEW) {
+        const previewStructure = this.buildPreviewStructure(allFiles);
+        return {
+          structure: previewStructure,
+          totalFiles,
+          totalFolders,
+          mode: RESPONSE_MODES.PREVIEW
+        };
+      }
+      
+      // Full mode - build complete hierarchical structure
       const structure = maxDepth > 0 
         ? this.buildHierarchicalStructureWithDepth(allFiles, maxDepth)
         : this.buildHierarchicalStructure(allFiles);
       
-      // Count totals
-      const totalFolders = this.countFolders(structure);
-      
       return {
         structure,
         totalFiles,
-        totalFolders
+        totalFolders,
+        mode: RESPONSE_MODES.FULL
       };
     } catch (error: unknown) {
       ResourceErrorHandler.handle(error, 'Vault structure');
     }
   }
   
+  private buildPreviewStructure(filePaths: string[]): PreviewFolderStructure {
+    const root: PreviewFolderStructure = {
+      fileCount: 0,
+      folders: {}
+    };
+    
+    for (const filePath of filePaths) {
+      const pathParts = filePath.split('/');
+      
+      if (pathParts.length === 1) {
+        // Root level file
+        root.fileCount++;
+      } else {
+        // File in nested folder(s)
+        const folderParts = pathParts.slice(0, -1);
+        let currentLevel = root;
+        
+        // Navigate/create folder structure
+        for (const folderName of folderParts) {
+          if (!currentLevel.folders[folderName]) {
+            currentLevel.folders[folderName] = {
+              fileCount: 0,
+              folders: {}
+            };
+          }
+          currentLevel = currentLevel.folders[folderName];
+        }
+        
+        // Count file in the deepest folder
+        currentLevel.fileCount++;
+      }
+    }
+    
+    return root;
+  }
+
   private buildHierarchicalStructure(filePaths: string[]): FolderStructure {
     const root: FolderStructure = {
       files: [],

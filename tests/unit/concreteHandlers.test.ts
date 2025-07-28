@@ -154,7 +154,7 @@ describe('Concrete Resource Handlers', () => {
       };
       
       const handler = new VaultStructureHandler();
-      const result = await handler.execute('vault://structure', server);
+      const result = await handler.execute('vault://structure?mode=full', server);
       
       expect(mockListFilesInVault).toHaveBeenCalled();
       expect(result.contents[0].mimeType).toBe('application/json');

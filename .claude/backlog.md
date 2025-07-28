@@ -75,6 +75,155 @@ For each task:
 
 # 📋 Backlog Items
 
+## HIGH PRIORITY: Resource Response Modes (Context Explosion Fix)
+
+### Priority 0: Critical Usability Issue - Resource Summary/Preview Modes
+**Problem**: Resources currently return full content causing context overflow in conversations and forcing users to rewind.
+
+**Solution**: Implement summary/preview modes as default behavior with explicit opt-in for full content.
+
+- [⏳] RSM1.1: Implement vault://structure summary mode with response modes
+  - Create mode parameter interface (?mode=summary|preview|full) for this resource only
+  - Return folder/file names only without content (summary mode default)
+  - Include basic metadata (count, size estimates)
+  - Preserve full content mode with ?mode=full parameter
+  - Update corresponding tools to use summary mode by default
+  - Add comprehensive tests for all modes
+  - Document the new response mode system
+  
+- [⏳] RSM1.2: Implement vault://recent preview mode with response modes
+  - Extend mode parameter system to vault://recent resource
+  - Return titles + first 100 characters preview (preview mode default)
+  - Include modification dates and file paths
+  - Preserve full content mode with ?mode=full parameter
+  - Update GetRecentChangesTool to use preview mode by default
+  - Add comprehensive tests for all modes
+  - Update documentation with new resource mode
+  
+- [ ] RSM1.3: Implement vault://note/{path} preview mode with response modes
+  - Extend mode parameter system to vault://note/{path} resource
+  - Return frontmatter + first 200 characters of content (preview mode default)
+  - Include basic note statistics (word count, headers)
+  - Preserve full content mode with ?mode=full parameter
+  - Update GetFileContentsTool to use preview mode by default
+  - Add comprehensive tests for all modes
+  - Update documentation with new resource mode
+  
+- [ ] RSM1.4: Implement vault://folder/{path} summary mode with response modes
+  - Extend mode parameter system to vault://folder/{path} resource
+  - Return file listings without content previews (summary mode default)
+  - Include file counts and basic metadata
+  - Preserve full content mode with ?mode=full parameter
+  - Update ListFilesInDirTool to use summary mode by default
+  - Add comprehensive tests for all modes
+  - Update documentation with new resource mode
+  
+- [ ] RSM1.5: Implement vault://search/{query} preview mode with response modes
+  - Extend mode parameter system to vault://search/{query} resource
+  - Return search results with 100-character context snippets (preview mode default)
+  - Include match counts and file paths
+  - Preserve full content mode with ?mode=full parameter
+  - Update SimpleSearchTool to use preview mode by default
+  - Add comprehensive tests for all modes
+  - Update documentation with new resource mode
+  
+- [ ] RSM1.6: Optimize vault://tags for conversation use with response modes
+  - Extend mode parameter system to vault://tags resource
+  - Add metadata about tag usage patterns (already reasonable size)
+  - Include top tags by frequency with usage statistics
+  - Update GetAllTagsTool to use optimized response
+  - Add comprehensive tests for all modes
+  - Update documentation with new resource mode
+  
+- [ ] RSM1.7: Extract and optimize response mode system architecture
+  - Extract common mode parameter handling into BaseResourceHandler
+  - Create shared response size utilities (summary <500 chars, preview <2000 chars)
+  - Optimize summary generation algorithms across all resources
+  - Add caching for computed previews
+  - Measure and document performance improvements
+  - Update all existing response mode implementations to use shared system
+
+**Success Criteria**:
+- Default resource responses < 2000 characters each
+- No context overflow in typical conversation flows
+- Full backward compatibility maintained
+- Response performance maintained or improved
+
+## HIGH PRIORITY: Resource Pagination System (Data Management)
+
+### Priority 1: Critical Performance Issue - Resource Pagination Support
+**Problem**: Large datasets in resources can still cause performance issues and memory pressure even with summary modes.
+
+**Solution**: Implement comprehensive pagination system for all resources with backward compatibility.
+
+- [ ] RPS1.1: Implement pagination for vault://structure resource
+  - Create pagination interface (?limit=N&offset=N) for this resource only
+  - Default limit=50 files/folders per page
+  - Include pagination metadata (hasMore, total, nextUri)
+  - Maintain legacy unlimited mode with ?legacy=true
+  - Update ListFilesInVaultTool to handle paginated responses
+  - Add comprehensive tests for pagination behavior
+  - Document pagination parameters and usage
+  
+- [ ] RPS1.2: Implement pagination for vault://recent resource
+  - Extend pagination system to vault://recent resource
+  - Default limit=20 recent items per page
+  - Include modification dates and continuation tokens
+  - Optimize for time-based pagination (chronological ordering)
+  - Update GetRecentChangesTool to handle paginated responses
+  - Add comprehensive tests for time-based pagination
+  - Update documentation with pagination examples
+  
+- [ ] RPS1.3: Implement pagination for vault://folder/{path} resource
+  - Extend pagination system to vault://folder/{path} resource
+  - Default limit=50 items per page
+  - Handle nested folder pagination efficiently
+  - Include directory metadata and item counts
+  - Update ListFilesInDirTool to handle paginated responses
+  - Add comprehensive tests for folder pagination
+  - Update documentation with folder pagination examples
+  
+- [ ] RPS1.4: Implement pagination for vault://search/{query} resource
+  - Extend pagination system to vault://search/{query} resource
+  - Default limit=10 results per page (search results are expensive)
+  - Include relevance scoring and result ranking
+  - Support continuation tokens for consistent ordering
+  - Update SimpleSearchTool to handle paginated search results
+  - Add comprehensive tests for search pagination
+  - Update documentation with search pagination examples
+  
+- [ ] RPS1.5: Implement pagination for vault://tags resource
+  - Extend pagination system to vault://tags resource
+  - Default limit=100 tags per page (tags are lightweight)
+  - Sort by usage frequency for better UX
+  - Include tag usage statistics in metadata
+  - Update GetAllTagsTool to handle paginated tag responses
+  - Add comprehensive tests for tag pagination
+  - Update documentation with tag pagination examples
+  
+- [ ] RPS1.6: Extract and optimize pagination system architecture
+  - Extract common pagination logic into BaseResourceHandler
+  - Create shared pagination parameter parsing utilities
+  - Generate standardized pagination metadata across all resources
+  - Support multiple pagination styles (offset/limit, page/limit)
+  - Update all existing paginated implementations to use shared system
+  - Add performance benchmarks for paginated vs non-paginated responses
+  
+- [ ] RPS1.7: Implement paginated caching optimization
+  - Update CachedResourceHandler to cache paginated responses by page parameters
+  - Implement smart cache invalidation for paginated data
+  - Handle partial cache updates when underlying data changes
+  - Optimize memory usage for large cached datasets
+  - Add cache hit/miss metrics for paginated resources
+  - Document caching behavior for paginated resources
+
+**Success Criteria**:
+- All resources paginated with reasonable default limits
+- Response times < 500ms for any single page
+- Memory usage remains constant regardless of vault size
+- 100% backward compatibility maintained
+- Pagination metadata enables efficient navigation
+
 ## Task Categories
 ### 1. Constants and Magic Numbers (DRY)
 - [x] T1.1: Create constants file for Obsidian defaults
@@ -214,16 +363,20 @@ For each task:
 ## Progress Status
 
 **Last Updated**: 2025-01-28
-**Current Priority**: ✅ TRI Features Complete - All Tool-Resource Integration tasks finished
-**Completion Status**: 100% - All TRI tasks completed (TRI1-TRI10)
+**Current Priority**: 🚨 CRITICAL - Two High-Priority Initiatives
+**Priority 0**: Resource Response Modes (Context Explosion Fix) - 1/7 in progress  
+**Priority 1**: Resource Pagination System (Data Management) - 0/7 completed
 **Green Line Status**: ✅ All tests passing 
-**High Priority TRI Tasks**: ✅ All 6 completed (TRI1-TRI6)
-**Medium Priority TRI Tasks**: ✅ All 4 completed (TRI7-TRI10) 
+**Critical RSM Tasks**: 1/7 in progress (RSM1.1 ACTIVE, RSM1.2-RSM1.7 pending)
+**Critical RPS Tasks**: 0/7 completed (RPS1.1-RPS1.7) - HIGH-PRIORITY INITIATIVE
+**Previous TRI Tasks**: ✅ All 10 completed (TRI1-TRI10) 
 ## Total Project Summary
 
 **Quality Improvement Tasks**: 63 (100% completed) 
 **Resource Tasks**: 18 (100% completed) 
 **TRI Tasks**: 10 (100% completed)
+**RSM Tasks**: 0/7 completed (0%) - HIGH-PRIORITY INITIATIVE
+**RPS Tasks**: 0/7 completed (0%) - NEW HIGH-PRIORITY INITIATIVE
 **Quality Check Tasks**: 11/14 completed (78%)
 
 ---

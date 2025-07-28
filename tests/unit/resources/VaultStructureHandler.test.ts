@@ -22,7 +22,7 @@ describe('VaultStructureHandler', () => {
       };
       
       const handler = new VaultStructureHandler();
-      const result = await handler.execute('vault://structure', server);
+      const result = await handler.execute('vault://structure?mode=full', server);
       
       expect(mockListFilesInVault).toHaveBeenCalled();
       expect(result.contents[0].mimeType).toBe('application/json');
@@ -67,7 +67,7 @@ describe('VaultStructureHandler', () => {
       };
       
       const handler = new VaultStructureHandler();
-      const result = await handler.execute('vault://structure', server);
+      const result = await handler.execute('vault://structure?mode=full', server);
       
       const data = JSON.parse(result.contents[0].text);
       expect(data.structure.files).toEqual([]);
@@ -90,7 +90,7 @@ describe('VaultStructureHandler', () => {
       };
       
       const handler = new VaultStructureHandler();
-      const result = await handler.execute('vault://structure', server);
+      const result = await handler.execute('vault://structure?mode=full', server);
       
       const data = JSON.parse(result.contents[0].text);
       expect(data.structure.files).toEqual(['README.md', 'notes.txt', 'ideas.md']);
@@ -113,7 +113,7 @@ describe('VaultStructureHandler', () => {
       };
       
       const handler = new VaultStructureHandler();
-      const result = await handler.execute('vault://structure', server);
+      const result = await handler.execute('vault://structure?mode=full', server);
       
       const data = JSON.parse(result.contents[0].text);
       
@@ -137,7 +137,7 @@ describe('VaultStructureHandler', () => {
       
       const handler = new VaultStructureHandler();
       
-      await expect(handler.execute('vault://structure', server))
+      await expect(handler.execute('vault://structure?mode=full', server))
         .rejects.toThrow('API Error');
     });
     
@@ -155,7 +155,7 @@ describe('VaultStructureHandler', () => {
       };
       
       const handler = new VaultStructureHandler();
-      const result = await handler.execute('vault://structure', server);
+      const result = await handler.execute('vault://structure?mode=full', server);
       
       const data = JSON.parse(result.contents[0].text);
       
@@ -166,6 +166,118 @@ describe('VaultStructureHandler', () => {
       expect(data.structure.folders['folder with spaces'].files).toContain('file with spaces.md');
       expect(data.structure.folders['folder-with-dashes'].files).toContain('file_with_underscores.md');
       expect(data.structure.folders['folder.with.dots'].files).toContain('file.with.dots.md');
+    });
+  });
+
+  describe('response modes', () => {
+    const mockFiles = [
+      'file1.md',
+      'file2.txt',
+      'Projects/project1.md',
+      'Projects/project2.md',
+      'Projects/SubProject/task.md',
+      'Archive/old.md',
+      'Archive/2023/old-year.md'
+    ];
+
+    const createMockServer = () => ({
+      obsidianClient: {
+        listFilesInVault: vi.fn().mockResolvedValue(mockFiles)
+      }
+    });
+
+    it('should default to summary mode', async () => {
+      const server = createMockServer();
+      const handler = new VaultStructureHandler();
+      const result = await handler.execute('vault://structure', server);
+      
+      const data = JSON.parse(result.contents[0].text);
+      expect(data.mode).toBe('summary');
+      expect(data.totalFiles).toBe(7);
+      expect(data.totalFolders).toBe(4);
+      expect(data.message).toContain('Use ?mode=full for complete structure');
+      
+      // Should return summary structure (minimal folder/file info)
+      expect(data.structure.files).toHaveLength(0);
+      expect(data.structure.folders).toHaveProperty('...');
+    });
+
+    it('should support ?mode=summary explicitly', async () => {
+      const server = createMockServer();
+      const handler = new VaultStructureHandler();
+      const result = await handler.execute('vault://structure?mode=summary', server);
+      
+      const data = JSON.parse(result.contents[0].text);
+      expect(data.mode).toBe('summary');
+      expect(data.totalFiles).toBe(7);
+      expect(data.totalFolders).toBe(4);
+      expect(data.message).toContain('Use ?mode=full for complete structure');
+    });
+
+    it('should support ?mode=preview with basic metadata', async () => {
+      const server = createMockServer();
+      const handler = new VaultStructureHandler();
+      const result = await handler.execute('vault://structure?mode=preview', server);
+      
+      const data = JSON.parse(result.contents[0].text);
+      expect(data.mode).toBe('preview');
+      expect(data.totalFiles).toBe(7);
+      expect(data.totalFolders).toBe(4);
+      
+      // Should include folder names but limited file info
+      expect(data.structure.folders).toHaveProperty('Projects');
+      expect(data.structure.folders).toHaveProperty('Archive');
+      expect(data.structure.folders.Projects).toHaveProperty('fileCount');
+      expect(data.structure.folders.Projects).toHaveProperty('folders');
+      expect(data.structure.folders.Projects.folders.SubProject).toHaveProperty('fileCount');
+    });
+
+    it('should support ?mode=full with complete structure', async () => {
+      const server = createMockServer();
+      const handler = new VaultStructureHandler();
+      const result = await handler.execute('vault://structure?mode=full', server);
+      
+      const data = JSON.parse(result.contents[0].text);
+      expect(data.mode).toBe('full');
+      expect(data.totalFiles).toBe(7);
+      expect(data.totalFolders).toBe(4);
+      
+      // Should have complete hierarchical structure with all files
+      expect(data.structure.files).toContain('file1.md');
+      expect(data.structure.files).toContain('file2.txt');
+      expect(data.structure.folders.Projects.files).toContain('project1.md');
+      expect(data.structure.folders.Projects.files).toContain('project2.md');
+      expect(data.structure.folders.Projects.folders.SubProject.files).toContain('task.md');
+    });
+
+    it('should handle invalid mode parameter', async () => {
+      const server = createMockServer();
+      const handler = new VaultStructureHandler();
+      const result = await handler.execute('vault://structure?mode=invalid', server);
+      
+      const data = JSON.parse(result.contents[0].text);
+      // Should default to summary mode for invalid parameters
+      expect(data.mode).toBe('summary');
+    });
+
+    it('should handle large vault threshold in summary mode', async () => {
+      // Create a large file list that exceeds the threshold
+      const largeFileList = Array.from({ length: 6000 }, (_, i) => `file${i}.md`);
+      
+      const server = {
+        obsidianClient: {
+          listFilesInVault: vi.fn().mockResolvedValue(largeFileList)
+        }
+      };
+      
+      const handler = new VaultStructureHandler();
+      const result = await handler.execute('vault://structure?mode=full', server);
+      
+      const data = JSON.parse(result.contents[0].text);
+      // Should force summary mode for large vaults even when full mode requested
+      expect(data.mode).toBe('summary');
+      expect(data.totalFiles).toBe(6000);
+      expect(data.message).toContain('6000 files');
     });
   });
 });
