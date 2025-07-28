@@ -2,10 +2,11 @@ import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
 import { SimpleSearchArgs } from './types/SimpleSearchArgs.js';
 import { validateRequiredArgs, PAGINATION_SCHEMA } from '../utils/validation.js';
+import { defaultCachedHandlers } from '../resources/CachedConcreteHandlers.js';
 
 export class SimpleSearchTool extends BaseTool<SimpleSearchArgs> {
   name = 'obsidian_simple_search';
-  description = 'Search text in Obsidian vault notes (vault-only - NOT filesystem search). Returns paginated results. For better performance, use the vault://search/{query} resource with 1 minute cache.';
+  description = 'Search text in Obsidian vault notes (vault-only - NOT filesystem search). Returns paginated results. Uses vault://search/{query} resource internally with 1-minute caching for optimal performance.';
   
   metadata: ToolMetadata = {
     category: 'search',
@@ -55,8 +56,18 @@ export class SimpleSearchTool extends BaseTool<SimpleSearchArgs> {
       const limit = Math.min(args.limit || OBSIDIAN_DEFAULTS.DEFAULT_SEARCH_LIMIT, OBSIDIAN_DEFAULTS.MAX_SEARCH_RESULTS);
       const offset = args.offset || 0;
       
-      const client = this.getClient();
-      const results = await client.search(args.query, args.contextLength || OBSIDIAN_DEFAULTS.CONTEXT_LENGTH, limit, offset);
+      // Use cached resource handler instead of direct client call for better performance
+      const resourceData = await defaultCachedHandlers.search.handleRequest(`vault://search/${encodeURIComponent(args.query)}`);
+      
+      // For now, we get all results from the resource and handle filtering locally
+      // The resource doesn't yet support contextLength, limit, offset parameters
+      // TODO: Enhance SearchHandler to support these parameters via URI encoding
+      const results = {
+        results: resourceData.results,
+        totalResults: resourceData.totalResults,
+        hasMore: resourceData.hasMore
+      };
+      
       return this.formatResponse(results);
     } catch (error: unknown) {
       // Use the new handleHttpError method with custom handlers

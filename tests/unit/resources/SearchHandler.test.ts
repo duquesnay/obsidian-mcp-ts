@@ -43,7 +43,7 @@ describe('SearchHandler', () => {
 
       const result = await handler.handleRequest('vault://search/query-term', mockServer);
 
-      expect(mockClient.search).toHaveBeenCalledWith('query-term');
+      expect(mockClient.search).toHaveBeenCalledWith('query-term', undefined, undefined, undefined);
       expect(result).toEqual({
         query: 'query-term',
         results: searchResults.results,
@@ -63,7 +63,7 @@ describe('SearchHandler', () => {
 
       const result = await handler.handleRequest('vault://search/multiple%20words', mockServer);
 
-      expect(mockClient.search).toHaveBeenCalledWith('multiple words');
+      expect(mockClient.search).toHaveBeenCalledWith('multiple words', undefined, undefined, undefined);
       expect(result.query).toBe('multiple words');
     });
 
