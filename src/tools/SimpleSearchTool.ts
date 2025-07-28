@@ -6,7 +6,7 @@ import { defaultCachedHandlers } from '../resources/CachedConcreteHandlers.js';
 
 export class SimpleSearchTool extends BaseTool<SimpleSearchArgs> {
   name = 'obsidian_simple_search';
-  description = 'Search text in Obsidian vault notes (vault-only - NOT filesystem search). Returns paginated results. Uses vault://search/{query} resource internally with 1-minute caching for optimal performance.';
+  description = 'Search text in Obsidian vault notes (vault-only - NOT filesystem search). Returns paginated results with 100-character context snippets by default (preview mode). Uses vault://search/{query} resource internally with 1-minute caching for optimal performance.';
   
   metadata: ToolMetadata = {
     category: 'search',
@@ -56,12 +56,23 @@ export class SimpleSearchTool extends BaseTool<SimpleSearchArgs> {
       const limit = Math.min(args.limit || OBSIDIAN_DEFAULTS.DEFAULT_SEARCH_LIMIT, OBSIDIAN_DEFAULTS.MAX_SEARCH_RESULTS);
       const offset = args.offset || 0;
       
-      // Use cached resource handler instead of direct client call for better performance
-      const resourceData = await defaultCachedHandlers.search.handleRequest(`vault://search/${encodeURIComponent(args.query)}`);
+      // Build resource URI with mode parameter based on contextLength
+      let resourceUri = `vault://search/${encodeURIComponent(args.query)}`;
       
-      // For now, we get all results from the resource and handle filtering locally
-      // The resource doesn't yet support contextLength, limit, offset parameters
-      // TODO: Enhance SearchHandler to support these parameters via URI encoding
+      // Determine mode based on contextLength parameter
+      if (args.contextLength !== undefined && args.contextLength > OBSIDIAN_DEFAULTS.CONTEXT_LENGTH) {
+        // If contextLength is greater than default, use full mode
+        resourceUri += '?mode=full';
+      } else {
+        // Use preview mode (default behavior)
+        resourceUri += '?mode=preview';
+      }
+      
+      // Use cached resource handler instead of direct client call for better performance
+      const resourceData = await defaultCachedHandlers.search.handleRequest(resourceUri);
+      
+      // The resource now supports contextLength via mode parameter
+      // Local pagination is still handled here for limit/offset
       const results = {
         results: resourceData.results,
         totalResults: resourceData.totalResults,
