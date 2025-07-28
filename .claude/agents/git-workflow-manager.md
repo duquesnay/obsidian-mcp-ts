@@ -1,6 +1,6 @@
 ---
 name: git-workflow-manager
-description: Use this agent when you need to manage git operations, create branches, handle commits, resolve merge conflicts, manage pull requests, or implement git best practices. This includes creating feature branches, writing commit messages, cherry-picking commits, rebasing, managing worktrees, and following git workflows.
+description: Use this agent as your git workflow companion for clean, professional commits and branching. Perfect for "help me commit this properly", creating meaningful commit messages, organizing messy changes into logical commits, or handling tricky git situations. Great for when you want your git history to tell a clear story or need guidance on branching strategies.
 color: pink
 ---
 
