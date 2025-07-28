@@ -2,15 +2,21 @@ import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { ListFilesArgs } from './types/ListFilesArgs.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
 import { PAGINATION_SCHEMA, validatePaginationParams } from '../utils/validation.js';
+import { defaultCachedHandlers } from '../resources/CachedConcreteHandlers.js';
+
+interface FolderStructure {
+  files: string[];
+  folders: { [key: string]: FolderStructure };
+}
 
 export class ListFilesInVaultTool extends BaseTool<ListFilesArgs> {
   name = 'obsidian_list_files_in_vault';
-  description = 'List all notes and folders in your Obsidian vault root (NOT filesystem access - Obsidian vault files only). For better performance, use the vault://structure resource with 5 minute cache.';
+  description = 'List all notes and folders in your Obsidian vault root (NOT filesystem access - Obsidian vault files only). Uses vault://structure resource internally with 5 minute cache for optimal performance.';
   
   metadata: ToolMetadata = {
     category: 'file-operations',
     keywords: ['list', 'files', 'vault', 'browse', 'directory', 'pagination'],
-    version: '1.1.0'
+    version: '1.2.0'
   };
   
   inputSchema = {
@@ -26,6 +32,30 @@ export class ListFilesInVaultTool extends BaseTool<ListFilesArgs> {
     required: []
   };
 
+  /**
+   * Flatten hierarchical folder structure into a flat list of file paths
+   */
+  private flattenStructure(structure: FolderStructure, basePath: string = ''): string[] {
+    const files: string[] = [];
+    
+    // Add files from current level
+    for (const fileName of structure.files) {
+      const fullPath = basePath ? `${basePath}/${fileName}` : fileName;
+      files.push(fullPath);
+    }
+    
+    // Add files from subfolders recursively
+    for (const [folderName, folderStructure] of Object.entries(structure.folders)) {
+      // Skip summary indicators
+      if (folderName === '...') continue;
+      
+      const folderPath = basePath ? `${basePath}/${folderName}` : folderName;
+      files.push(...this.flattenStructure(folderStructure, folderPath));
+    }
+    
+    return files;
+  }
+
   async executeTyped(args: ListFilesArgs): Promise<ToolResponse> {
     try {
       // Validate pagination parameters
@@ -39,8 +69,9 @@ export class ListFilesInVaultTool extends BaseTool<ListFilesArgs> {
         );
       }
       
-      const client = this.getClient();
-      const files = await client.listFilesInVault();
+      // Use cached resource handler instead of direct client call for better performance
+      const resourceData = await defaultCachedHandlers.structure.handleRequest('vault://structure');
+      const files = this.flattenStructure(resourceData.structure);
       
       // Handle pagination
       const totalCount = files.length;

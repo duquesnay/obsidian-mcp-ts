@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ListFilesInVaultTool } from '../../src/tools/ListFilesInVaultTool.js';
 import { ObsidianClient } from '../../src/obsidian/ObsidianClient.js';
+import { defaultCachedHandlers } from '../../src/resources/CachedConcreteHandlers.js';
 
 // Mock ObsidianClient
 vi.mock('../../src/obsidian/ObsidianClient.js', () => ({
@@ -19,28 +20,48 @@ describe('ListFilesInVaultTool', () => {
     tool = new ListFilesInVaultTool();
     // Mock the getClient method to return our mock
     vi.spyOn(tool as any, 'getClient').mockReturnValue(mockClient);
+    
+    // Reset all mocks to ensure test isolation
+    vi.clearAllMocks();
   });
 
   describe('success scenarios', () => {
     it('should list files successfully', async () => {
-      const mockFiles = [
-        { name: 'note1.md', path: 'note1.md', type: 'file' },
-        { name: 'note2.md', path: 'folder/note2.md', type: 'file' },
-        { name: 'folder', path: 'folder', type: 'folder' }
-      ];
+      const mockStructureData = {
+        structure: {
+          files: ['note1.md'],
+          folders: {
+            'folder': {
+              files: ['note2.md'],
+              folders: {}
+            }
+          }
+        },
+        totalFiles: 2,
+        totalFolders: 1
+      };
 
-      vi.mocked(mockClient.listFilesInVault!).mockResolvedValue(mockFiles);
+      vi.spyOn(defaultCachedHandlers.structure, 'handleRequest').mockResolvedValue(mockStructureData);
 
       const result = await tool.execute({});
       const response = JSON.parse(result.text);
 
-      expect(response.files).toEqual(mockFiles);
-      expect(response.count).toBe(3);
-      expect(mockClient.listFilesInVault).toHaveBeenCalled();
+      expect(response.files).toEqual(['note1.md', 'folder/note2.md']);
+      expect(response.count).toBe(2);
+      expect(mockClient.listFilesInVault).not.toHaveBeenCalled();
     });
 
     it('should handle empty vault', async () => {
-      vi.mocked(mockClient.listFilesInVault!).mockResolvedValue([]);
+      const mockStructureData = {
+        structure: {
+          files: [],
+          folders: {}
+        },
+        totalFiles: 0,
+        totalFolders: 0
+      };
+
+      vi.spyOn(defaultCachedHandlers.structure, 'handleRequest').mockResolvedValue(mockStructureData);
 
       const result = await tool.execute({});
       const response = JSON.parse(result.text);
@@ -50,13 +71,18 @@ describe('ListFilesInVaultTool', () => {
     });
 
     it('should handle large number of files', async () => {
-      const mockFiles = Array.from({ length: 1000 }, (_, i) => ({
-        name: `note${i}.md`,
-        path: `folder${i % 10}/note${i}.md`,
-        type: 'file'
-      }));
+      const mockFiles = Array.from({ length: 1000 }, (_, i) => `note${i}.md`);
+      
+      const mockStructureData = {
+        structure: {
+          files: mockFiles,
+          folders: {}
+        },
+        totalFiles: 1000,
+        totalFolders: 0
+      };
 
-      vi.mocked(mockClient.listFilesInVault!).mockResolvedValue(mockFiles);
+      vi.spyOn(defaultCachedHandlers.structure, 'handleRequest').mockResolvedValue(mockStructureData);
 
       const result = await tool.execute({});
       const response = JSON.parse(result.text);
@@ -69,7 +95,7 @@ describe('ListFilesInVaultTool', () => {
   describe('error scenarios', () => {
     it('should handle API connection errors', async () => {
       const error = new Error('Connection refused');
-      vi.mocked(mockClient.listFilesInVault!).mockRejectedValue(error);
+      vi.spyOn(defaultCachedHandlers.structure, 'handleRequest').mockRejectedValue(error);
 
       const result = await tool.execute({});
       const response = JSON.parse(result.text);
@@ -81,7 +107,7 @@ describe('ListFilesInVaultTool', () => {
     it('should handle permission errors', async () => {
       const error = new Error('Unauthorized');
       (error as any).response = { status: 401 };
-      vi.mocked(mockClient.listFilesInVault!).mockRejectedValue(error);
+      vi.spyOn(defaultCachedHandlers.structure, 'handleRequest').mockRejectedValue(error);
 
       const result = await tool.execute({});
       const response = JSON.parse(result.text);
@@ -92,7 +118,7 @@ describe('ListFilesInVaultTool', () => {
 
     it('should handle timeout errors', async () => {
       const error = new Error('Request timeout');
-      vi.mocked(mockClient.listFilesInVault!).mockRejectedValue(error);
+      vi.spyOn(defaultCachedHandlers.structure, 'handleRequest').mockRejectedValue(error);
 
       const result = await tool.execute({});
       const response = JSON.parse(result.text);
@@ -104,10 +130,16 @@ describe('ListFilesInVaultTool', () => {
 
   describe('response format validation', () => {
     it('should include all required response fields', async () => {
-      const mockFiles = [
-        { name: 'test.md', path: 'test.md', type: 'file' }
-      ];
-      vi.mocked(mockClient.listFilesInVault!).mockResolvedValue(mockFiles);
+      const mockStructureData = {
+        structure: {
+          files: ['test.md'],
+          folders: {}
+        },
+        totalFiles: 1,
+        totalFolders: 0
+      };
+      
+      vi.spyOn(defaultCachedHandlers.structure, 'handleRequest').mockResolvedValue(mockStructureData);
 
       const result = await tool.execute({});
       const response = JSON.parse(result.text);
@@ -118,35 +150,54 @@ describe('ListFilesInVaultTool', () => {
       expect(Array.isArray(response.files)).toBe(true);
     });
 
-    it('should preserve file metadata structure', async () => {
-      const mockFiles = [
-        { 
-          name: 'complex-note.md', 
-          path: 'projects/2024/complex-note.md', 
-          type: 'file',
-          size: 1024,
-          modified: '2024-01-01T00:00:00Z'
-        }
-      ];
-      vi.mocked(mockClient.listFilesInVault!).mockResolvedValue(mockFiles);
+    it('should return file paths as strings', async () => {
+      const mockStructureData = {  
+        structure: {
+          files: [],
+          folders: {
+            'projects': {
+              files: [],
+              folders: {
+                '2024': {
+                  files: ['complex-note.md'],
+                  folders: {}
+                }
+              }
+            }
+          }
+        },
+        totalFiles: 1,
+        totalFolders: 2
+      };
+      
+      vi.spyOn(defaultCachedHandlers.structure, 'handleRequest').mockResolvedValue(mockStructureData);
 
       const result = await tool.execute({});
       const response = JSON.parse(result.text);
 
-      expect(response.files[0]).toEqual(mockFiles[0]);
-      expect(response.files[0]).toHaveProperty('name');
-      expect(response.files[0]).toHaveProperty('path');
-      expect(response.files[0]).toHaveProperty('type');
+      expect(response.files[0]).toBe('projects/2024/complex-note.md');
+      expect(typeof response.files[0]).toBe('string');
+      expect(response.count).toBe(1);
     });
   });
 
   describe('LLM ergonomics', () => {
     it('should provide structured output for easy parsing', async () => {
-      const mockFiles = [
-        { name: 'note1.md', path: 'note1.md', type: 'file' },
-        { name: 'images', path: 'images', type: 'folder' }
-      ];
-      vi.mocked(mockClient.listFilesInVault!).mockResolvedValue(mockFiles);
+      const mockStructureData = {
+        structure: {
+          files: ['note1.md'],
+          folders: {
+            'images': {
+              files: ['photo.jpg'],
+              folders: {}
+            }
+          }
+        },
+        totalFiles: 2,
+        totalFolders: 1
+      };
+      
+      vi.spyOn(defaultCachedHandlers.structure, 'handleRequest').mockResolvedValue(mockStructureData);
 
       const result = await tool.execute({});
       const response = JSON.parse(result.text);
@@ -155,32 +206,49 @@ describe('ListFilesInVaultTool', () => {
       expect(response.files).toBeInstanceOf(Array);
       expect(response.count).toBe(2);
       
-      // Each file should have consistent structure
+      // Each file should be a string path
       response.files.forEach((file: any) => {
-        expect(file).toHaveProperty('name');
-        expect(file).toHaveProperty('path');
-        expect(file).toHaveProperty('type');
+        expect(typeof file).toBe('string');
       });
+      
+      expect(response.files).toEqual(['note1.md', 'images/photo.jpg']);
     });
 
     it('should handle mixed content types gracefully', async () => {
-      const mockFiles = [
-        { name: 'readme.md', path: 'readme.md', type: 'file' },
-        { name: 'images', path: 'images', type: 'folder' },
-        { name: 'data.json', path: 'data/data.json', type: 'file' },
-        { name: 'archive', path: 'old/archive', type: 'folder' }
-      ];
-      vi.mocked(mockClient.listFilesInVault!).mockResolvedValue(mockFiles);
+      const mockStructureData = {
+        structure: {
+          files: ['readme.md'],
+          folders: {
+            'images': {
+              files: [],
+              folders: {}
+            },
+            'data': {
+              files: ['data.json'],
+              folders: {}
+            },
+            'old': {
+              files: [],
+              folders: {
+                'archive': {
+                  files: [],
+                  folders: {}
+                }
+              }
+            }
+          }
+        },
+        totalFiles: 2, // Only actual files: readme.md and data/data.json
+        totalFolders: 4 // images, data, old, archive
+      };
+      
+      vi.spyOn(defaultCachedHandlers.structure, 'handleRequest').mockResolvedValue(mockStructureData);
 
       const result = await tool.execute({});
       const response = JSON.parse(result.text);
-
-      const files = response.files.filter((f: any) => f.type === 'file');
-      const folders = response.files.filter((f: any) => f.type === 'folder');
       
-      expect(files).toHaveLength(2);
-      expect(folders).toHaveLength(2);
-      expect(response.count).toBe(4);
+      expect(response.files).toEqual(['readme.md', 'data/data.json']);
+      expect(response.count).toBe(2); // Only files, not folders
     });
   });
 
