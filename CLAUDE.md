@@ -455,3 +455,4 @@ This separation enables clean PRs by cherry-picking only non-claude commits.
 - **Clean architecture enables easy extension and maintenance**
 - **Obsidian API limitation**: The getPeriodicNote('daily') endpoint returns the current daily note only, not historical dates. This means vault://daily/{date} currently works the same for any date - it returns today's note. Future API updates may support date-specific queries.
 - **SSL verficiation must be deactivated since obsidian is accessed locally**
+- **Claude Desktop resource limitation**: Resources appear as "connected" but cannot be accessed by users due to [TypeScript SDK #686](https://github.com/modelcontextprotocol/typescript-sdk/issues/686) and [Python SDK #263](https://github.com/modelcontextprotocol/python-sdk/issues/263). Our internal resource integration provides the same benefits through tools with automatic caching.

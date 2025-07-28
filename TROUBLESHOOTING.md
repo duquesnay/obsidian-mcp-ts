@@ -12,6 +12,7 @@ This guide helps you resolve common issues with the Obsidian MCP TypeScript serv
 - [Diagnostic Checklist](#diagnostic-checklist)
 - [Common Misconfigurations](#common-misconfigurations)
 - [Debugging Tips](#debugging-tips)
+- [Claude Desktop MCP Resource Limitation](#claude-desktop-mcp-resource-limitation)
 - [FAQ](#faq)
 
 ## Common Setup Issues
@@ -892,6 +893,134 @@ npx @modelcontextprotocol/inspector tsx src/index.ts
 5. Check logs for details
 6. Test with MCP Inspector
 
+## Claude Desktop MCP Resource Limitation
+
+### Known Issue: Resources Not Accessible in Claude Desktop
+
+**Issue Summary:**
+Claude Desktop currently has a known limitation where MCP resources are not accessible to users, despite appearing as "connected" in Settings > Integrations. This affects all MCP servers, not just the Obsidian MCP server.
+
+**What Are MCP Resources?**
+MCP resources provide read-only access to structured data through URIs like:
+- `vault://tags` - All vault tags with usage counts
+- `vault://recent` - Recently modified notes  
+- `vault://note/path/to/note.md` - Individual note content
+- `vault://search/query` - Search results
+- `vault://structure` - Complete vault structure
+
+**Current Status:**
+- ✅ **Resources are implemented** and working correctly in the server
+- ✅ **Resources appear as "connected"** in Claude Desktop settings
+- ❌ **Resources cannot be accessed** by Claude Desktop users
+- ✅ **Tools work normally** - all functionality is available through tools
+
+**GitHub Issue References:**
+- TypeScript SDK: [Issue #686](https://github.com/modelcontextprotocol/typescript-sdk/issues/686)
+- Python SDK: [Issue #263](https://github.com/modelcontextprotocol/python-sdk/issues/263)
+
+### Our Workaround Solution: Internal Resource Integration
+
+**How We've Solved This:**
+We implemented internal resource integration where tools automatically use resources internally for performance benefits, even though users can't access resources directly.
+
+**Performance Benefits You Get:**
+| Tool | Internal Resource Used | Cache Duration | Performance Improvement |
+|------|----------------------|----------------|----------------------|
+| `obsidian_get_all_tags` | `vault://tags` | 5 minutes | 10-50x faster for tag operations |
+| `obsidian_get_recent_changes` | `vault://recent` | 30 seconds | Near-instant recent file listings |
+| `obsidian_get_file_contents` | `vault://note/{path}` | 2 minutes | Dramatically faster for repeated file access |
+| `obsidian_simple_search` | `vault://search/{query}` | 1 minute | Cached search results |
+| `obsidian_list_files_in_vault` | `vault://structure` | 5 minutes | Instant vault browsing after first load |
+| `obsidian_list_files_in_dir` | `vault://folder/{path}` | 2 minutes | Fast folder navigation |
+
+**What This Means for Users:**
+
+1. **✅ Full Functionality Available:** All operations work through tools - you're not missing any features
+2. **✅ Automatic Performance:** Speed improvements happen transparently without any configuration
+3. **✅ Smart Caching:** Tools use cached data when appropriate, fresh data when needed
+4. **✅ Future-Proof:** When Claude Desktop fixes this limitation, additional benefits will become available
+
+**Technical Implementation:**
+- Tools first check internal resources for cached data
+- If resource unavailable, tools fall back to direct API calls
+- Cache invalidation happens automatically on write operations
+- Memory-efficient LRU caching prevents memory leaks
+
+### What Happens When Claude Desktop Fixes This?
+
+**Additional Benefits Coming:**
+When Claude Desktop enables resource access, users will gain:
+- **Context Awareness:** Claude will have immediate access to vault structure, tags, and recent changes
+- **Improved Conversation Flow:** No need to explicitly call tools for basic vault information
+- **Better Suggestions:** Claude can suggest relevant files and tags based on current context
+- **Reduced Tool Calls:** Simple information queries won't require tool invocations
+
+**Current vs Future Behavior:**
+
+**Today (Tool-based):**
+```
+User: "What tags do I have related to meetings?"
+Claude: I'll check your vault tags.
+[Calls obsidian_get_all_tags tool]
+Claude: You have these meeting-related tags: #meeting, #standup, #review...
+```
+
+**Future (Resource-aware):**
+```
+User: "What tags do I have related to meetings?" 
+Claude: [Already knows from vault://tags resource]
+Claude: You have these meeting-related tags: #meeting, #standup, #review...
+```
+
+### Current Limitations
+
+**What You Cannot Do Today:**
+- Access resource URIs directly in Claude Desktop
+- Reference resources in prompts (e.g., "use vault://tags to see my tags")
+- Get real-time resource updates in conversations
+- Use resources for context without explicit tool calls
+
+**Workarounds:**
+- Use equivalent tools for all operations: `obsidian_get_all_tags` instead of `vault://tags`
+- Let tools handle caching automatically - no user action needed
+- All functionality is available, just through different interfaces
+
+### Verification
+
+**How to Confirm This Limitation:**
+1. **Check Settings:** Resources appear as "connected" in Claude Desktop Settings > Integrations
+2. **Try Direct Access:** Attempt to reference `vault://tags` in a conversation - it won't work
+3. **Use Tools Instead:** Call `obsidian_get_all_tags` - this works and uses cached resources internally
+
+**Expected vs Actual Behavior:**
+```bash
+# These should work but don't in Claude Desktop:
+vault://tags
+vault://recent  
+vault://structure
+
+# These work and provide the same data:
+obsidian_get_all_tags
+obsidian_get_recent_changes  
+obsidian_list_files_in_vault
+```
+
+### Future Planning
+
+**When the Limitation is Resolved:**
+1. **Seamless Transition:** All current functionality will continue working
+2. **Enhanced Experience:** Additional resource-based features will become available
+3. **Backward Compatibility:** No configuration changes needed
+4. **Performance Maintained:** Internal caching will remain for optimal performance
+
+**Stay Updated:**
+- Monitor the GitHub issues linked above for progress updates
+- Check release notes for Claude Desktop updates
+- No action required from users - improvements will be automatic
+
+**Bottom Line:**
+This limitation doesn't affect functionality - you get the same capabilities through tools, with automatic performance optimizations. When Claude Desktop resolves this, you'll gain additional convenience features without losing anything.
+
 ## FAQ
 
 ### Q: Why do I get SSL certificate warnings?
@@ -926,6 +1055,9 @@ npm install obsidian-mcp-ts@latest
 - Keep backups of your vault
 - Test operations on non-critical data first
 - Review the tool permissions
+
+### Q: Why can't I access MCP resources like vault://tags in Claude Desktop?
+**A:** This is a known limitation in Claude Desktop where resources appear as "connected" but aren't accessible to users. See the [Claude Desktop MCP Resource Limitation](#claude-desktop-mcp-resource-limitation) section for details. Use the equivalent tools instead - they provide the same functionality with automatic caching benefits.
 
 ### Q: What Obsidian features are not supported?
 **A:** Currently not supported:

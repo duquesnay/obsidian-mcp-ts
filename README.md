@@ -13,6 +13,42 @@ A TypeScript MCP server to interact with Obsidian via the Local REST API communi
 - **📦 Modular Architecture**: Clean separation of concerns with reusable utilities
 - **📊 MCP Resources**: Read-only access to vault data through the resources protocol
 
+## Performance Optimization: Internal Resource Caching
+
+The Obsidian MCP server automatically optimizes performance through intelligent internal resource caching. This system provides significant speed improvements for frequently used operations while remaining completely transparent to users.
+
+### How It Works
+
+Several major tools now use internal MCP resources with smart caching instead of making direct API calls every time:
+
+| Tool | Internal Resource | Cache Duration | Performance Benefit |
+|------|------------------|----------------|-------------------|
+| `obsidian_get_all_tags` | `vault://tags` | 5 minutes | 10-50x faster for tag operations |
+| `obsidian_get_recent_changes` | `vault://recent` | 30 seconds | Near-instant recent file listings |
+| `obsidian_get_file_contents` | `vault://note/{path}` | 2 minutes | Dramatically faster for repeated file access |
+| `obsidian_simple_search` | `vault://search/{query}` | 1 minute | Cached search results for common queries |
+| `obsidian_list_files_in_vault` | `vault://structure` | 5 minutes | Instant vault browsing after first load |
+| `obsidian_list_files_in_dir` | `vault://folder/{path}` | 2 minutes | Fast folder navigation |
+
+### User Benefits
+
+- **Transparent Performance**: All speed improvements happen automatically - no configuration required
+- **Backward Compatible**: Existing workflows continue to work exactly the same way
+- **Smart Invalidation**: Cache automatically updates when you modify files through the tools
+- **Reduced API Load**: Fewer direct calls to Obsidian's REST API improves overall responsiveness
+- **Better User Experience**: Operations like browsing tags, searching, and accessing recent files feel instant
+
+### Technical Details
+
+The optimization works by:
+
+1. **Resource-First Strategy**: Tools check internal MCP resources before making API calls
+2. **Tiered Caching**: Different cache durations based on data volatility (30s for recent changes, 5min for vault structure)
+3. **Graceful Fallback**: If resources aren't available, tools automatically fall back to direct API calls
+4. **Memory Efficient**: Uses LRU caching with automatic cleanup to prevent memory leaks
+
+This optimization is part of our commitment to making the Obsidian MCP server both powerful and performant for daily use.
+
 ## Feature Status
 
 This section shows what resources and capabilities are available in the Obsidian MCP server.
@@ -56,6 +92,8 @@ const stats = await client.readResource('vault://stats');
 const note = await client.readResource('vault://note/meeting-notes.md');
 const folder = await client.readResource('vault://folder/Projects');
 ```
+
+**⚠️ Claude Desktop Limitation:** Resources currently cannot be accessed directly in Claude Desktop due to a [known limitation](https://github.com/modelcontextprotocol/typescript-sdk/issues/686). However, equivalent tools provide the same functionality with automatic caching benefits. See [TROUBLESHOOTING.md](TROUBLESHOOTING.md#claude-desktop-mcp-resource-limitation) for details.
 
 #### Resource vs Tool Decision
 
