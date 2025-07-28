@@ -7,8 +7,15 @@
 COUNTER_FILE="$CLAUDE_PROJECT_DIR/.claude/hooks/feature-commit-counter"
 FEATURE_PREFIX="feat:"
 
+# Check if this was actually a git commit command (not git commit --amend, etc)
+# The hook receives the command as JSON in CLAUDE_TOOL_INPUT
+COMMAND=$(echo "$CLAUDE_TOOL_INPUT" | jq -r '.command // empty' 2>/dev/null)
+if [[ ! "$COMMAND" =~ ^git[[:space:]]+commit[[:space:]]+-m[[:space:]] ]]; then
+    exit 0
+fi
+
 # Debug output
-echo "[Feature Commit Hook] Checking last commit..."
+echo "[Feature Commit Hook] Git commit detected, checking if it's a feature commit..."
 
 # Get the most recent commit message
 COMMIT_MSG=$(cd "$CLAUDE_PROJECT_DIR" && git log -1 --pretty=%B 2>/dev/null)
