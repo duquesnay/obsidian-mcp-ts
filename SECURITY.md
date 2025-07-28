@@ -18,10 +18,16 @@ The Obsidian Local REST API plugin runs on `https://127.0.0.1:27124` with a self
 To ensure reliable connectivity, SSL verification is disabled in the client configuration:
 
 ```typescript
-const httpsAgent = new https.Agent({
-  rejectUnauthorized: false  // Required for self-signed certificates
+// In src/tools/base.ts and src/resources/BaseResourceHandler.ts
+const client = new ObsidianClient({
+  apiKey: config.apiKey,
+  host: config.host,
+  port: config.port,
+  verifySsl: false  // Disable SSL verification for self-signed Obsidian certificates
 });
 ```
+
+This setting is implemented at the client level and affects all HTTP requests to the Obsidian REST API.
 
 ### Security Implications
 
@@ -140,6 +146,28 @@ curl -k https://[your-ip]:27124/
 
 # Verify API key requirement
 curl -k https://127.0.0.1:27124/vault/ -H "Authorization: Bearer invalid_key"
+
+# Test with valid API key (should succeed)
+curl -k https://127.0.0.1:27124/vault/ -H "Authorization: Bearer your_api_key_here"
+
+# Verify SSL verification is properly disabled (should not show certificate errors)
+npm run test:integration
+```
+
+### Configuration Validation
+
+Ensure your development setup follows security best practices:
+
+```bash
+# Check that API key is not in version control
+git log --all --full-history -- .env
+git log --all --full-history -- "*.key"
+
+# Verify .env is properly ignored
+git check-ignore .env
+
+# Test MCP server authentication
+npx @modelcontextprotocol/inspector tsx src/index.ts
 ```
 
 ## Alternative Security Measures
@@ -182,8 +210,19 @@ Monitor these indicators:
 - Performance degradation (potential DoS)
 - Error spike in logs
 
+## Related Documentation
+
+For additional security-related information, see:
+
+- **[TROUBLESHOOTING.md](./TROUBLESHOOTING.md)** - SSL certificate issues and API key problems
+- **[README.md](./README.md)** - API key configuration and authentication setup  
+- **[TESTING.md](./TESTING.md)** - Security considerations for testing environments
+- **[docs/RESOURCES.md](./docs/RESOURCES.md)** - Authentication requirements for MCP resources
+
 ## Conclusion
 
 The security model of the Obsidian MCP server prioritizes functionality for local development while maintaining reasonable security boundaries. The localhost-only design and API key authentication provide adequate security for the intended use case. Users requiring higher security should implement additional measures based on their threat model.
+
+The deliberate decision to disable SSL verification for localhost connections is well-documented and implemented consistently across the codebase. This trade-off enables reliable operation with Obsidian's self-signed certificates while maintaining encryption for data in transit.
 
 For security concerns or vulnerability reports, please follow responsible disclosure practices and report to the project maintainers.
