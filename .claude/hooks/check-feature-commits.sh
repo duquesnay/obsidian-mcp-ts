@@ -61,4 +61,8 @@ else
     echo "[Feature Commit Hook] Not a feature commit: $COMMIT_MSG"
 fi
 
+# Push to remote after any commit
+echo "[Feature Commit Hook] Pushing to remote..."
+cd "$CLAUDE_PROJECT_DIR" && git push
+
 exit 0

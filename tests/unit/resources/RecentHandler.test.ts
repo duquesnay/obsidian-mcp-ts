@@ -129,4 +129,138 @@ describe('RecentHandler', () => {
       expect(result.notes[0].preview).toBe(longContent.substring(0, 100) + '...');
     });
   });
+
+  describe('pagination support', () => {
+    it('should handle limit parameter', async () => {
+      // Arrange
+      const mockRecentChanges = Array(25).fill(null).map((_, i) => ({
+        path: `note${i}.md`,
+        mtime: new Date(`2022-01-${String(i + 1).padStart(2, '0')}T00:00:00.000Z`).getTime(),
+        content: `Content for note ${i}`
+      }));
+
+      vi.mocked(mockClient.getRecentChanges).mockResolvedValue(mockRecentChanges);
+
+      const server = { obsidianClient: mockClient };
+
+      // Act - request with limit of 10
+      const result = await handler.handleRequest('vault://recent?limit=10', server);
+
+      // Assert
+      expect(result.notes).toHaveLength(10);
+      expect(result.pagination).toBeDefined();
+      expect(result.pagination.totalNotes).toBe(25);
+      expect(result.pagination.hasMore).toBe(true);
+      expect(result.pagination.limit).toBe(10);
+      expect(result.pagination.offset).toBe(0);
+      expect(result.pagination.nextOffset).toBe(10);
+    });
+
+    it('should handle offset parameter', async () => {
+      // Arrange
+      const mockRecentChanges = Array(25).fill(null).map((_, i) => ({
+        path: `note${i}.md`,
+        mtime: new Date(`2022-01-${String(i + 1).padStart(2, '0')}T00:00:00.000Z`).getTime(),
+        content: `Content for note ${i}`
+      }));
+
+      vi.mocked(mockClient.getRecentChanges).mockResolvedValue(mockRecentChanges);
+
+      const server = { obsidianClient: mockClient };
+
+      // Act - request with offset of 10
+      const result = await handler.handleRequest('vault://recent?offset=10&limit=10', server);
+
+      // Assert
+      expect(result.notes).toHaveLength(10);
+      expect(result.notes[0].path).toBe('note10.md');
+      expect(result.pagination.offset).toBe(10);
+      expect(result.pagination.nextOffset).toBe(20);
+    });
+
+    it('should handle limit=20 as default for recent items', async () => {
+      // Arrange
+      const mockRecentChanges = Array(30).fill(null).map((_, i) => ({
+        path: `note${i}.md`,
+        mtime: new Date(`2022-01-${String(i + 1).padStart(2, '0')}T00:00:00.000Z`).getTime(),
+        content: `Content for note ${i}`
+      }));
+
+      vi.mocked(mockClient.getRecentChanges).mockResolvedValue(mockRecentChanges);
+
+      const server = { obsidianClient: mockClient };
+
+      // Act - request without pagination params (should default to limit=20)
+      const result = await handler.handleRequest('vault://recent', server);
+
+      // Assert
+      expect(result.notes).toHaveLength(20);
+      expect(result.pagination.limit).toBe(20);
+      expect(result.pagination.hasMore).toBe(true);
+    });
+
+    it('should maintain chronological ordering with pagination', async () => {
+      // Arrange - Create dates in reverse chronological order (most recent first)
+      const mockRecentChanges = Array(15).fill(null).map((_, i) => ({
+        path: `note${i}.md`,
+        mtime: new Date(`2022-12-${String(31 - i).padStart(2, '0')}T00:00:00.000Z`).getTime(),
+        content: `Content for note ${i}`
+      }));
+
+      vi.mocked(mockClient.getRecentChanges).mockResolvedValue(mockRecentChanges);
+
+      const server = { obsidianClient: mockClient };
+
+      // Act - get first page
+      const page1 = await handler.handleRequest('vault://recent?limit=5&offset=0', server);
+      // Act - get second page  
+      const page2 = await handler.handleRequest('vault://recent?limit=5&offset=5', server);
+
+      // Assert - verify chronological ordering is maintained
+      expect(page1.notes[0].modifiedAt).toBe('2022-12-31T00:00:00.000Z'); // Most recent
+      expect(page1.notes[4].modifiedAt).toBe('2022-12-27T00:00:00.000Z');
+      expect(page2.notes[0].modifiedAt).toBe('2022-12-26T00:00:00.000Z');
+      expect(page2.notes[4].modifiedAt).toBe('2022-12-22T00:00:00.000Z');
+    });
+
+    it('should include continuation tokens for time-based pagination', async () => {
+      // Arrange
+      const mockRecentChanges = Array(15).fill(null).map((_, i) => ({
+        path: `note${i}.md`,
+        mtime: new Date(`2022-01-${String(i + 15).padStart(2, '0')}T00:00:00.000Z`).getTime(),
+        content: `Content for note ${i}`
+      }));
+
+      vi.mocked(mockClient.getRecentChanges).mockResolvedValue(mockRecentChanges);
+
+      const server = { obsidianClient: mockClient };
+
+      // Act
+      const result = await handler.handleRequest('vault://recent?limit=5', server);
+
+      // Assert
+      expect(result.pagination.continuationToken).toBeDefined();
+      expect(result.pagination.continuationToken).toMatch(/^\d+$/); // Should be a timestamp
+    });
+
+    it('should handle no pagination when all results fit in default limit', async () => {
+      // Arrange
+      const mockRecentChanges = Array(10).fill(null).map((_, i) => ({
+        path: `note${i}.md`,
+        mtime: new Date(`2022-01-${String(i + 1).padStart(2, '0')}T00:00:00.000Z`).getTime(),
+        content: `Content for note ${i}`
+      }));
+
+      vi.mocked(mockClient.getRecentChanges).mockResolvedValue(mockRecentChanges);
+
+      const server = { obsidianClient: mockClient };
+
+      // Act
+      const result = await handler.handleRequest('vault://recent', server);
+
+      // Assert - When all results fit, should not include pagination metadata
+      expect(result.notes).toHaveLength(10);
+      expect(result.pagination).toBeUndefined();
+    });
+  });
 });

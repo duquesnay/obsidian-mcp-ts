@@ -14,19 +14,29 @@ interface VaultNote {
   content?: string;    // available in full mode
 }
 
+interface PaginationInfo {
+  totalNotes: number;
+  hasMore: boolean;
+  limit: number;
+  offset: number;
+  nextOffset?: number;
+  continuationToken?: string;
+}
+
 interface RecentChangesResourceResponse {
   notes: VaultNote[];
   mode: 'preview' | 'full';
+  pagination?: PaginationInfo;
 }
 
 export class GetRecentChangesTool extends BaseTool<GetRecentChangesArgs> {
   name = 'obsidian_get_recent_changes';
-  description = 'Get recently modified files in the vault with titles and previews. Uses vault://recent resource internally with 30 second caching for optimal performance.';
+  description = 'Get recently modified files in the vault with titles and previews. Supports pagination with default limit of 20 items per page. Uses vault://recent resource internally with 30 second caching for optimal performance.';
   
   metadata: ToolMetadata = {
     category: 'file-operations',
-    keywords: ['recent', 'changes', 'modified', 'files', 'history'],
-    version: '1.1.0'
+    keywords: ['recent', 'changes', 'modified', 'files', 'history', 'pagination', 'chronological'],
+    version: '1.2.0'
   };
   
   inputSchema = {
@@ -52,8 +62,14 @@ export class GetRecentChangesTool extends BaseTool<GetRecentChangesArgs> {
 
   async executeTyped(args: GetRecentChangesArgs): Promise<ToolResponse> {
     try {
+      // Build URI with pagination parameters for the resource
+      const params = new URLSearchParams();
+      if (args.limit !== undefined) params.set('limit', args.limit.toString());
+      if (args.offset !== undefined) params.set('offset', args.offset.toString());
+      const uri = `vault://recent${params.toString() ? '?' + params.toString() : ''}`;
+      
       // Use cached resource handler for 30-second caching performance benefit
-      const resourceData: RecentChangesResourceResponse = await defaultCachedHandlers.recent.handleRequest('vault://recent');
+      const resourceData: RecentChangesResourceResponse = await defaultCachedHandlers.recent.handleRequest(uri);
       let notes: VaultNote[] = resourceData.notes;
       
       // Apply directory filtering if requested
@@ -61,7 +77,16 @@ export class GetRecentChangesTool extends BaseTool<GetRecentChangesArgs> {
         notes = this.filterNotesByDirectory(notes, args.directory);
       }
       
-      // Determine if pagination is needed
+      // If the resource already provided pagination, return it directly
+      if (resourceData.pagination) {
+        const recentChanges = this.convertToRecentChangesFormat(notes);
+        return this.formatResponse({
+          notes: recentChanges,
+          ...resourceData.pagination
+        });
+      }
+      
+      // Determine if local pagination is needed
       if (this.isPaginationRequested(args, notes.length)) {
         return this.createPaginatedResponse(notes, args);
       }
