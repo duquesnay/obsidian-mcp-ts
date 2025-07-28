@@ -5,7 +5,7 @@ import { PAGINATION_SCHEMA, validatePaginationParams } from '../utils/validation
 
 export class ListFilesInVaultTool extends BaseTool<ListFilesArgs> {
   name = 'obsidian_list_files_in_vault';
-  description = 'List all notes and folders in your Obsidian vault root (NOT filesystem access - Obsidian vault files only).';
+  description = 'List all notes and folders in your Obsidian vault root (NOT filesystem access - Obsidian vault files only). For better performance, use the vault://structure resource with 5 minute cache.';
   
   metadata: ToolMetadata = {
     category: 'file-operations',

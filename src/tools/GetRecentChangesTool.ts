@@ -5,7 +5,7 @@ import { PAGINATION_SCHEMA } from '../utils/validation.js';
 
 export class GetRecentChangesTool extends BaseTool<GetRecentChangesArgs> {
   name = 'obsidian_get_recent_changes';
-  description = 'Get recently modified files in the vault.';
+  description = 'Get recently modified files in the vault. For better performance, consider using the vault://recent resource which provides cached results (30 seconds cache).';
   
   metadata: ToolMetadata = {
     category: 'file-operations',

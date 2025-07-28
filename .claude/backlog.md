@@ -361,3 +361,11 @@ a**Last Updated**: 2025-01-27
   - [ ] Q3.3.7: Add references to Obsidian Local REST API security model
   - [ ] Q3.3.8: Include alternative security measures for production use
 
+### Resource Discovery Enhancement (High Priority - Quick Win)
+- [x] RD1: Update GetAllTagsTool description to mention vault://tags resource (5min cache)
+- [x] RD2: Update GetRecentChangesTool description to mention vault://recent resource (30s cache)
+- [x] RD3: Update GetFileContentsTool description to mention vault://note/{path} resource (2min cache)
+- [x] RD4: Update SimpleSearchTool description to mention vault://search/{query} resource (1min cache)
+- [x] RD5: Update ListFilesInVaultTool description to mention vault://structure resource (5min cache)
+- [x] RD6: Update ListFilesInDirTool description to mention vault://folder/{path} resource (2min cache)
+

@@ -5,7 +5,7 @@ import { FILE_PATH_SCHEMA } from '../utils/validation.js';
 
 export class GetFileContentsTool extends BaseTool<GetFileContentsArgs> {
   name = 'obsidian_get_file_contents';
-  description = 'Read content from an Obsidian vault note (NOT filesystem files - vault notes only). Supports different formats.';
+  description = 'Read content from an Obsidian vault note (NOT filesystem files - vault notes only). Supports different formats. For better performance, use the vault://note/{path} resource with 2 minute cache.';
   
   metadata: ToolMetadata = {
     category: 'file-operations',

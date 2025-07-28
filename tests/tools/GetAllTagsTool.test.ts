@@ -14,6 +14,16 @@ describe('GetAllTagsTool', () => {
     tool.getClient = vi.fn().mockReturnValue(mockClient);
   });
 
+  describe('Tool description', () => {
+    it('should mention the vault://tags resource alternative', () => {
+      const tool = new GetAllTagsTool();
+      
+      expect(tool.description).toContain('vault://tags');
+      expect(tool.description).toContain('5 minutes');
+      expect(tool.description).toContain('performance');
+    });
+  });
+
   describe('Large vault optimization', () => {
     it('should handle pagination for large tag lists', async () => {
       // Generate mock data for a large number of tags
