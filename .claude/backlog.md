@@ -1,5 +1,24 @@
 # Obsidian MCP TypeScript - Quality Improvement Backlog
 
+## ⚠️ MANDATORY ORCHESTRATION RULES - READ FIRST ⚠️
+
+**STOP: Before doing ANYTHING else, you MUST:**
+
+1. **USE TEAM-COORDINATOR FIRST**: Launch the team-coordinator agent to assess current status and dispatch work
+2. **NEVER implement tasks directly** - always delegate to specialized sub-agents
+3. **MANDATORY**: Use the Task tool to create a sub-agent for EACH backlog item
+4. **NO EXCEPTIONS**: Even simple tasks must go through the team-coordinator
+
+```
+Task(
+  description="Assess backlog and coordinate work", 
+  prompt="You are the team-coordinator. Assess the current backlog status and coordinate the remaining work by dispatching tasks to appropriate specialist agents.",
+  subagent_type="team-coordinator"
+)
+```
+
+---
+
 ## 🤖 AI Agent Instructions
 
 ### Overview
@@ -12,12 +31,6 @@ See `.claude/agents/README.md` for the complete list of specialized agents and t
 - **code-quality-analyst**: Code smell detection
 - **architecture-reviewer**: SOLID principles
 - **team-coordinator**: Multi-agent orchestration
-
-### Orchestration Rules
-1. **MANDATORY**: Use the Task tool to create a sub-agent for EACH backlog item
-2. **NEVER** implement tasks directly - always delegate to sub-agents
-3. Use @./scratchpad.md as a scratchpad for tracking progress
-4. Update the backlog after each sub-agent completes its task
 
 ### Sub-Agent Task Instructions
 When creating a sub-agent with the Task tool, include these instructions:
