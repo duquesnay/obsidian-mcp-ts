@@ -489,6 +489,28 @@ The server includes several performance optimizations:
 - **Optimized Batch Processing**: Smart concurrency control with retry logic
 - **Streaming Results**: Process large datasets without loading everything into memory
 
+#### Performance Benchmarks
+Compare cached vs non-cached operations to understand when caching is beneficial:
+
+```bash
+# Run comprehensive benchmark test
+npm test -- tests/benchmarks/cached-vs-noncached.benchmark.test.ts
+
+# Quick standalone benchmark
+npx tsx scripts/run-cache-benchmark.ts --scenario sequential
+
+# Test with different configurations
+npx tsx scripts/run-cache-benchmark.ts --iterations 100 --data-size 10240
+```
+
+The benchmarks test six scenarios:
+- **Sequential Access**: High hit rate (90-98%), 10-50x speedup ✅
+- **80/20 Pattern**: Realistic usage (70-85% hit rate), 3-8x speedup ✅  
+- **Random Access**: Low hit rate (10-30%), marginal benefit ⚠️
+- **Unique Access**: No cache benefit (0% hit rate), disable caching ❌
+
+See [Cache Performance Benchmarks](docs/Cache-Performance-Benchmarks.md) for detailed analysis and configuration guidelines.
+
 See [Performance Best Practices](docs/PERFORMANCE.md) for detailed optimization strategies.
 
 ### Architecture
