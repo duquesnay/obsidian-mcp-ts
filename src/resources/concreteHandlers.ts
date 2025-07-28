@@ -1,5 +1,6 @@
 import { BaseResourceHandler } from './BaseResourceHandler.js';
 import { ResourceErrorHandler } from '../utils/ResourceErrorHandler.js';
+import { OBSIDIAN_DEFAULTS } from '../constants.js';
 
 /**
  * Response modes for vault://tags resource
@@ -186,28 +187,42 @@ const FOLDER_RESPONSE_MODES: Record<string, FolderResponseMode> = {
   FULL: 'full'
 } as const;
 
+interface PaginationInfo {
+  totalItems: number;
+  hasMore: boolean;
+  limit: number;
+  offset: number;
+  nextOffset?: number;
+}
+
 interface FolderSummaryResponse {
   path: string;
   mode: 'summary';
   fileCount: number;
-  files: string[];  // Empty in summary mode
+  files: string[];  // Empty in summary mode unless pagination requested
   folders: string[];
   message: string;
+  pagination?: PaginationInfo;
 }
 
 interface FolderFullResponse {
   path: string;
   mode: 'full';
   items: string[];
+  pagination?: PaginationInfo;
 }
 
 type FolderResponse = FolderSummaryResponse | FolderFullResponse;
 
 export class FolderHandler extends BaseResourceHandler {
+  private static readonly DEFAULT_LIMIT = 50; // Default limit for folder pagination
+  
   async handleRequest(uri: string, server?: any): Promise<FolderResponse> {
-    // Parse query parameters for mode
+    // Parse query parameters for mode and pagination
     const url = new URL(uri, 'vault://');
     const modeParam = url.searchParams.get('mode') || FOLDER_RESPONSE_MODES.SUMMARY;
+    const limitParam = url.searchParams.get('limit');
+    const offsetParam = url.searchParams.get('offset');
     
     // Extract path without query parameters
     const uriWithoutQuery = uri.split('?')[0];
@@ -220,21 +235,60 @@ export class FolderHandler extends BaseResourceHandler {
       ? (modeParam as FolderResponseMode) 
       : FOLDER_RESPONSE_MODES.SUMMARY;
     
+    // Parse pagination parameters
+    const limit = limitParam ? Math.min(parseInt(limitParam, 10), OBSIDIAN_DEFAULTS.MAX_LIST_LIMIT) : FolderHandler.DEFAULT_LIMIT;
+    const offset = offsetParam ? parseInt(offsetParam, 10) : 0;
+    const isPaginationRequested = limitParam !== null || offsetParam !== null;
+    
     try {
       const items = await client.listFilesInDir(path);
       
       if (mode === FOLDER_RESPONSE_MODES.FULL) {
-        // Return full mode (backward compatibility)
-        return {
-          path: path,
-          mode: 'full',
-          items: items
-        };
+        // Return full mode with pagination support
+        return this.buildFullModeResponse(path, items, limit, offset, isPaginationRequested);
       }
       
-      // Return summary mode (default)
-      const { fileCount, folders } = this.analyzeFolderStructure(items, path);
-      
+      // Return summary mode with conditional pagination
+      return this.buildSummaryModeResponse(path, items, limit, offset, isPaginationRequested);
+    } catch (error: unknown) {
+      ResourceErrorHandler.handle(error, 'Folder', path);
+    }
+  }
+  
+  private buildFullModeResponse(path: string, items: string[], limit: number, offset: number, isPaginationRequested: boolean): FolderFullResponse {
+    if (!isPaginationRequested) {
+      // Return all items without pagination (backward compatibility)
+      return {
+        path: path,
+        mode: 'full',
+        items: items
+      };
+    }
+    
+    // Apply pagination
+    const totalItems = items.length;
+    const paginatedItems = items.slice(offset, offset + limit);
+    const hasMore = offset + limit < totalItems;
+    
+    return {
+      path: path,
+      mode: 'full',
+      items: paginatedItems,
+      pagination: {
+        totalItems,
+        hasMore,
+        limit,
+        offset,
+        nextOffset: hasMore ? offset + limit : undefined
+      }
+    };
+  }
+  
+  private buildSummaryModeResponse(path: string, items: string[], limit: number, offset: number, isPaginationRequested: boolean): FolderSummaryResponse {
+    const { fileCount, folders } = this.analyzeFolderStructure(items, path);
+    
+    if (!isPaginationRequested) {
+      // Return standard summary without file listings (optimal performance)
       return {
         path: path,
         mode: 'summary',
@@ -243,9 +297,27 @@ export class FolderHandler extends BaseResourceHandler {
         folders: folders,
         message: 'Use ?mode=full for complete file listings'
       };
-    } catch (error: unknown) {
-      ResourceErrorHandler.handle(error, 'Folder', path);
     }
+    
+    // Pagination requested - return paginated file listings in summary mode
+    const paginatedItems = items.slice(offset, offset + limit);
+    const hasMore = offset + limit < items.length;
+    
+    return {
+      path: path,
+      mode: 'summary',
+      fileCount: fileCount,
+      files: paginatedItems,
+      folders: folders,
+      message: `Showing ${paginatedItems.length} of ${items.length} files`,
+      pagination: {
+        totalItems: items.length,
+        hasMore,
+        limit,
+        offset,
+        nextOffset: hasMore ? offset + limit : undefined
+      }
+    };
   }
   
   private analyzeFolderStructure(items: string[], basePath: string): { fileCount: number; folders: string[] } {
