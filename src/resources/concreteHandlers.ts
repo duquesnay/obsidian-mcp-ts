@@ -34,27 +34,8 @@ export class StatsHandler extends BaseResourceHandler {
   }
 }
 
-export class RecentHandler extends BaseResourceHandler {
-  async handleRequest(uri: string, server?: any): Promise<any> {
-    const client = this.getObsidianClient(server);
-    
-    try {
-      // Use the getRecentChanges method, limiting to 10 files
-      const recentChanges = await client.getRecentChanges(undefined, 10);
-      
-      // Transform to match expected format
-      // Note: Actual modification times are not available from the API
-      const notes = recentChanges.map(change => ({
-        path: change.path,
-        modifiedAt: new Date(change.mtime).toISOString()
-      }));
-      
-      return { notes };
-    } catch (error: unknown) {
-      ResourceErrorHandler.handle(error, 'Recent notes');
-    }
-  }
-}
+// RecentHandler moved to RecentChangesHandler.ts for better organization
+export { RecentChangesHandler as RecentHandler } from './RecentChangesHandler.js';
 
 export class NoteHandler extends BaseResourceHandler {
   async handleRequest(uri: string, server?: any): Promise<any> {

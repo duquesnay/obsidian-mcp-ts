@@ -8,12 +8,20 @@ import { RecentChange } from '../types/obsidian.js';
 // Interface for vault notes from the resource cache
 interface VaultNote {
   path: string;
+  title: string;
   modifiedAt: string; // ISO date string
+  preview?: string;    // available in preview mode
+  content?: string;    // available in full mode
+}
+
+interface RecentChangesResourceResponse {
+  notes: VaultNote[];
+  mode: 'preview' | 'full';
 }
 
 export class GetRecentChangesTool extends BaseTool<GetRecentChangesArgs> {
   name = 'obsidian_get_recent_changes';
-  description = 'Get recently modified files in the vault. Uses vault://recent resource internally with 30 second caching for optimal performance.';
+  description = 'Get recently modified files in the vault with titles and previews. Uses vault://recent resource internally with 30 second caching for optimal performance.';
   
   metadata: ToolMetadata = {
     category: 'file-operations',
@@ -45,7 +53,7 @@ export class GetRecentChangesTool extends BaseTool<GetRecentChangesArgs> {
   async executeTyped(args: GetRecentChangesArgs): Promise<ToolResponse> {
     try {
       // Use cached resource handler for 30-second caching performance benefit
-      const resourceData = await defaultCachedHandlers.recent.handleRequest('vault://recent');
+      const resourceData: RecentChangesResourceResponse = await defaultCachedHandlers.recent.handleRequest('vault://recent');
       let notes: VaultNote[] = resourceData.notes;
       
       // Apply directory filtering if requested
@@ -95,13 +103,28 @@ export class GetRecentChangesTool extends BaseTool<GetRecentChangesArgs> {
     });
   }
 
-  private convertToRecentChangesFormat(notes: VaultNote[]): RecentChange[] {
-    // Convert resource format { path, modifiedAt } to RecentChange[] format
-    // for backward compatibility with existing client code
-    return notes.map(note => ({
-      path: note.path,
-      mtime: new Date(note.modifiedAt).getTime(),
-      content: undefined // Content preview not available from cached resource
-    }));
+  private convertToRecentChangesFormat(notes: VaultNote[]): any[] {
+    // Convert resource format to enhanced format with preview/title support
+    return notes.map(note => {
+      const result: any = {
+        path: note.path,
+        mtime: new Date(note.modifiedAt).getTime()
+      };
+      
+      // Include title and preview/content from the resource
+      if (note.title) {
+        result.title = note.title;
+      }
+      
+      if (note.preview !== undefined) {
+        result.preview = note.preview;
+      }
+      
+      if (note.content !== undefined) {
+        result.content = note.content;
+      }
+      
+      return result;
+    });
   }
 }

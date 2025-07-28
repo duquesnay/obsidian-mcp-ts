@@ -72,6 +72,54 @@ describe('GetRecentChangesTool', () => {
       ]);
     });
 
+    it('should use preview mode by default when accessing vault://recent resource', async () => {
+      // Arrange
+      const mockResourceData = {
+        notes: [
+          { 
+            path: 'note1.md', 
+            title: 'note1',
+            modifiedAt: '2024-01-01T10:00:00.000Z',
+            preview: 'This is a preview of the first note with exactly one hundred characters to test the truncation...'
+          },
+          { 
+            path: 'note2.md', 
+            title: 'note2',
+            modifiedAt: '2024-01-01T09:00:00.000Z',
+            preview: 'Short preview'
+          }
+        ],
+        mode: 'preview'
+      };
+      
+      const mockHandleRequest = vi.mocked(defaultCachedHandlers.recent.handleRequest);
+      mockHandleRequest.mockResolvedValue(mockResourceData);
+
+      const args = { limit: 10 };
+
+      // Act
+      const result = await tool.executeTyped(args);
+
+      // Assert
+      expect(mockHandleRequest).toHaveBeenCalledWith('vault://recent');
+      
+      const responseData = JSON.parse(result.text);
+      expect(responseData).toEqual([
+        { 
+          path: 'note1.md', 
+          title: 'note1',
+          mtime: expect.any(Number), 
+          preview: 'This is a preview of the first note with exactly one hundred characters to test the truncation...'
+        },
+        { 
+          path: 'note2.md', 
+          title: 'note2',
+          mtime: expect.any(Number), 
+          preview: 'Short preview'
+        }
+      ]);
+    });
+
     it('should handle pagination by processing resource data', async () => {
       // Arrange - This test should fail initially because pagination logic needs to be implemented
       const mockResourceData = {
