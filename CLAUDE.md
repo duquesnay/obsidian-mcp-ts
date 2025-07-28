@@ -446,51 +446,6 @@ git commit -m "claude: document architectural decisions"
 
 This separation enables clean PRs by cherry-picking only non-claude commits.
 
-## Development Learnings
-
-### Quality Improvement Process (2025-07-18)
-
-**Methodological insights**:
-- **Incremental Refactoring with TDD**: Successfully refactored 63 tasks using red-green-refactor cycle. Each change was tested independently, preventing regressions while maintaining functionality.
-- **Dynamic Discovery Over Configuration**: Replacing hardcoded tool arrays with filesystem-based discovery eliminated manual registration and made the system self-maintaining.
-
-**Technical insights**:
-- **TypeScript Generics for Tool Safety**: Using `BaseTool<TArgs>` pattern eliminated any-type proliferation while maintaining flexibility. The execute/executeTyped pattern provides both type safety and backward compatibility.
-- **Performance Utilities as Composable Units**: LRU cache, request deduplicator, and batch processor work independently but can be composed for complex scenarios. This modular approach enables targeted optimization.
-
-### E2E Testing with Dynamic Discovery (2025-07-18)
-
-**Technical insights**:
-- **Chunked Response Handling**: Large tool lists (21KB for 33 tools) require buffered response parsing in E2E tests. Simple line-by-line parsing fails when JSON responses span multiple chunks.
-- **Tool Discovery File Extension Handling**: Dynamic discovery must handle both .ts (development) and .js (production) files. Using `file.endsWith('Tool.ts') || file.endsWith('Tool.js')` ensures compatibility across environments.
-
-## Project Learnings
-
-### 2025-07-23 - Git Worktree Package.json Confusion
-
-**Methodological:**
-- **Git Forensics Before Assumptions**: When facing persistent directory/project confusion, trace through git history (`git show`, `git diff`) to understand how files changed over time. The issue may be in commit history rather than current configuration. In our case, a single commit had replaced the entire package.json, creating the confusion.
-
-**Technical:**
-- **Interactive Rebase with Selective File Restoration**: During interactive rebase, use `git checkout HEAD~ -- filename` to surgically restore specific files from the parent commit while preserving all other changes. This is more precise than cherry-picking or full commit resets and maintains the integrity of the actual work done.
-
-### 2025-07-23 - Tag Notes Resource Implementation (R6.2)
-
-**Technical insights:**
-- **Consistent Resource Handler Pattern**: Successfully implemented TagNotesHandler following established BaseResourceHandler pattern. The pattern of parameter extraction, validation, client interaction, and response formatting is now well-established across all resource handlers.
-- **URL Parameter Handling**: Tag names may contain special characters or be URL encoded. Proper decoding with `decodeURIComponent()` and normalization (removing # prefix) ensures consistent behavior regardless of how the URI is formatted.
-
-**Methodological insights:**
-- **TDD with Comprehensive Test Coverage**: Created tests covering edge cases (empty tags, special characters, URL encoding, missing parameters) before implementation. This approach caught potential issues early and ensured robust error handling.
-
-### 2025-01-24 - Type Safety Migration and Tool Discovery Hardening
-
-**Technical:**
-- **Type Guard Flexibility for Testing**: When adding type guards (like `isErrorLike`), avoid strict `instanceof` checks that break test mocks. Instead, use shape-based validation (`typeof error === 'object' && error !== null && 'message' in error`) to support both production Error instances and test mock objects.
-- **Runtime Validation for Dynamic Loading**: When implementing dynamic tool discovery, validate at multiple levels: class constructor validation (`isValidToolClass`), instance validation (`validateToolInstance`), and schema structure validation. This multi-layer approach catches issues early while providing clear error messages.
-
-**Methodological:**
-- **Incremental Type Migration with Tests**: Successfully migrating from `any` to specific types across 25+ occurrences worked best by running tests after each change. This caught breaking changes immediately (like the mock error objects) rather than discovering them after multiple changes. The pattern of fix-test-fix proved more efficient than batch changes.
 
 ## Insights and Memories
 
