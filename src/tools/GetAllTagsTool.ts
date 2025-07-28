@@ -5,7 +5,7 @@ import { PAGINATION_SCHEMA } from '../utils/validation.js';
 
 export class GetAllTagsTool extends BaseTool<GetAllTagsArgs> {
   name = 'obsidian_get_all_tags';
-  description = 'List all unique tags in the vault with their usage counts. Includes both inline tags (#tag) and frontmatter tags.';
+  description = 'List all unique tags in the vault with their usage counts. Includes both inline tags (#tag) and frontmatter tags. For better performance, consider using the vault://tags resource which is cached for 5 minutes.';
   
   metadata: ToolMetadata = {
     category: 'tags',

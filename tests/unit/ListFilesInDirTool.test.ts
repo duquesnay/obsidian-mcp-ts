@@ -113,4 +113,24 @@ describe('ListFilesInDirTool', () => {
     expect(response.success).toBe(false);
     expect(response.error).toContain('dirpath contains parent directory traversal');
   });
+
+  describe('tool metadata', () => {
+    it('should have appropriate tool name and description', () => {
+      expect(tool.name).toBe('obsidian_list_files_in_dir');
+      expect(tool.description).toContain('List notes and folders in a specific');
+      expect(tool.description).toContain('vault');
+    });
+
+    it('should mention the vault://folder/{path} resource with 2min cache', () => {
+      expect(tool.description).toContain('vault://folder/{path}');
+      expect(tool.description).toMatch(/2\s*min(?:ute)?s?\s*cache/i);
+      expect(tool.description).toContain('resource');
+    });
+
+    it('should have proper input schema', () => {
+      expect(tool.inputSchema.type).toBe('object');
+      expect(tool.inputSchema.properties.dirpath).toBeDefined();
+      expect(tool.inputSchema.required).toEqual(['dirpath']);
+    });
+  });
 });

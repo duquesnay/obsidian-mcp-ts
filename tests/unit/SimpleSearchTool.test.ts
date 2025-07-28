@@ -651,6 +651,12 @@ describe('SimpleSearchTool', () => {
       expect(tool.description).toContain('paginated results');
     });
 
+    it('should mention the vault://search/{query} resource with 1min cache', () => {
+      expect(tool.description).toContain('vault://search/{query}');
+      expect(tool.description).toMatch(/1\s*min(?:ute)?\s*cache/i);
+      expect(tool.description).toContain('resource');
+    });
+
     it('should have proper input schema', () => {
       expect(tool.inputSchema.type).toBe('object');
       expect(tool.inputSchema.properties.query).toBeDefined();

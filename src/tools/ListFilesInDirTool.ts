@@ -7,7 +7,7 @@ import { hasHttpResponse, getErrorMessage } from '../utils/errorTypeGuards.js';
 
 export class ListFilesInDirTool extends BaseTool<ListFilesInDirArgs> {
   name = 'obsidian_list_files_in_dir';
-  description = 'List notes and folders in a specific Obsidian vault directory (vault-only - NOT general filesystem access).';
+  description = 'List notes and folders in a specific Obsidian vault directory (vault-only - NOT general filesystem access). For better performance, use the vault://folder/{path} resource with 2 minute cache.';
   
   metadata: ToolMetadata = {
     category: 'file-operations',

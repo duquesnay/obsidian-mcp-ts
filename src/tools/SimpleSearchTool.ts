@@ -5,7 +5,7 @@ import { validateRequiredArgs, PAGINATION_SCHEMA } from '../utils/validation.js'
 
 export class SimpleSearchTool extends BaseTool<SimpleSearchArgs> {
   name = 'obsidian_simple_search';
-  description = 'Search text in Obsidian vault notes (vault-only - NOT filesystem search). Returns paginated results.';
+  description = 'Search text in Obsidian vault notes (vault-only - NOT filesystem search). Returns paginated results. For better performance, use the vault://search/{query} resource with 1 minute cache.';
   
   metadata: ToolMetadata = {
     category: 'search',

@@ -380,6 +380,12 @@ Nested content`;
       expect(tool.description).toContain('formats');
     });
 
+    it('should mention the vault://note/{path} resource with 2min cache', () => {
+      expect(tool.description).toContain('vault://note/{path}');
+      expect(tool.description).toMatch(/2\s*min(?:ute)?s?\s*cache/i);
+      expect(tool.description).toContain('resource');
+    });
+
     it('should have proper input schema', () => {
       expect(tool.inputSchema.type).toBe('object');
       expect(tool.inputSchema.properties.filepath).toBeDefined();
