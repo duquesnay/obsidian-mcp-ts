@@ -24,7 +24,7 @@ describe('MCP Resources', () => {
       expect(result.resources[0]).toEqual({
         uri: 'vault://tags',
         name: 'Vault Tags',
-        description: 'All tags in the vault with usage counts (cached 5min)',
+        description: 'All tags in the vault with usage counts (cached 5min). Returns summary with top tags and usage stats by default. Use ?mode=full for complete tag list.',
         mimeType: 'application/json'
       });
       expect(result.resources[1]).toEqual({
@@ -80,12 +80,12 @@ describe('MCP Resources', () => {
         params: { uri: 'vault://tags' }
       });
       
-      // Should return hardcoded tags data
+      // Should return hardcoded tags data (now in summary mode)
       expect(result.contents).toBeDefined();
       expect(result.contents[0]).toMatchObject({
         uri: 'vault://tags',
         mimeType: 'application/json',
-        text: expect.stringContaining('tags')
+        text: expect.stringContaining('topTags')
       });
     });
 

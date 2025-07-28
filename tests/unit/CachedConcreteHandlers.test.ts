@@ -22,14 +22,15 @@ describe('Cached Concrete Handlers', () => {
       expect(mockGetAllTags).toHaveBeenCalledTimes(1);
       
       const data1 = JSON.parse(result1.contents[0].text);
-      expect(data1.tags[0].name).toBe('#project');
+      expect(data1.mode).toBe('summary');
+      expect(data1.topTags[0].name).toBe('#project');
       
       // Second call should use cache (same result)
       const result2 = await cachedHandler.execute('vault://tags', server);
       expect(mockGetAllTags).toHaveBeenCalledTimes(1); // Still only one call
       
       const data2 = JSON.parse(result2.contents[0].text);
-      expect(data2.tags[0].name).toBe('#project'); // Same cached result
+      expect(data2.topTags[0].name).toBe('#project'); // Same cached result
       
       // Verify cache statistics
       const stats = cachedHandler.getCacheStats();

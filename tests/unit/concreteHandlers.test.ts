@@ -21,9 +21,10 @@ describe('Concrete Resource Handlers', () => {
       expect(mockGetAllTags).toHaveBeenCalled();
       expect(result.contents[0].mimeType).toBe('application/json');
       const data = JSON.parse(result.contents[0].text);
-      expect(data).toHaveProperty('tags');
-      expect(data.tags).toHaveLength(2);
-      expect(data.tags[0]).toEqual({ name: '#project', count: 10 });
+      expect(data.mode).toBe('summary');
+      expect(data).toHaveProperty('topTags');
+      expect(data.topTags).toHaveLength(2);
+      expect(data.topTags[0]).toEqual({ name: '#project', count: 10 });
     });
   });
   

@@ -44,8 +44,12 @@ describe('GetAllTagsTool', () => {
         count: Math.floor(Math.random() * 100) + 1
       }));
       
-      // Mock the cached handler instead of client
-      defaultCachedHandlers.tags.handleRequest = vi.fn().mockResolvedValue({ tags: allTags });
+      // Mock the cached handler instead of client - should use full mode for pagination
+      defaultCachedHandlers.tags.handleRequest = vi.fn().mockResolvedValue({ 
+        mode: 'full',
+        tags: allTags,
+        totalTags: totalTags 
+      });
 
       // Test with pagination parameters
       const result = await tool.executeTyped({ 
@@ -55,28 +59,46 @@ describe('GetAllTagsTool', () => {
 
       expect(result.type).toBe('text');
       const data = JSON.parse(result.text);
+      expect(data.mode).toBe('full');
       expect(data.tags).toHaveLength(100);
       expect(data.totalTags).toBe(totalTags);
       expect(data.hasMore).toBe(true);
       expect(data.nextOffset).toBe(100);
+      
+      // Verify it used full mode
+      expect(defaultCachedHandlers.tags.handleRequest).toHaveBeenCalledWith('vault://tags?mode=full');
     });
 
-    it('should return all tags when no pagination is requested', async () => {
-      const tags = [
-        { name: 'tag1', count: 5 },
-        { name: 'tag2', count: 3 },
-        { name: 'tag3', count: 1 }
-      ];
-      defaultCachedHandlers.tags.handleRequest = vi.fn().mockResolvedValue({ tags });
+    it('should return optimized summary when no pagination is requested', async () => {
+      const mockSummaryResponse = {
+        mode: 'summary',
+        totalTags: 3,
+        topTags: [
+          { name: 'tag1', count: 5 },
+          { name: 'tag2', count: 3 },
+          { name: 'tag3', count: 1 }
+        ],
+        usageStats: {
+          totalUsages: 9,
+          averageUsage: 3,
+          medianUsage: 3
+        },
+        message: 'Use ?mode=full for complete tag list'
+      };
+      defaultCachedHandlers.tags.handleRequest = vi.fn().mockResolvedValue(mockSummaryResponse);
 
       const result = await tool.executeTyped({});
 
       expect(result.type).toBe('text');
       const data = JSON.parse(result.text);
-      expect(data.tags).toEqual(tags);
+      expect(data.mode).toBe('summary');
+      expect(data.topTags).toEqual(mockSummaryResponse.topTags);
       expect(data.totalTags).toBe(3);
-      expect(data.message).toContain('Found 3 unique tags');
-      expect(data.hasMore).toBeUndefined();
+      expect(data.usageStats).toEqual(mockSummaryResponse.usageStats);
+      expect(data.message).toBe('Use ?mode=full for complete tag list');
+      
+      // Verify it used summary mode
+      expect(defaultCachedHandlers.tags.handleRequest).toHaveBeenCalledWith('vault://tags?mode=summary');
     });
 
     it('should sort tags by count when sortBy parameter is provided', async () => {
@@ -85,7 +107,11 @@ describe('GetAllTagsTool', () => {
         { name: 'tag2', count: 10 },
         { name: 'tag3', count: 1 }
       ];
-      defaultCachedHandlers.tags.handleRequest = vi.fn().mockResolvedValue({ tags });
+      defaultCachedHandlers.tags.handleRequest = vi.fn().mockResolvedValue({ 
+        mode: 'full',
+        tags: tags,
+        totalTags: 3
+      });
 
       const result = await tool.executeTyped({ 
         sortBy: 'count',
@@ -94,9 +120,13 @@ describe('GetAllTagsTool', () => {
 
       expect(result.type).toBe('text');
       const data = JSON.parse(result.text);
+      expect(data.mode).toBe('full');
       expect(data.tags[0].count).toBe(10);
       expect(data.tags[1].count).toBe(5);
       expect(data.tags[2].count).toBe(1);
+      
+      // Verify it used full mode for sorting
+      expect(defaultCachedHandlers.tags.handleRequest).toHaveBeenCalledWith('vault://tags?mode=full');
     });
 
     it('should sort tags by name when requested', async () => {
@@ -105,7 +135,11 @@ describe('GetAllTagsTool', () => {
         { name: 'alpha', count: 10 },
         { name: 'gamma', count: 1 }
       ];
-      defaultCachedHandlers.tags.handleRequest = vi.fn().mockResolvedValue({ tags });
+      defaultCachedHandlers.tags.handleRequest = vi.fn().mockResolvedValue({ 
+        mode: 'full',
+        tags: tags,
+        totalTags: 3
+      });
 
       const result = await tool.executeTyped({ 
         sortBy: 'name',
@@ -114,9 +148,13 @@ describe('GetAllTagsTool', () => {
 
       expect(result.type).toBe('text');
       const data = JSON.parse(result.text);
+      expect(data.mode).toBe('full');
       expect(data.tags[0].name).toBe('alpha');
       expect(data.tags[1].name).toBe('beta');
       expect(data.tags[2].name).toBe('gamma');
+      
+      // Verify it used full mode for sorting
+      expect(defaultCachedHandlers.tags.handleRequest).toHaveBeenCalledWith('vault://tags?mode=full');
     });
 
     it('should combine sorting and pagination', async () => {
@@ -124,7 +162,11 @@ describe('GetAllTagsTool', () => {
         name: `tag-${i}`,
         count: 100 - i // Decreasing count
       }));
-      defaultCachedHandlers.tags.handleRequest = vi.fn().mockResolvedValue({ tags });
+      defaultCachedHandlers.tags.handleRequest = vi.fn().mockResolvedValue({ 
+        mode: 'full',
+        tags: tags,
+        totalTags: 100
+      });
 
       const result = await tool.executeTyped({ 
         sortBy: 'count',
@@ -135,35 +177,70 @@ describe('GetAllTagsTool', () => {
 
       expect(result.type).toBe('text');
       const data = JSON.parse(result.text);
+      expect(data.mode).toBe('full');
       expect(data.tags).toHaveLength(10);
       expect(data.tags[0].count).toBe(95); // Should start from 6th highest
       expect(data.hasMore).toBe(true);
+      
+      // Verify it used full mode for sorting and pagination
+      expect(defaultCachedHandlers.tags.handleRequest).toHaveBeenCalledWith('vault://tags?mode=full');
     });
   });
 
   describe('Resource integration (TRI1)', () => {
-    it('should use vault://tags resource internally for caching', async () => {
-      // Mock the cached handler to return data
-      const mockTags = [
-        { name: 'project', count: 5 },
-        { name: 'meeting', count: 3 }
-      ];
+    it('should use vault://tags resource internally for caching with mode optimization', async () => {
+      // Mock the cached handler to return optimized summary data
+      const mockSummaryResponse = {
+        mode: 'summary',
+        totalTags: 2,
+        topTags: [
+          { name: 'project', count: 5 },
+          { name: 'meeting', count: 3 }
+        ],
+        usageStats: {
+          totalUsages: 8,
+          averageUsage: 4,
+          medianUsage: 4
+        },
+        message: 'Use ?mode=full for complete tag list'
+      };
       
       // Mock the cached handler directly  
-      const mockHandleRequest = vi.fn().mockResolvedValue({ tags: mockTags });
+      const mockHandleRequest = vi.fn().mockResolvedValue(mockSummaryResponse);
       vi.spyOn(defaultCachedHandlers.tags, 'handleRequest').mockImplementation(mockHandleRequest);
 
       const result = await tool.executeTyped({});
 
-      // Verify the cached handler was called instead of direct client call
-      expect(mockHandleRequest).toHaveBeenCalledWith('vault://tags');
+      // Verify the cached handler was called with summary mode instead of direct client call
+      expect(mockHandleRequest).toHaveBeenCalledWith('vault://tags?mode=summary');
       expect(mockClient.getAllTags).not.toHaveBeenCalled();
       
-      // Verify the result is processed correctly
+      // Verify the result is processed correctly with optimized response
       expect(result.type).toBe('text');
       const data = JSON.parse(result.text);
-      expect(data.tags).toEqual(mockTags);
+      expect(data.mode).toBe('summary');
+      expect(data.topTags).toEqual(mockSummaryResponse.topTags);
       expect(data.totalTags).toBe(2);
+      expect(data.usageStats).toEqual(mockSummaryResponse.usageStats);
+    });
+
+    it('should use full mode when pagination or sorting is requested', async () => {
+      const mockFullResponse = {
+        mode: 'full',
+        tags: [{ name: 'tag1', count: 5 }],
+        totalTags: 1
+      };
+      
+      const mockHandleRequest = vi.fn().mockResolvedValue(mockFullResponse);
+      vi.spyOn(defaultCachedHandlers.tags, 'handleRequest').mockImplementation(mockHandleRequest);
+
+      // Test with sorting
+      await tool.executeTyped({ sortBy: 'name' });
+      expect(mockHandleRequest).toHaveBeenCalledWith('vault://tags?mode=full');
+
+      // Test with pagination
+      await tool.executeTyped({ limit: 10 });
+      expect(mockHandleRequest).toHaveBeenCalledWith('vault://tags?mode=full');
     });
   });
 });

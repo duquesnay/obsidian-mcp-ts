@@ -54,7 +54,7 @@ export async function registerResources(server: ServerWithClient): Promise<void>
   registry.registerResource({
     uri: 'vault://tags',
     name: 'Vault Tags',
-    description: 'All tags in the vault with usage counts (cached 5min)',
+    description: 'All tags in the vault with usage counts (cached 5min). Returns summary with top tags and usage stats by default. Use ?mode=full for complete tag list.',
     mimeType: 'application/json'
   }, createCachedTagsHandler());
   
@@ -186,8 +186,8 @@ export async function registerUncachedResources(server: ServerWithClient): Promi
   // Register static resources without caching
   registry.registerResource({
     uri: 'vault://tags',
-    name: 'Vault Tags',
-    description: 'All tags in the vault with usage counts',
+    name: 'Tags',
+    description: 'All tags in the vault with usage counts. Returns summary with top tags and usage stats by default. Use ?mode=full for complete tag list.',
     mimeType: 'application/json'
   }, createTagsHandler());
   

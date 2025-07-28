@@ -6,7 +6,7 @@ import { defaultCachedHandlers } from '../resources/CachedConcreteHandlers.js';
 
 export class GetAllTagsTool extends BaseTool<GetAllTagsArgs> {
   name = 'obsidian_get_all_tags';
-  description = 'List all unique tags in the vault with their usage counts. Includes both inline tags (#tag) and frontmatter tags. Uses vault://tags resource internally with 5-minute caching for optimal performance.';
+  description = 'List all unique tags in the vault with their usage counts. Includes both inline tags (#tag) and frontmatter tags. Uses vault://tags resource internally with 5-minute caching and optimized response modes for optimal performance. Returns conversational summary by default, switches to full mode for sorting/pagination.';
   
   metadata: ToolMetadata = {
     category: 'tags',
@@ -39,8 +39,25 @@ export class GetAllTagsTool extends BaseTool<GetAllTagsArgs> {
 
   async executeTyped(args: GetAllTagsArgs): Promise<ToolResponse> {
     try {
-      // Use cached resource handler instead of direct client call for better performance
-      const resourceData = await defaultCachedHandlers.tags.handleRequest('vault://tags');
+      // Check if user wants simple listing (pagination or sorting) vs conversational summary
+      const needsFullData = args.sortBy || args.sortOrder || args.limit !== undefined || args.offset !== undefined;
+      const resourceMode = needsFullData ? 'full' : 'summary';
+      
+      // Use cached resource handler with appropriate mode for better performance
+      const resourceData = await defaultCachedHandlers.tags.handleRequest(`vault://tags?mode=${resourceMode}`);
+      
+      if (resourceMode === 'summary') {
+        // Return optimized summary for conversational use
+        return this.formatResponse({
+          mode: 'summary',
+          totalTags: resourceData.totalTags,
+          topTags: resourceData.topTags,
+          usageStats: resourceData.usageStats,
+          message: resourceData.message
+        });
+      }
+      
+      // Full mode with original processing logic for pagination/sorting
       let tags = resourceData.tags;
       
       // Apply sorting if requested
@@ -71,6 +88,7 @@ export class GetAllTagsTool extends BaseTool<GetAllTagsArgs> {
         const hasMore = offset + limit < totalTags;
         
         return this.formatResponse({
+          mode: 'full',
           tags: paginatedTags,
           totalTags,
           hasMore,
@@ -81,8 +99,9 @@ export class GetAllTagsTool extends BaseTool<GetAllTagsArgs> {
         });
       }
       
-      // Non-paginated response
+      // Non-paginated full response
       return this.formatResponse({
+        mode: 'full',
         totalTags: tags.length,
         tags: tags,
         message: `Found ${tags.length} unique tags in the vault`

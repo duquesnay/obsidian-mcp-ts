@@ -113,12 +113,12 @@ describe('Cache Performance Demo', () => {
     // First call
     const result1 = await cachedHandler.execute('vault://tags', mockServer);
     const data1 = JSON.parse(result1.contents[0].text);
-    expect(data1.tags[0].name).toBe('#old');
+    expect(data1.topTags[0].name).toBe('#old');
     
     // Immediate second call should use cache
     const result2 = await cachedHandler.execute('vault://tags', mockServer);
     const data2 = JSON.parse(result2.contents[0].text);
-    expect(data2.tags[0].name).toBe('#old'); // Same cached result
+    expect(data2.topTags[0].name).toBe('#old'); // Same cached result
     expect(mockGetAllTags).toHaveBeenCalledTimes(1);
     
     // Wait for TTL expiration
@@ -127,7 +127,7 @@ describe('Cache Performance Demo', () => {
     // Third call should hit API again due to TTL expiration
     const result3 = await cachedHandler.execute('vault://tags', mockServer);
     const data3 = JSON.parse(result3.contents[0].text);
-    expect(data3.tags[0].name).toBe('#new'); // New result from API
+    expect(data3.topTags[0].name).toBe('#new'); // New result from API
     expect(mockGetAllTags).toHaveBeenCalledTimes(2);
     
     // Verify cache statistics reflect the behavior

@@ -110,23 +110,23 @@ For each task:
   - [x] Add comprehensive tests for all modes
   - [x] Update documentation with new resource mode
   
-- [ ] RSM1.4: Implement vault://folder/{path} summary mode with response modes
-  - Extend mode parameter system to vault://folder/{path} resource
-  - Return file listings without content previews (summary mode default)
-  - Include file counts and basic metadata
-  - Preserve full content mode with ?mode=full parameter
-  - Update ListFilesInDirTool to use summary mode by default
-  - Add comprehensive tests for all modes
-  - Update documentation with new resource mode
+- [x] RSM1.4: Implement vault://folder/{path} summary mode with response modes
+  - [x] Extend mode parameter system to vault://folder/{path} resource
+  - [x] Return file listings without content previews (summary mode default)
+  - [x] Include file counts and basic metadata
+  - [x] Preserve full content mode with ?mode=full parameter
+  - [x] Update ListFilesInDirTool to use summary mode by default
+  - [x] Add comprehensive tests for all modes
+  - [x] Update documentation with new resource mode
   
-- [ ] RSM1.5: Implement vault://search/{query} preview mode with response modes
-  - Extend mode parameter system to vault://search/{query} resource
-  - Return search results with 100-character context snippets (preview mode default)
-  - Include match counts and file paths
-  - Preserve full content mode with ?mode=full parameter
-  - Update SimpleSearchTool to use preview mode by default
-  - Add comprehensive tests for all modes
-  - Update documentation with new resource mode
+- [x] RSM1.5: Implement vault://search/{query} preview mode with response modes
+  - [x] Extend mode parameter system to vault://search/{query} resource
+  - [x] Return search results with 100-character context snippets (preview mode default)
+  - [x] Include match counts and file paths
+  - [x] Preserve full content mode with ?mode=full parameter
+  - [x] Update SimpleSearchTool to use preview mode by default
+  - [x] Add comprehensive tests for all modes
+  - [x] Update documentation with new resource mode
   
 - [ ] RSM1.6: Optimize vault://tags for conversation use with response modes
   - Extend mode parameter system to vault://tags resource

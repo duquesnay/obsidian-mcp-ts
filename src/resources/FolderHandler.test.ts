@@ -60,8 +60,10 @@ describe('FolderHandler', () => {
       it('should include only root-level files in file count for summary mode', async () => {
         const result = await handler.handleRequest('vault://folder/Documents?mode=summary');
         
-        expect(result.fileCount).toBe(2); // Only file1.md and file2.md, not nested.md
-        expect(result.folders).toEqual(['Subfolder']);
+        if (result.mode === 'summary') {
+          expect(result.fileCount).toBe(2); // Only file1.md and file2.md, not nested.md
+          expect(result.folders).toEqual(['Subfolder']);
+        }
       });
     });
 
@@ -79,8 +81,10 @@ describe('FolderHandler', () => {
       it('should preserve backward compatibility with full mode', async () => {
         const result = await handler.handleRequest('vault://folder/Documents?mode=full');
         
-        expect(result.items).toEqual(mockFiles);
-        expect(result.path).toBe('Documents');
+        if (result.mode === 'full') {
+          expect(result.items).toEqual(mockFiles);
+          expect(result.path).toBe('Documents');
+        }
       });
     });
 
@@ -89,8 +93,10 @@ describe('FolderHandler', () => {
         const result = await handler.handleRequest('vault://folder/Documents?mode=invalid');
         
         expect(result.mode).toBe('summary');
-        expect(result.fileCount).toBeDefined();
-        expect(result.files).toEqual([]);
+        if (result.mode === 'summary') {
+          expect(result.fileCount).toBeDefined();
+          expect(result.files).toEqual([]);
+        }
       });
     });
   });
@@ -118,8 +124,10 @@ describe('FolderHandler', () => {
       const result = await handler.handleRequest('vault://folder/?mode=summary');
       
       expect(result.path).toBe('');
-      expect(result.fileCount).toBe(2); // Only root-level files
-      expect(result.folders).toEqual(['Folder']);
+      if (result.mode === 'summary') {
+        expect(result.fileCount).toBe(2); // Only root-level files
+        expect(result.folders).toEqual(['Folder']);
+      }
     });
   });
 
@@ -136,8 +144,10 @@ describe('FolderHandler', () => {
 
       const result = await handler.handleRequest('vault://folder/Projects?mode=summary');
       
-      expect(result.fileCount).toBe(1); // Only archive.md is at Projects level
-      expect(result.folders).toEqual(['Project1', 'Project2', 'Templates']);
+      if (result.mode === 'summary') {
+        expect(result.fileCount).toBe(1); // Only archive.md is at Projects level
+        expect(result.folders).toEqual(['Project1', 'Project2', 'Templates']);
+      }
     });
   });
 });

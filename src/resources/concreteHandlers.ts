@@ -1,13 +1,112 @@
 import { BaseResourceHandler } from './BaseResourceHandler.js';
 import { ResourceErrorHandler } from '../utils/ResourceErrorHandler.js';
 
+/**
+ * Response modes for vault://tags resource
+ * 
+ * - summary: Default mode. Returns metadata about tag usage patterns with top tags (optimal for conversations)
+ * - full: Returns complete tag list (backward compatibility mode)
+ * 
+ * Usage:
+ * - vault://tags (defaults to summary)
+ * - vault://tags?mode=summary
+ * - vault://tags?mode=full
+ */
+type TagsResponseMode = 'summary' | 'full';
+
+const TAGS_RESPONSE_MODES: Record<string, TagsResponseMode> = {
+  SUMMARY: 'summary',
+  FULL: 'full'
+} as const;
+
+interface TagsSummaryResponse {
+  mode: 'summary';
+  totalTags: number;
+  topTags: Array<{ name: string; count: number }>;
+  usageStats: {
+    totalUsages: number;
+    averageUsage: number;
+    medianUsage: number;
+  };
+  message: string;
+}
+
+interface TagsFullResponse {
+  mode: 'full';
+  tags: Array<{ name: string; count: number }>;
+  totalTags: number;
+}
+
+type TagsResponse = TagsSummaryResponse | TagsFullResponse;
+
 export class TagsHandler extends BaseResourceHandler {
-  async handleRequest(uri: string, server?: any): Promise<any> {
+  async handleRequest(uri: string, server?: any): Promise<TagsResponse> {
+    // Parse query parameters for mode
+    const url = new URL(uri, 'vault://');
+    const modeParam = url.searchParams.get('mode') || TAGS_RESPONSE_MODES.SUMMARY;
+    
+    // Validate and set mode (default to summary for invalid modes)
+    const validModes: TagsResponseMode[] = Object.values(TAGS_RESPONSE_MODES);
+    const mode: TagsResponseMode = validModes.includes(modeParam as TagsResponseMode) 
+      ? (modeParam as TagsResponseMode) 
+      : TAGS_RESPONSE_MODES.SUMMARY;
+    
     const client = this.getObsidianClient(server);
     
     try {
       const tags = await client.getAllTags();
-      return { tags };
+      
+      if (mode === TAGS_RESPONSE_MODES.FULL) {
+        // Return full mode (backward compatibility)
+        return {
+          mode: 'full',
+          tags: tags,
+          totalTags: tags.length
+        };
+      }
+      
+      // Return summary mode (default)
+      if (tags.length === 0) {
+        return {
+          mode: 'summary',
+          totalTags: 0,
+          topTags: [],
+          usageStats: {
+            totalUsages: 0,
+            averageUsage: 0,
+            medianUsage: 0
+          },
+          message: 'No tags found in vault'
+        };
+      }
+      
+      // Calculate usage statistics
+      const totalUsages = tags.reduce((sum, tag) => sum + tag.count, 0);
+      const averageUsage = Math.round((totalUsages / tags.length) * 10) / 10;
+      
+      // Calculate median usage
+      const sortedCounts = tags.map(tag => tag.count).sort((a, b) => a - b);
+      const medianIndex = Math.floor(sortedCounts.length / 2);
+      const medianUsage = sortedCounts.length % 2 === 0
+        ? (sortedCounts[medianIndex - 1] + sortedCounts[medianIndex]) / 2
+        : sortedCounts[medianIndex];
+      
+      // Get top 5 tags by usage count
+      const topTags = [...tags]
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+      
+      return {
+        mode: 'summary',
+        totalTags: tags.length,
+        topTags: topTags,
+        usageStats: {
+          totalUsages,
+          averageUsage,
+          medianUsage
+        },
+        message: 'Use ?mode=full for complete tag list'
+      };
     } catch (error: unknown) {
       ResourceErrorHandler.handle(error, 'Tags');
     }

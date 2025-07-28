@@ -14,8 +14,9 @@ describe('Resource Handlers', () => {
       });
       
       const data = JSON.parse(result.contents[0].text);
-      expect(data).toHaveProperty('tags');
-      expect(Array.isArray(data.tags)).toBe(true);
+      expect(data.mode).toBe('summary');
+      expect(data).toHaveProperty('topTags');
+      expect(Array.isArray(data.topTags)).toBe(true);
     });
   });
   

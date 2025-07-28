@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "input_filter": "git commit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/check-feature-commits.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
