@@ -23,6 +23,8 @@
     "test:e2e": "tsx tests/e2e/test-obsidian-api.ts",
     "test:all": "npm run test",
     "typecheck": "tsc --noEmit",
+    "benchmark": "tsx scripts/run-benchmarks.ts",
+    "benchmark:cache": "tsx src/benchmarks/LRUCache.benchmark.ts",
     "prepublishOnly": "npm run build"
   },
   "keywords": [

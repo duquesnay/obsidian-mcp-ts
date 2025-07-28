@@ -20,7 +20,6 @@ describe('Retry Constants Centralization', () => {
     // List of files that might contain retry logic
     const filesToCheck = [
       '../../src/utils/OptimizedBatchProcessor.ts',
-      '../../src/utils/BatchProcessor.ts',
     ];
 
     filesToCheck.forEach(file => {
