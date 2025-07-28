@@ -17,6 +17,9 @@ This guide explains how to use the MCP Resources feature in obsidian-mcp-ts to a
 
 MCP Resources provide a standardized way for AI assistants to access read-only data from your Obsidian vault. Unlike tools which perform actions, resources are designed for retrieving and maintaining context about your vault's content and structure.
 
+**⚠️ Important Note - Claude Desktop Limitation:**
+Due to a [known limitation in Claude Desktop](https://github.com/modelcontextprotocol/typescript-sdk/issues/686), resources cannot be accessed directly by users, even though they appear as "connected" in settings. However, this server implements internal resource integration where tools automatically use resources for caching benefits. All functionality is available through equivalent tools. See the [Troubleshooting Guide](../TROUBLESHOOTING.md#claude-desktop-mcp-resource-limitation) for complete details.
+
 ### Key Benefits
 
 - **Persistent Context**: Resources help AI assistants maintain awareness of your vault structure
