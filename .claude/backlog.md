@@ -11,7 +11,7 @@ See `.claude/agents/README.md` for the complete list of specialized agents and t
 - **test-engineer**: TDD methodology  
 - **code-quality-analyst**: Code smell detection
 - **architecture-reviewer**: SOLID principles
-- **team-coordinator**: Multi-agent orchestration
+- **backlog-manager**: Strategic project management
 
 ### Sub-Agent Task Instructions
 When creating a sub-agent with the Task tool, include these instructions:
@@ -54,7 +54,7 @@ For each task:
    - Mark the task as [x] in the backlog
    - Add completion notes if needed
    - Update the Progress Status section
-4. Use team-coordinator agent to manage backlog items and dispatch implementation work to specialists
+4. Use backlog-manager agent to manage backlog items and dispatch implementation work to specialists
 
 ### Success Metrics
 - All tests passing after each change
@@ -331,33 +331,33 @@ a**Last Updated**: 2025-01-27
   - [x] CQ14.8: Remove deprecated BatchProcessor once migration is complete
 
 ### Low Priority (From Previous Quality Check)
-- [⏳] Q3.1: Add performance benchmarks for optimization utilities
+- [x] Q3.1: Add performance benchmarks for optimization utilities
   - [x] Q3.1.1: Create benchmark directory structure (src/benchmarks/)
   - [x] Q3.1.2: Complete LRUCache benchmark suite measuring hit/miss rates
-  - [ ] Q3.1.3: Create RequestDeduplicator benchmark for concurrent request handling
-  - [ ] Q3.1.4: Create OptimizedBatchProcessor benchmark for various batch sizes
-  - [ ] Q3.1.5: Add memory usage tracking to benchmark utilities
-  - [ ] Q3.1.6: Create comparison benchmark between cached vs non-cached operations
+  - [x] Q3.1.3: Create RequestDeduplicator benchmark for concurrent request handling
+  - [x] Q3.1.4: Create OptimizedBatchProcessor benchmark for various batch sizes
+  - [x] Q3.1.5: Add memory usage tracking to benchmark utilities
+  - [x] Q3.1.6: Create comparison benchmark between cached vs non-cached operations
   - [x] Q3.1.7: Add benchmark npm script to package.json
-  - [ ] Q3.1.8: Document benchmark results in performance.md
+  - [x] Q3.1.8: Document benchmark results in performance.md
 
-- [ ] Q3.2: Create troubleshooting guide for common issues (Partial)
+- [x] Q3.2: Create troubleshooting guide for common issues
   - [x] Q3.2.1: Create TROUBLESHOOTING.md file structure with sections
-  - [ ] Q3.2.2: Document "API key not set" error with resolution steps
-  - [ ] Q3.2.3: Document "Connection refused" error with Obsidian plugin checks
-  - [ ] Q3.2.4: Document "Path not found" errors with encoding solutions
-  - [ ] Q3.2.5: Document "Permission denied" errors with vault access checks
-  - [ ] Q3.2.6: Add SSL certificate error section with explanation
-  - [ ] Q3.2.7: Create diagnostic checklist for connection issues
-  - [ ] Q3.2.8: Add examples of common misconfigurations with fixes
+  - [x] Q3.2.2: Document "API key not set" error with resolution steps
+  - [x] Q3.2.3: Document "Connection refused" error with Obsidian plugin checks
+  - [x] Q3.2.4: Document "Path not found" errors with encoding solutions
+  - [x] Q3.2.5: Document "Permission denied" errors with vault access checks
+  - [x] Q3.2.6: Add SSL certificate error section with explanation
+  - [x] Q3.2.7: Create diagnostic checklist for connection issues
+  - [x] Q3.2.8: Add examples of common misconfigurations with fixes
 
-- [ ] Q3.3: Document SSL verification rationale (disabled for local Obsidian access) (Partial)
+- [x] Q3.3: Document SSL verification rationale (disabled for local Obsidian access)
   - [x] Q3.3.1: Create SECURITY.md file for security-related documentation
-  - [ ] Q3.3.2: Document why SSL verification is disabled for local connections
-  - [ ] Q3.3.3: Explain self-signed certificate challenges with Obsidian
-  - [ ] Q3.3.4: Add security implications of disabled SSL verification
-  - [ ] Q3.3.5: Document recommended security practices for API keys
-  - [ ] Q3.3.6: Create section on secure local development setup
-  - [ ] Q3.3.7: Add references to Obsidian Local REST API security model
-  - [ ] Q3.3.8: Include alternative security measures for production use
+  - [x] Q3.3.2: Document why SSL verification is disabled for local connections
+  - [x] Q3.3.3: Explain self-signed certificate challenges with Obsidian
+  - [x] Q3.3.4: Add security implications of disabled SSL verification
+  - [x] Q3.3.5: Document recommended security practices for API keys
+  - [x] Q3.3.6: Create section on secure local development setup
+  - [x] Q3.3.7: Add references to Obsidian Local REST API security model
+  - [x] Q3.3.8: Include alternative security measures for production use
 

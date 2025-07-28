@@ -357,6 +357,70 @@ OBSIDIAN_HOST=127.0.0.1
 - **Maintained execute/executeTyped**: Backward compatibility
 - **Focused on practical optimizations**: Over complex metrics
 
+## Team Coordination and Task Management
+
+### Coordination Patterns
+Use team coordination when dealing with:
+- Multi-step development work requiring multiple specialists
+- Complex features spanning multiple components  
+- Bug fixes requiring investigation across domains
+- Refactoring projects with systematic task management
+- Quality improvement initiatives
+
+### Workflow Options
+1. **Main Agent as Coordinator**: Use TodoWrite extensively for task tracking and delegate to specialists using Task tool
+2. **Dedicated Backlog Manager**: Use `Task(subagent_type="backlog-manager")` for strategic project management and persistent goal tracking
+
+### Core Coordination Workflow
+1. **Read** → Understand current state (backlog, codebase)
+2. **Plan** → Break down work into manageable pieces  
+3. **Delegate** → Use Task tool to assign work to specialists
+4. **Track** → Monitor progress and update task status
+5. **Complete** → Verify completion and mark tasks done
+
+### Specialist Agent Delegation Map
+- **TypeScript development** → `typescript-specialist`
+- **Git operations** → `git-workflow-manager`
+- **Testing** → `test-engineer`
+- **Code quality** → `code-quality-analyst`
+- **Architecture** → `architecture-reviewer`
+- **Performance** → `performance-optimizer`
+- **Documentation** → `documentation-writer`
+- **Integration** → `integration-specialist`
+
+### Process Indication Best Practices
+- **Mark tasks in progress** before starting work (use TodoWrite)
+- **Update status immediately** after completion
+- **One task in progress** at a time to maintain focus
+- **Delegate implementation work** to appropriate specialists
+- **Track goal-oriented items** in backlog vs technical tasks
+
+### TDD Coordination Pattern
+Follow Red-Green-Refactor cycle through delegation:
+1. **Red**: Write failing tests (→ test-engineer)
+2. **Green**: Implement minimal code (→ typescript-specialist)
+3. **Refactor**: Improve code quality (→ code-quality-analyst)
+4. **Validate**: Ensure tests pass (→ test-engineer)
+
+### Quality Review Integration
+Schedule quality reviews after every 3 completed features:
+1. **Analyze** codebase state (→ code-quality-analyst)
+2. **Assess** architecture patterns (→ architecture-reviewer)
+3. **Evaluate** performance opportunities (→ performance-optimizer)
+4. **Review** test coverage (→ test-engineer)
+5. **Document** findings and create improvement tasks
+
+### Backlog Management
+**Goal-oriented items** (recorded in .claude/backlog.md):
+- User-facing features and capabilities
+- What users will experience or benefit from
+- Marked with checkboxes: [ ] todo, [⏳] work-in-progress, [x] done
+
+**Implementation tasks** (dispatched to specialists):
+- Technical work needed to achieve backlog goals
+- Internal development activities
+- Not tracked in backlog, managed through TodoWrite
+
 ## Git Workflow for Claude Development
 
 ### Commit Prefix Strategy

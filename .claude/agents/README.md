@@ -52,10 +52,10 @@ This directory contains specialized sub-agent definitions for collaborative deve
 
 ### Coordination
 
-9. **team-coordinator.md**
-   - Orchestrates multi-agent workflows
-   - Task delegation
-   - Progress tracking
+9. **backlog-manager.md**
+   - Strategic project management
+   - Backlog tracking and goal management
+   - Multi-session project continuity
 
 ## Usage with /agents Command
 
@@ -84,16 +84,16 @@ Then select the appropriate agent(s) for your task.
 - Support: test-engineer, code-quality-analyst
 - Review: architecture-reviewer
 
-### For Complex Features
-- Coordinator: team-coordinator
-- All relevant specialists based on feature requirements
+### For Complex Multi-Session Projects
+- Strategic Management: backlog-manager
+- All relevant specialists based on project requirements
 
 ## Best Practices
 
 1. Always include test-engineer for any code changes
 2. Use git-workflow-manager for proper commits
 3. Include documentation-writer for user-facing changes
-4. Let team-coordinator orchestrate complex multi-agent tasks
+4. Use backlog-manager for strategic project management across sessions
 
 ## Agent Communication
 
