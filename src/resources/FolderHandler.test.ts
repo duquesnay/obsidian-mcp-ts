@@ -150,4 +150,173 @@ describe('FolderHandler', () => {
       }
     });
   });
+
+  describe('Pagination Support', () => {
+    const manyFiles = Array.from({ length: 100 }, (_, i) => `Documents/file${i + 1}.md`);
+
+    beforeEach(() => {
+      mockClient.listFilesInDir.mockResolvedValue(manyFiles);
+    });
+
+    describe('Full Mode Pagination', () => {
+      it('should handle pagination parameters in full mode', async () => {
+        const result = await handler.handleRequest('vault://folder/Documents?mode=full&limit=10&offset=0');
+        
+        expect(result).toEqual({
+          path: 'Documents',
+          mode: 'full',
+          items: manyFiles.slice(0, 10),
+          pagination: {
+            totalItems: 100,
+            hasMore: true,
+            limit: 10,
+            offset: 0,
+            nextOffset: 10
+          }
+        });
+      });
+
+      it('should handle pagination with offset in full mode', async () => {
+        const result = await handler.handleRequest('vault://folder/Documents?mode=full&limit=10&offset=20');
+        
+        expect(result).toEqual({
+          path: 'Documents',
+          mode: 'full',
+          items: manyFiles.slice(20, 30),
+          pagination: {
+            totalItems: 100,
+            hasMore: true,
+            limit: 10,
+            offset: 20,
+            nextOffset: 30
+          }
+        });
+      });
+
+      it('should handle last page in full mode', async () => {
+        const result = await handler.handleRequest('vault://folder/Documents?mode=full&limit=10&offset=95');
+        
+        expect(result).toEqual({
+          path: 'Documents',
+          mode: 'full',
+          items: manyFiles.slice(95, 100),
+          pagination: {
+            totalItems: 100,
+            hasMore: false,
+            limit: 10,
+            offset: 95,
+            nextOffset: undefined
+          }
+        });
+      });
+
+      it('should use default limit when not specified in full mode', async () => {
+        const result = await handler.handleRequest('vault://folder/Documents?mode=full&offset=10');
+        
+        expect(result).toEqual({
+          path: 'Documents',
+          mode: 'full',
+          items: manyFiles.slice(10, 60), // Default limit should be 50
+          pagination: {
+            totalItems: 100,
+            hasMore: true,
+            limit: 50,
+            offset: 10,
+            nextOffset: 60
+          }
+        });
+      });
+    });
+
+    describe('Summary Mode Pagination', () => {
+      it('should handle pagination parameters in summary mode', async () => {
+        const result = await handler.handleRequest('vault://folder/Documents?mode=summary&limit=10&offset=0');
+        
+        if (result.mode === 'summary') {
+          expect(result).toEqual({
+            path: 'Documents',
+            mode: 'summary',
+            fileCount: 100,
+            files: manyFiles.slice(0, 10),
+            folders: [],
+            message: 'Showing 10 of 100 files',
+            pagination: {
+              totalItems: 100,
+              hasMore: true,
+              limit: 10,
+              offset: 0,
+              nextOffset: 10
+            }
+          });
+        }
+      });
+
+      it('should return empty files array in summary mode when no pagination requested', async () => {
+        const result = await handler.handleRequest('vault://folder/Documents?mode=summary');
+        
+        if (result.mode === 'summary') {
+          expect(result.files).toEqual([]);
+          expect(result.message).toBe('Use ?mode=full for complete file listings');
+          expect(result.pagination).toBeUndefined();
+        }
+      });
+    });
+
+    describe('Pagination Edge Cases', () => {
+      it('should handle limit larger than total items', async () => {
+        const smallFiles = ['file1.md', 'file2.md'];
+        mockClient.listFilesInDir.mockResolvedValue(smallFiles);
+        
+        const result = await handler.handleRequest('vault://folder/Documents?mode=full&limit=50&offset=0');
+        
+        expect(result).toEqual({
+          path: 'Documents',
+          mode: 'full',
+          items: smallFiles,
+          pagination: {
+            totalItems: 2,
+            hasMore: false,
+            limit: 50,
+            offset: 0,
+            nextOffset: undefined
+          }
+        });
+      });
+
+      it('should handle offset beyond total items', async () => {
+        const result = await handler.handleRequest('vault://folder/Documents?mode=full&limit=10&offset=150');
+        
+        expect(result).toEqual({
+          path: 'Documents',
+          mode: 'full',
+          items: [],
+          pagination: {
+            totalItems: 100,
+            hasMore: false,
+            limit: 10,
+            offset: 150,
+            nextOffset: undefined
+          }
+        });
+      });
+
+      it('should validate maximum limit constraint', async () => {
+        const result = await handler.handleRequest('vault://folder/Documents?mode=full&limit=10000&offset=0');
+        
+        // Should limit to MAX_LIST_LIMIT (5000)
+        expect(result).toEqual({
+          path: 'Documents',
+          mode: 'full',
+          items: manyFiles, // All 100 items since it's less than the limit
+          pagination: {
+            totalItems: 100,
+            hasMore: false,
+            limit: 5000, // Should be capped at MAX_LIST_LIMIT
+            offset: 0,
+            nextOffset: undefined
+          }
+        });
+      });
+    });
+  });
 });
