@@ -24,7 +24,7 @@ Several major tools now use internal MCP resources with smart caching instead of
 | Tool | Internal Resource | Cache Duration | Performance Benefit |
 |------|------------------|----------------|-------------------|
 | `obsidian_get_all_tags` | `vault://tags` | 5 minutes | 10-50x faster for tag operations |
-| `obsidian_get_recent_changes` | `vault://recent` | 30 seconds | Near-instant recent file listings |
+| `obsidian_get_recent_changes` | `vault://recent` | 30 seconds | Near-instant recent file listings with titles & previews |
 | `obsidian_get_file_contents` | `vault://note/{path}` | 2 minutes | Dramatically faster for repeated file access |
 | `obsidian_simple_search` | `vault://search/{query}` | 1 minute | Cached search results for common queries |
 | `obsidian_list_files_in_vault` | `vault://structure` | 5 minutes | Instant vault browsing after first load |
@@ -65,7 +65,7 @@ MCP Resources provide read-only access to data from your Obsidian vault through 
 |----------|-------------|-------------|
 | **Vault Tags** | All unique tags with usage counts | `vault://tags` |
 | **Vault Statistics** | File and note counts for the vault | `vault://stats` |
-| **Recent Changes** | Recently modified notes (cached 30s) | `vault://recent` |
+| **Recent Changes** | Recently modified notes with preview mode (cached 30s) | `vault://recent` or `vault://recent?mode=full` |
 | **Vault Structure** | Complete hierarchical structure | `vault://structure` |
 
 #### Dynamic Resources (Cached 1-2min)
@@ -91,6 +91,14 @@ const tags = await client.readResource('vault://tags');
 const stats = await client.readResource('vault://stats');
 const note = await client.readResource('vault://note/meeting-notes.md');
 const folder = await client.readResource('vault://folder/Projects');
+
+// Recent changes with preview mode (default)
+const recentPreview = await client.readResource('vault://recent');
+// Returns: { notes: [{ path, title, modifiedAt, preview }], mode: 'preview' }
+
+// Recent changes with full content 
+const recentFull = await client.readResource('vault://recent?mode=full');
+// Returns: { notes: [{ path, title, modifiedAt, content }], mode: 'full' }
 ```
 
 **⚠️ Claude Desktop Limitation:** Resources currently cannot be accessed directly in Claude Desktop due to a [known limitation](https://github.com/modelcontextprotocol/typescript-sdk/issues/686). However, equivalent tools provide the same functionality with automatic caching benefits. See [TROUBLESHOOTING.md](TROUBLESHOOTING.md#claude-desktop-mcp-resource-limitation) for details.
