@@ -91,14 +91,14 @@ For each task:
   - Add comprehensive tests for all modes
   - Document the new response mode system
   
-- [⏳] RSM1.2: Implement vault://recent preview mode with response modes
-  - Extend mode parameter system to vault://recent resource
-  - Return titles + first 100 characters preview (preview mode default)
-  - Include modification dates and file paths
-  - Preserve full content mode with ?mode=full parameter
-  - Update GetRecentChangesTool to use preview mode by default
-  - Add comprehensive tests for all modes
-  - Update documentation with new resource mode
+- [x] RSM1.2: Implement vault://recent preview mode with response modes
+  - ✅ Extend mode parameter system to vault://recent resource
+  - ✅ Return titles + first 100 characters preview (preview mode default)
+  - ✅ Include modification dates and file paths
+  - ✅ Preserve full content mode with ?mode=full parameter
+  - ✅ Update GetRecentChangesTool to use preview mode by default
+  - ✅ Add comprehensive tests for all modes
+  - ✅ Update documentation with new resource mode
   
 - [ ] RSM1.3: Implement vault://note/{path} preview mode with response modes
   - Extend mode parameter system to vault://note/{path} resource
@@ -364,10 +364,10 @@ For each task:
 
 **Last Updated**: 2025-01-28
 **Current Priority**: 🚨 CRITICAL - Two High-Priority Initiatives
-**Priority 0**: Resource Response Modes (Context Explosion Fix) - 1/7 in progress  
+**Priority 0**: Resource Response Modes (Context Explosion Fix) - 2/7 completed  
 **Priority 1**: Resource Pagination System (Data Management) - 0/7 completed
 **Green Line Status**: ✅ All tests passing 
-**Critical RSM Tasks**: 1/7 in progress (RSM1.1 ACTIVE, RSM1.2-RSM1.7 pending)
+**Critical RSM Tasks**: 2/7 completed (RSM1.1-RSM1.2 DONE, RSM1.3-RSM1.7 pending)
 **Critical RPS Tasks**: 0/7 completed (RPS1.1-RPS1.7) - HIGH-PRIORITY INITIATIVE
 **Previous TRI Tasks**: ✅ All 10 completed (TRI1-TRI10) 
 ## Total Project Summary
