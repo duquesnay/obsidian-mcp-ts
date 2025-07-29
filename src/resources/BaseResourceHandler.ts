@@ -5,6 +5,7 @@ import { ResourceHandler } from './types.js';
 import { ResourceErrorHandler } from '../utils/ResourceErrorHandler.js';
 import { ResourceValidationUtil } from '../utils/ResourceValidationUtil.js';
 import { ResponseModeSystem, ResponseMode, ResponseContent, ModeResponse } from '../utils/ResponseModeSystem.js';
+import { PaginationSystem, PaginationParams, PaginationOptions } from '../utils/PaginationSystem.js';
 
 // Extend Server type to include obsidianClient for testing
 interface ServerWithClient {
@@ -133,5 +134,53 @@ export abstract class BaseResourceHandler {
    */
   protected createModeResponse(content: ResponseContent, mode: ResponseMode): ModeResponse {
     return ResponseModeSystem.createModeResponse(content, mode);
+  }
+
+  // Pagination System Integration
+
+  /**
+   * Extract pagination parameters from URI using PaginationSystem
+   */
+  protected extractPaginationParameters(uri: string, options?: PaginationOptions): PaginationParams {
+    return PaginationSystem.parseParameters(uri, options);
+  }
+
+  /**
+   * Create a paginated response with standardized metadata
+   */
+  protected createPaginatedResponse<T>(
+    data: T[],
+    params: PaginationParams,
+    additionalMetadata?: Record<string, any>
+  ) {
+    return PaginationSystem.createPaginatedResponse(data, params, data.length, additionalMetadata);
+  }
+
+  /**
+   * Apply pagination to data array
+   */
+  protected applyPagination<T>(data: T[], params: PaginationParams): T[] {
+    return PaginationSystem.applyPagination(data, params);
+  }
+
+  /**
+   * Generate pagination metadata
+   */
+  protected generatePaginationMetadata(params: PaginationParams, totalItems: number) {
+    return PaginationSystem.generateMetadata(params, totalItems);
+  }
+
+  /**
+   * Check if pagination is requested
+   */
+  protected isPaginationRequested(params: PaginationParams): boolean {
+    return PaginationSystem.isPaginationRequested(params);
+  }
+
+  /**
+   * Generate continuation token for stateful pagination
+   */
+  protected generateContinuationToken(type: string, query: string, offset: number): string {
+    return PaginationSystem.generateContinuationToken(type, query, offset);
   }
 }

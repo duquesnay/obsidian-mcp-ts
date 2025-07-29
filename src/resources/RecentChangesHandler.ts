@@ -34,11 +34,14 @@ interface RecentNote {
 }
 
 interface PaginationInfo {
-  totalNotes: number;
+  totalItems: number;
   hasMore: boolean;
   limit: number;
   offset: number;
   nextOffset?: number;
+  previousOffset?: number;
+  currentPage: number;
+  totalPages: number;
   continuationToken?: string;
 }
 
@@ -58,11 +61,14 @@ export class RecentChangesHandler extends BaseResourceHandler {
     const client = this.getObsidianClient(server);
     
     try {
-      // Parse query parameters
+      // Parse query parameters using shared pagination system
+      const paginationParams = this.extractPaginationParameters(uri, { 
+        defaultLimit: RecentChangesHandler.DEFAULT_LIMIT 
+      });
+      
+      // Parse response mode
       const url = new URL(uri, 'vault://');
       const modeParam = url.searchParams.get('mode') || RESPONSE_MODES.PREVIEW;
-      const limitParam = url.searchParams.get('limit');
-      const offsetParam = url.searchParams.get('offset');
       
       // Validate and set mode (default to preview for invalid modes)
       const validModes: ResponseMode[] = Object.values(RESPONSE_MODES);
@@ -70,14 +76,9 @@ export class RecentChangesHandler extends BaseResourceHandler {
         ? (modeParam as ResponseMode) 
         : RESPONSE_MODES.PREVIEW;
       
-      // Parse pagination parameters
-      const limit = limitParam ? parseInt(limitParam, 10) : RecentChangesHandler.DEFAULT_LIMIT;
-      const offset = offsetParam ? parseInt(offsetParam, 10) : 0;
-      
       // Get recent changes from the client, using a higher limit to ensure we have enough data
-      // TODO: In a real implementation, we would need to get more data from the API
       const maxFetchLimit = Math.max(
-        limit + offset + RecentChangesHandler.PAGINATION_BUFFER, 
+        paginationParams.limit + paginationParams.offset + RecentChangesHandler.PAGINATION_BUFFER, 
         RecentChangesHandler.MIN_FETCH_LIMIT
       );
       const recentChanges = await client.getRecentChanges(undefined, maxFetchLimit);
@@ -99,47 +100,33 @@ export class RecentChangesHandler extends BaseResourceHandler {
         return note;
       });
       
-      // Apply pagination and build response
-      return this.buildPaginatedResponse(allNotes, mode, limit, offset, limitParam, offsetParam);
+      // Use shared pagination system
+      const paginatedData = this.applyPagination(allNotes, paginationParams);
+      const paginationMetadata = this.generatePaginationMetadata(paginationParams, allNotes.length);
+      
+      // Build response with standardized pagination
+      const response: RecentChangesResponse = {
+        notes: paginatedData,
+        mode
+      };
+      
+      // Add pagination metadata if requested or needed
+      const isPaginationRequested = this.isPaginationRequested(paginationParams);
+      if (isPaginationRequested || allNotes.length > RecentChangesHandler.DEFAULT_LIMIT) {
+        response.pagination = {
+          ...paginationMetadata,
+          totalItems: paginationMetadata.totalItems,
+          // Add continuation token for last item in current page
+          continuationToken: paginatedData.length > 0 
+            ? new Date(paginatedData[paginatedData.length - 1].modifiedAt).getTime().toString()
+            : undefined
+        };
+      }
+      
+      return response;
     } catch (error: unknown) {
       ResourceErrorHandler.handle(error, 'Recent notes');
     }
-  }
-  
-  private buildPaginatedResponse(
-    allNotes: RecentNote[], 
-    mode: ResponseMode, 
-    limit: number, 
-    offset: number,
-    limitParam: string | null,
-    offsetParam: string | null
-  ): RecentChangesResponse {
-    // Apply pagination
-    const totalNotes = allNotes.length;
-    const paginatedNotes = allNotes.slice(offset, offset + limit);
-    const hasMore = offset + limit < totalNotes;
-    
-    // Check if pagination is requested or needed
-    const isPaginationRequested = limitParam !== null || offsetParam !== null;
-    const needsPagination = isPaginationRequested || totalNotes > RecentChangesHandler.DEFAULT_LIMIT;
-    
-    // Build response
-    const response: RecentChangesResponse = { notes: paginatedNotes, mode };
-    
-    if (needsPagination && (hasMore || offset > 0)) {
-      response.pagination = {
-        totalNotes,
-        hasMore,
-        limit,
-        offset,
-        nextOffset: hasMore ? offset + limit : undefined,
-        continuationToken: hasMore && paginatedNotes.length > 0 
-          ? new Date(paginatedNotes[paginatedNotes.length - 1].modifiedAt).getTime().toString()
-          : undefined
-      };
-    }
-    
-    return response;
   }
   
   private extractTitle(path: string): string {
