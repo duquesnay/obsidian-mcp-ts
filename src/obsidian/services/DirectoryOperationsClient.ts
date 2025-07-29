@@ -2,7 +2,8 @@ import axios, { AxiosInstance, AxiosError } from 'axios';
 import https from 'https';
 import { ObsidianError } from '../../types/errors.js';
 import { validatePath } from '../../utils/pathValidator.js';
-import { OBSIDIAN_DEFAULTS, TIMEOUTS } from '../../constants.js';
+import { OBSIDIAN_DEFAULTS, TIMEOUTS, BATCH_PROCESSOR } from '../../constants.js';
+import { OptimizedBatchProcessor } from '../../utils/OptimizedBatchProcessor.js';
 import type { IDirectoryOperationsClient } from '../interfaces/IDirectoryOperationsClient.js';
 import type { ObsidianClientConfig } from '../ObsidianClient.js';
 
@@ -280,6 +281,86 @@ export class DirectoryOperationsClient implements IDirectoryOperationsClient {
           throw error;
         }
       }
+    });
+  }
+
+  /**
+   * Copy directory with streaming support for large directories
+   * Uses streaming mode when directory has many files for memory efficiency
+   */
+  async copyDirectoryStream(
+    sourcePath: string, 
+    destinationPath: string, 
+    options?: {
+      overwrite?: boolean;
+      onProgress?: (completed: number, total: number) => void;
+      useStreaming?: boolean;
+    }
+  ): Promise<{
+    filesCopied: number;
+    failedFiles: string[];
+    message?: string;
+    streamingUsed?: boolean;
+  }> {
+    validatePath(sourcePath, 'sourcePath');
+    validatePath(destinationPath, 'destinationPath');
+
+    return this.safeCall(async () => {
+      // First, get the list of files to copy
+      const listResponse = await this.axiosInstance.get(`/vault/${sourcePath}/`);
+      const files = listResponse.data.files || [];
+      
+      // Determine if we should use streaming
+      const useStreaming = options?.useStreaming ?? (files.length > 100);
+      
+      if (!useStreaming) {
+        // Use regular copy for smaller directories
+        return this.copyDirectory(sourcePath, destinationPath, options?.overwrite);
+      }
+      
+      // Use streaming approach for large directories
+      const filesCopied: string[] = [];
+      const failedFiles: string[] = [];
+      
+      const processor = new OptimizedBatchProcessor({
+        maxConcurrency: OBSIDIAN_DEFAULTS.BATCH_SIZE,
+        retryAttempts: BATCH_PROCESSOR.DEFAULT_RETRY_ATTEMPTS,
+        retryDelay: BATCH_PROCESSOR.DEFAULT_RETRY_DELAY_MS,
+        onProgress: options?.onProgress
+      });
+      
+      // Process each file copy operation
+      for await (const result of processor.processStream(files, async (file: string) => {
+        const sourceFile = `${sourcePath}/${file}`;
+        const destFile = `${destinationPath}/${file}`;
+        
+        try {
+          // Get file content
+          const contentResponse = await this.axiosInstance.get(`/vault/${sourceFile}`);
+          
+          // Create destination file
+          await this.axiosInstance.put(`/vault/${destFile}`, contentResponse.data, {
+            headers: { 'Content-Type': 'text/markdown' }
+          });
+          
+          return { success: true, file };
+        } catch (error) {
+          return { success: false, file, error };
+        }
+      })) {
+        if (result.error || !result.result?.success) {
+          failedFiles.push(result.item);
+        } else {
+          filesCopied.push(result.item);
+        }
+      }
+      
+      return {
+        filesCopied: filesCopied.length,
+        failedFiles,
+        message: `Directory copied from ${sourcePath} to ${destinationPath} using streaming mode`,
+        streamingUsed: true
+      };
     });
   }
 }

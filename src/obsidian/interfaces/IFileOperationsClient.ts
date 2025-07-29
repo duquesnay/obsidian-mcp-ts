@@ -64,9 +64,14 @@ export interface IFileOperationsClient {
     contentLength?: number
   ): Promise<RecentChange[]>;
 
-  // Batch write operations
+  // Batch operations
   batchCreateFiles(fileOperations: Array<{ filepath: string; content: string }>, options?: BatchOperationOptions): Promise<Array<{ filepath: string; success: boolean; error?: string }>>;
   batchUpdateFiles(fileOperations: Array<{ filepath: string; content: string }>, options?: BatchOperationOptions): Promise<Array<{ filepath: string; success: boolean; error?: string }>>;
   batchDeleteFiles(filepaths: string[], options?: BatchOperationOptions): Promise<Array<{ filepath: string; success: boolean; error?: string }>>;
   batchCopyFiles(copyOperations: Array<{ sourcePath: string; destinationPath: string; overwrite?: boolean }>, options?: BatchOperationOptions): Promise<Array<{ sourcePath: string; destinationPath: string; success: boolean; error?: string }>>;
+
+  // Streaming batch operations for memory-efficient processing
+  streamBatchFileContents(filepaths: string[], options?: BatchOperationOptions): AsyncGenerator<{ filepath: string; content?: string; error?: string }, void, unknown>;
+  streamBatchCreateFiles(fileOperations: Array<{ filepath: string; content: string }>, options?: BatchOperationOptions): AsyncGenerator<{ filepath: string; success: boolean; error?: string }, void, unknown>;
+  streamBatchDeleteFiles(filepaths: string[], options?: BatchOperationOptions): AsyncGenerator<{ filepath: string; success: boolean; error?: string }, void, unknown>;
 }

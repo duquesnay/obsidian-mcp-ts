@@ -70,20 +70,19 @@ export class BatchGetFileContentsTool extends BaseTool<BatchGetFileContentsArgs>
         }
       };
       
-      const content = await client.getBatchFileContents(filesToProcess, batchOptions);
+      const content = await client.getBatchFileContents(filesToProcess);
       
-      // Include progress information in the response
-      const response = this.formatResponse(content);
-      
-      // Add progress metadata to response
-      return {
-        ...response,
+      // Create response with progress information
+      const responseData = {
+        content,
         progress: {
           completed: progressInfo.completed,
           total: progressInfo.total,
           percentage: progressInfo.total > 0 ? Math.round((progressInfo.completed / progressInfo.total) * 100) : 0
         }
       };
+      
+      return this.formatResponse(responseData);
     } catch (error) {
       return this.handleError(error);
     }
