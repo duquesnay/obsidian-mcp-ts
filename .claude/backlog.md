@@ -3,20 +3,126 @@
 ## Product Backlog (User Capabilities)
 
 - [x] RSM1.1: See vault structure without context overflow
+  - [x] Create mode parameter interface (?mode=summary|preview|full) for this resource only
+  - [x] Return folder/file names only without content (summary mode default)
+  - [x] Include basic metadata (count, size estimates)
+  - [x] Preserve full content mode with ?mode=full parameter
+  - [x] Update corresponding tools to use summary mode by default
+  - [x] Add comprehensive tests for all modes
+  - [x] Document the new response mode system
+
 - [x] RSM1.2: Scan recent changes with manageable previews
+  - [x] Extend mode parameter system to vault://recent resource
+  - [x] Return titles + first 100 characters preview (preview mode default)
+  - [x] Include modification dates and file paths
+  - [x] Preserve full content mode with ?mode=full parameter
+  - [x] Update GetRecentChangesTool to use preview mode by default
+  - [x] Add comprehensive tests for all modes
+  - [x] Update documentation with new resource mode
+
 - [x] RSM1.3: Preview individual notes efficiently
+  - [x] Extend mode parameter system to vault://note/{path} resource
+  - [x] Return frontmatter + first 200 characters of content (preview mode default)
+  - [x] Include basic note statistics (word count, headers)
+  - [x] Preserve full content mode with ?mode=full parameter
+  - [x] Update GetFileContentsTool to use preview mode by default
+  - [x] Add comprehensive tests for all modes
+  - [x] Update documentation with new resource mode
+
 - [x] RSM1.4: Navigate folder listings without overload
+  - [x] Extend mode parameter system to vault://folder/{path} resource
+  - [x] Return file listings without content previews (summary mode default)
+  - [x] Include file counts and basic metadata
+  - [x] Preserve full content mode with ?mode=full parameter
+  - [x] Update ListFilesInDirTool to use summary mode by default
+  - [x] Add comprehensive tests for all modes
+  - [x] Update documentation with new resource mode
+
 - [x] RSM1.5: Evaluate search results with context snippets
+  - [x] Extend mode parameter system to vault://search/{query} resource
+  - [x] Return search results with 100-character context snippets (preview mode default)
+  - [x] Include match counts and file paths
+  - [x] Preserve full content mode with ?mode=full parameter
+  - [x] Update SimpleSearchTool to use preview mode by default
+  - [x] Add comprehensive tests for all modes
+  - [x] Update documentation with new resource mode
+
 - [x] RSM1.6: Browse tag collections with usage patterns
+  - [x] Extend mode parameter system to vault://tags resource
+  - [x] Add metadata about tag usage patterns (already reasonable size)
+  - [x] Include top tags by frequency with usage statistics
+  - [x] Update GetAllTagsTool to use optimized response
+  - [x] Add comprehensive tests for all modes
+  - [x] Update documentation with new resource mode
+
 - [x] RSM1.7: Control response sizes consistently across resources
+  - [x] Extract common mode parameter handling into BaseResourceHandler
+  - [x] Create shared response size utilities (summary <500 chars, preview <2000 chars)
+  - [x] Optimize summary generation algorithms across all resources
+  - [x] Add caching for computed previews
+  - [x] Measure and document performance improvements
+  - [x] Update all existing response mode implementations to use shared system
 
 - [x] RPS1.1: Browse large vault structures in manageable chunks
+  - [x] Create pagination interface (?limit=N&offset=N) for this resource only
+  - [x] Default limit=50 files/folders per page
+  - [x] Include pagination metadata (hasMore, total, nextUri)
+  - [x] Maintain legacy unlimited mode with ?legacy=true
+  - [x] Update ListFilesInVaultTool to handle paginated responses
+  - [x] Add comprehensive tests for pagination behavior
+  - [x] Document pagination parameters and usage
+
 - [x] RPS1.2: Navigate recent changes with chronological pagination
+  - [x] Extend pagination system to vault://recent resource
+  - [x] Default limit=20 recent items per page
+  - [x] Include modification dates and continuation tokens
+  - [x] Optimize for time-based pagination (chronological ordering)
+  - [x] Update GetRecentChangesTool to handle paginated responses
+  - [x] Add comprehensive tests for time-based pagination
+  - [x] Update documentation with pagination examples
+
 - [x] RPS1.3: Explore folder contents in paged responses
+  - [x] Extend pagination system to vault://folder/{path} resource
+  - [x] Default limit=50 items per page
+  - [x] Handle nested folder pagination efficiently
+  - [x] Include directory metadata and item counts
+  - [x] Update ListFilesInDirTool to handle paginated responses
+  - [x] Add comprehensive tests for folder pagination
+  - [x] Update documentation with folder pagination examples
+
 - [x] RPS1.4: Review search results in small batches
+  - [x] Extend pagination system to vault://search/{query} resource
+  - [x] Default limit=10 results per page (search results are expensive)
+  - [x] Include relevance scoring and result ranking
+  - [x] Support continuation tokens for consistent ordering
+  - [x] Update SimpleSearchTool to handle paginated search results
+  - [x] Add comprehensive tests for search pagination
+  - [x] Update documentation with search pagination examples
+
 - [x] RPS1.5: Browse tag collections with optimized pagination
+  - [x] Extend pagination system to vault://tags resource
+  - [x] Default limit=100 tags per page (tags are lightweight)
+  - [x] Sort by usage frequency for better UX
+  - [x] Include tag usage statistics in metadata
+  - [x] Update GetAllTagsTool to handle paginated tag responses
+  - [x] Add comprehensive tests for tag pagination
+  - [x] Update documentation with tag pagination examples
+
 - [x] RPS1.6: Access consistent pagination across all resources
+  - [x] Extract common pagination logic into BaseResourceHandler
+  - [x] Create shared pagination parameter parsing utilities
+  - [x] Generate standardized pagination metadata across all resources
+  - [x] Support multiple pagination styles (offset/limit, page/limit)
+  - [x] Update all existing paginated implementations to use shared system
+  - [x] Add performance benchmarks for paginated vs non-paginated responses
+
 - [x] RPS1.7: Receive optimized caching for paginated data
+  - [x] Update CachedResourceHandler to cache paginated responses by page parameters
+  - [x] Implement smart cache invalidation for paginated data
+  - [x] Handle partial cache updates when underlying data changes
+  - [x] Optimize memory usage for large cached datasets
+  - [x] Add cache hit/miss metrics for paginated resources
+  - [x] Document caching behavior for paginated resources
 
 - [x] POI1.1: Receive automatic cache invalidation on file changes
 - [ ] POI1.2: Experience optimized batch processing with retry logic
