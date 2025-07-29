@@ -395,7 +395,7 @@ For each task:
 **Current Priority**: Performance Optimization Integration (POI)
 **Priority 0**: Resource Response Modes (Context Explosion Fix) - 7/7 IMPLEMENTED (tests failing)
 **Priority 1**: Resource Pagination System (Data Management) - 7/7 IMPLEMENTED (tests failing)
-**Priority 2**: Performance Optimization Integration - 5/26 tasks (19%) IN PROGRESS
+**Priority 2**: Performance Optimization Integration - 6/26 tasks (23%) IN PROGRESS
 **Green Line Status**: 27 tests failing - need fixes
 **Critical RSM Tasks**: 7/7 IMPLEMENTED (RSM1.1-RSM1.7 - debugging needed)
 **Critical RPS Tasks**: 7/7 IMPLEMENTED (RPS1.1-RPS1.7 - debugging needed)
@@ -407,7 +407,7 @@ For each task:
 **TRI Tasks**: 10 (100% completed)
 **RSM Tasks**: 7/7 implemented (100%) - DEBUGGING NEEDED
 **RPS Tasks**: 7/7 implemented (100%) - DEBUGGING NEEDED
-**POI Tasks**: 5/26 (19%) - POI1.1-POI1.4, POI1.7 completed
+**POI Tasks**: 6/26 (23%) - POI1.1-POI1.4, POI1.6-POI1.7 completed
 **Quality Check Tasks**: 11/14 completed (78%)
 
 ---
@@ -603,7 +603,7 @@ Performance optimization features (Subscription System, OptimizedBatchProcessor,
 - [x] POI1.3: Connect file operations to trigger invalidation events (ALREADY DONE - FileOperationsClient triggers notifications)
 - [x] POI1.4: Add subscription hooks to resource handlers (CacheSubscriptionManager singleton, connected to NotificationManager)
 - [ ] POI1.5: Implement cache synchronization across tools
-- [ ] POI1.6: Add subscription configuration to server initialization
+- [x] POI1.6: Add subscription configuration to server initialization (Fixed init order: subscriptions before resources)
 - [x] POI1.7: Create integration tests for subscription events (7 tests passing for cache-subscription flow)
 - [ ] POI1.8: Document subscription system usage
 
