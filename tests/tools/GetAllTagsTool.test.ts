@@ -24,6 +24,161 @@ describe('GetAllTagsTool', () => {
     defaultCachedHandlers.tags.handleRequest = originalHandleRequest;
   });
 
+  describe('Resource-level pagination', () => {
+    it('should use resource-level pagination for count-based sorting with default desc order', async () => {
+      // Mock resource handler to return paginated response
+      const mockResourceResponse = {
+        mode: 'full',
+        tags: [
+          { name: 'work', count: 20 },
+          { name: 'project', count: 15 }
+        ],
+        totalTags: 10,
+        pagination: {
+          totalItems: 10,
+          hasMore: true,
+          limit: 2,
+          offset: 0,
+          nextOffset: 2,
+          usageStats: {
+            totalUsages: 86,
+            averageUsage: 8.6,
+            medianUsage: 7.5
+          }
+        }
+      };
+
+      defaultCachedHandlers.tags.handleRequest = vi.fn().mockResolvedValue(mockResourceResponse);
+
+      // When - request with pagination and count sorting (default desc)
+      const result = await tool.executeTyped({ 
+        limit: 2, 
+        offset: 0,
+        sortBy: 'count'
+      });
+
+      // Then - should use resource-level pagination
+      expect(defaultCachedHandlers.tags.handleRequest).toHaveBeenCalledWith('vault://tags?mode=full&limit=2&offset=0');
+      expect(result.text).toContain('Showing 2 of 10 unique tags (sorted by usage frequency)');
+    });
+
+    it('should use resource-level pagination when no custom sorting specified', async () => {
+      // Mock resource handler
+      const mockResourceResponse = {
+        mode: 'full',
+        tags: [{ name: 'tag1', count: 5 }],
+        totalTags: 1,
+        pagination: {
+          totalItems: 1,
+          hasMore: false,
+          limit: 10,
+          offset: 0,
+          nextOffset: undefined
+        }
+      };
+
+      defaultCachedHandlers.tags.handleRequest = vi.fn().mockResolvedValue(mockResourceResponse);
+
+      // When - request with only pagination
+      const result = await tool.executeTyped({ limit: 10, offset: 0 });
+
+      // Then - should use resource-level pagination
+      expect(defaultCachedHandlers.tags.handleRequest).toHaveBeenCalledWith('vault://tags?mode=full&limit=10&offset=0');
+    });
+
+    it('should fall back to tool-level processing for custom name sorting', async () => {
+      // Mock resource handler to return full tag list
+      const mockResourceResponse = {
+        mode: 'full',
+        tags: [
+          { name: 'zebra', count: 5 },
+          { name: 'alpha', count: 10 }
+        ],
+        totalTags: 2
+      };
+
+      defaultCachedHandlers.tags.handleRequest = vi.fn().mockResolvedValue(mockResourceResponse);
+
+      // When - request with name sorting
+      const result = await tool.executeTyped({ 
+        sortBy: 'name',
+        sortOrder: 'asc',
+        limit: 10
+      });
+
+      // Then - should get full data and apply custom sorting
+      expect(defaultCachedHandlers.tags.handleRequest).toHaveBeenCalledWith('vault://tags?mode=full');
+      
+      const parsedResult = JSON.parse(result.text);
+      expect(parsedResult.tags[0].name).toBe('alpha'); // Should be sorted alphabetically
+      expect(parsedResult.tags[1].name).toBe('zebra');
+    });
+
+    it('should fall back to tool-level processing for count asc sorting', async () => {
+      // Mock resource handler
+      const mockResourceResponse = {
+        mode: 'full',
+        tags: [
+          { name: 'high', count: 20 },
+          { name: 'low', count: 5 }
+        ],
+        totalTags: 2
+      };
+
+      defaultCachedHandlers.tags.handleRequest = vi.fn().mockResolvedValue(mockResourceResponse);
+
+      // When - request with count asc sorting (not default desc)
+      const result = await tool.executeTyped({ 
+        sortBy: 'count',
+        sortOrder: 'asc',
+        limit: 10
+      });
+
+      // Then - should get full data and apply custom sorting
+      expect(defaultCachedHandlers.tags.handleRequest).toHaveBeenCalledWith('vault://tags?mode=full');
+      
+      const parsedResult = JSON.parse(result.text);
+      expect(parsedResult.tags[0].name).toBe('low'); // Should be sorted by count ascending
+      expect(parsedResult.tags[1].name).toBe('high');
+    });
+  });
+
+  describe('Pagination metadata handling', () => {
+    it('should include usage statistics from resource-level pagination', async () => {
+      // Mock resource handler with usage stats
+      const mockResourceResponse = {
+        mode: 'full',
+        tags: [{ name: 'tag1', count: 5 }],
+        totalTags: 10,
+        pagination: {
+          totalItems: 10,
+          hasMore: true,
+          limit: 1,
+          offset: 0,
+          nextOffset: 1,
+          usageStats: {
+            totalUsages: 86,
+            averageUsage: 8.6,
+            medianUsage: 7.5
+          }
+        }
+      };
+
+      defaultCachedHandlers.tags.handleRequest = vi.fn().mockResolvedValue(mockResourceResponse);
+
+      // When - request with pagination
+      const result = await tool.executeTyped({ limit: 1, offset: 0 });
+
+      // Then - should include usage statistics
+      const parsedResult = JSON.parse(result.text);
+      expect(parsedResult.usageStats).toEqual({
+        totalUsages: 86,
+        averageUsage: 8.6,
+        medianUsage: 7.5
+      });
+    });
+  });
+
   describe('Tool description', () => {
     it('should mention the vault://tags resource and internal usage', () => {
       const tool = new GetAllTagsTool();

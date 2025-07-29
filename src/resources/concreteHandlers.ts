@@ -36,15 +36,31 @@ interface TagsFullResponse {
   mode: 'full';
   tags: Array<{ name: string; count: number }>;
   totalTags: number;
+  pagination?: {
+    totalItems: number;
+    hasMore: boolean;
+    limit: number;
+    offset: number;
+    nextOffset?: number;
+    usageStats?: {
+      totalUsages: number;
+      averageUsage: number;
+      medianUsage: number;
+    };
+  };
 }
 
 type TagsResponse = TagsSummaryResponse | TagsFullResponse;
 
 export class TagsHandler extends BaseResourceHandler {
+  private static readonly DEFAULT_LIMIT = 100; // Default limit for tag pagination
+  
   async handleRequest(uri: string, server?: any): Promise<TagsResponse> {
-    // Parse query parameters for mode
+    // Parse query parameters for mode and pagination
     const url = new URL(uri, 'vault://');
     const modeParam = url.searchParams.get('mode') || TAGS_RESPONSE_MODES.SUMMARY;
+    const limitParam = url.searchParams.get('limit');
+    const offsetParam = url.searchParams.get('offset');
     
     // Validate and set mode (default to summary for invalid modes)
     const validModes: TagsResponseMode[] = Object.values(TAGS_RESPONSE_MODES);
@@ -52,18 +68,18 @@ export class TagsHandler extends BaseResourceHandler {
       ? (modeParam as TagsResponseMode) 
       : TAGS_RESPONSE_MODES.SUMMARY;
     
+    // Parse pagination parameters
+    const limit = limitParam ? Math.min(parseInt(limitParam, 10), OBSIDIAN_DEFAULTS.MAX_LIST_LIMIT) : TagsHandler.DEFAULT_LIMIT;
+    const offset = offsetParam ? parseInt(offsetParam, 10) : 0;
+    const isPaginationRequested = limitParam !== null || offsetParam !== null;
+    
     const client = this.getObsidianClient(server);
     
     try {
       const tags = await client.getAllTags();
       
       if (mode === TAGS_RESPONSE_MODES.FULL) {
-        // Return full mode (backward compatibility)
-        return {
-          mode: 'full',
-          tags: tags,
-          totalTags: tags.length
-        };
+        return this.buildFullModeResponse(tags, limit, offset, isPaginationRequested);
       }
       
       // Return summary mode (default)
@@ -111,6 +127,54 @@ export class TagsHandler extends BaseResourceHandler {
     } catch (error: unknown) {
       ResourceErrorHandler.handle(error, 'Tags');
     }
+  }
+  
+  private buildFullModeResponse(tags: Array<{ name: string; count: number }>, limit: number, offset: number, isPaginationRequested: boolean): TagsFullResponse {
+    // Sort tags by usage frequency (descending) for better UX
+    const sortedTags = [...tags].sort((a, b) => b.count - a.count);
+    
+    if (!isPaginationRequested) {
+      // Return all tags without pagination (backward compatibility)
+      return {
+        mode: 'full',
+        tags: sortedTags,
+        totalTags: tags.length
+      };
+    }
+    
+    // Apply pagination
+    const totalItems = tags.length;
+    const paginatedTags = sortedTags.slice(offset, offset + limit);
+    const hasMore = offset + limit < totalItems;
+    
+    // Calculate usage statistics for pagination metadata
+    const totalUsages = tags.reduce((sum, tag) => sum + tag.count, 0);
+    const averageUsage = totalUsages / tags.length;
+    
+    // Calculate median usage
+    const sortedCounts = tags.map(tag => tag.count).sort((a, b) => a - b);
+    const medianIndex = Math.floor(sortedCounts.length / 2);
+    const medianUsage = sortedCounts.length % 2 === 0
+      ? (sortedCounts[medianIndex - 1] + sortedCounts[medianIndex]) / 2
+      : sortedCounts[medianIndex];
+    
+    return {
+      mode: 'full',
+      tags: paginatedTags,
+      totalTags: tags.length,
+      pagination: {
+        totalItems,
+        hasMore,
+        limit,
+        offset,
+        nextOffset: hasMore ? offset + limit : undefined,
+        usageStats: {
+          totalUsages,
+          averageUsage: Math.round(averageUsage * 10) / 10,
+          medianUsage
+        }
+      }
+    };
   }
 }
 

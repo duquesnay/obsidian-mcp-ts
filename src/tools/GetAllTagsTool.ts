@@ -43,10 +43,10 @@ export class GetAllTagsTool extends BaseTool<GetAllTagsArgs> {
       const needsFullData = args.sortBy || args.sortOrder || args.limit !== undefined || args.offset !== undefined;
       const resourceMode = needsFullData ? 'full' : 'summary';
       
-      // Use cached resource handler with appropriate mode for better performance
-      const resourceData = await defaultCachedHandlers.tags.handleRequest(`vault://tags?mode=${resourceMode}`);
-      
       if (resourceMode === 'summary') {
+        // Use cached resource handler for summary mode
+        const resourceData = await defaultCachedHandlers.tags.handleRequest(`vault://tags?mode=${resourceMode}`);
+        
         // Return optimized summary for conversational use
         return this.formatResponse({
           mode: 'summary',
@@ -57,10 +57,35 @@ export class GetAllTagsTool extends BaseTool<GetAllTagsArgs> {
         });
       }
       
-      // Full mode with original processing logic for pagination/sorting
+      // For full mode, check if we can use resource-level pagination (when no custom sorting needed)
+      const canUseResourcePagination = !args.sortBy || (args.sortBy === 'count' && args.sortOrder !== 'asc');
+      
+      if (canUseResourcePagination && (args.limit !== undefined || args.offset !== undefined)) {
+        // Use resource-level pagination for better performance
+        const params = new URLSearchParams({ mode: 'full' });
+        if (args.limit !== undefined) params.append('limit', args.limit.toString());
+        if (args.offset !== undefined) params.append('offset', args.offset.toString());
+        
+        const resourceData = await defaultCachedHandlers.tags.handleRequest(`vault://tags?${params.toString()}`);
+        
+        return this.formatResponse({
+          mode: 'full',
+          tags: resourceData.tags,
+          totalTags: resourceData.totalTags,
+          hasMore: resourceData.pagination?.hasMore,
+          limit: resourceData.pagination?.limit,
+          offset: resourceData.pagination?.offset,
+          nextOffset: resourceData.pagination?.nextOffset,
+          usageStats: resourceData.pagination?.usageStats,
+          message: `Showing ${resourceData.tags.length} of ${resourceData.totalTags} unique tags (sorted by usage frequency)`
+        });
+      }
+      
+      // Fall back to tool-level processing for custom sorting
+      const resourceData = await defaultCachedHandlers.tags.handleRequest(`vault://tags?mode=${resourceMode}`);
       let tags = resourceData.tags;
       
-      // Apply sorting if requested
+      // Apply custom sorting if requested
       if (args.sortBy) {
         const sortOrder = args.sortOrder || (args.sortBy === 'count' ? 'desc' : 'asc');
         tags = [...tags].sort((a, b) => {
@@ -76,7 +101,7 @@ export class GetAllTagsTool extends BaseTool<GetAllTagsArgs> {
         });
       }
       
-      // Handle pagination
+      // Handle tool-level pagination for custom-sorted results
       const totalTags = tags.length;
       const isPaginated = args.limit !== undefined || args.offset !== undefined;
       
