@@ -67,7 +67,8 @@ export class ResponseModeSystem {
     // Check cache first if key provided
     if (cacheKey) {
       const cached = this.summaryCache.get(cacheKey);
-      if (cached !== undefined) {
+      // Only return cached value if it's a valid string (not null/undefined/corrupted)
+      if (cached !== undefined && typeof cached === 'string') {
         return cached;
       }
     }
@@ -96,7 +97,8 @@ export class ResponseModeSystem {
     // Check cache first if key provided
     if (cacheKey) {
       const cached = this.previewCache.get(cacheKey);
-      if (cached !== undefined) {
+      // Only return cached value if it's a valid string (not null/undefined/corrupted)
+      if (cached !== undefined && typeof cached === 'string') {
         return cached;
       }
     }
@@ -122,18 +124,26 @@ export class ResponseModeSystem {
    * Process content based on response mode with auto-generation of missing modes
    */
   static processContent(content: ResponseContent, mode: ResponseMode): string {
+    // Handle null/undefined content gracefully
+    if (!content || typeof content !== 'object') {
+      return '';
+    }
+    
+    // Ensure full content exists
+    const fullContent = content.full || '';
+    
     switch (mode) {
       case 'full':
-        return content.full;
+        return fullContent;
         
       case 'preview':
-        return content.preview || this.createPreview(content.full);
+        return content.preview || this.createPreview(fullContent);
         
       case 'summary':
-        return content.summary || this.createSummary(content.full);
+        return content.summary || this.createSummary(fullContent);
         
       default:
-        return content.summary || this.createSummary(content.full);
+        return content.summary || this.createSummary(fullContent);
     }
   }
 
@@ -159,14 +169,17 @@ export class ResponseModeSystem {
    * Get cache statistics for monitoring
    */
   static getCacheStats() {
+    const previewStats = this.previewCache.getStats();
+    const summaryStats = this.summaryCache.getStats();
+    
     return {
       preview: {
-        size: this.previewCache.size(),
-        hitRate: this.previewCache.getHitRate()
+        size: previewStats.size,
+        hitRate: previewStats.hitRate
       },
       summary: {
-        size: this.summaryCache.size(),
-        hitRate: this.summaryCache.getHitRate()
+        size: summaryStats.size,
+        hitRate: summaryStats.hitRate
       }
     };
   }

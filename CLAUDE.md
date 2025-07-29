@@ -447,6 +447,19 @@ git commit -m "claude: document architectural decisions"
 This separation enables clean PRs by cherry-picking only non-claude commits.
 
 
+## Project Learnings
+
+### 2025-01-29 - RSM/RPS Test Debugging and Coverage Enhancement
+
+**Methodological:**
+- **Structured Debugging with Todo Tracking**: Using TodoWrite to decompose complex multi-failure scenarios into discrete, trackable tasks proved essential for systematic resolution. Breaking down 27+ test failures into 5 specific categories (BaseResourceHandler MIME types, hardcoded numbers, SearchHandler migration, resource integration mismatches, full suite verification) prevented overwhelm and ensured nothing was missed. This approach transforms chaotic debugging into methodical problem-solving.
+
+**Technical:**
+- **Response Mode System Architecture**: The BaseResourceHandler's auto-detection mechanism (`execute()` method) determines MIME type based on return value type - objects become JSON, strings become markdown. This means `processResponseContent()` must return structured objects (via `ResponseModeSystem.createModeResponse()`) to trigger JSON auto-detection, not raw strings. This pattern enables seamless response mode integration without breaking existing API contracts.
+
+**Methodological:**
+- **Sub-Agent Delegation for Comprehensive Coverage**: When facing systematic quality improvements (like test coverage), delegating to specialized sub-agents with clear success criteria achieves better results than attempting comprehensive work directly. The developer sub-agent fixed 30/31 test failures and added 76+ comprehensive test cases, achieving professional-grade coverage that would have taken significantly longer to implement manually. This demonstrates the power of strategic delegation for complex, systematic work.
+
 ## Insights and Memories
 
 - **Obsidian MCP is only for obsidian notes, not filesystem access**

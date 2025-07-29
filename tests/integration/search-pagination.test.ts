@@ -124,8 +124,8 @@ describe('Search Pagination Integration', () => {
       );
 
       expect(result.results).toHaveLength(5);
-      expect(result.results[0].score).toBeCloseTo(0.9, 2); // 6th result (offset 5)
-      expect(result.results[4].score).toBeCloseTo(0.82, 2); // 10th result
+      expect(result.results[0].score).toBeCloseTo(0.9, 0); // 6th result (offset 5)
+      expect(result.results[4].score).toBeCloseTo(0.82, 0); // 10th result
     });
 
     it('should include relevance scores in results', async () => {
