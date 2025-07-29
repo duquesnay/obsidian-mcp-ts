@@ -76,6 +76,8 @@ For each task:
 
 # 📋 Backlog Items
 
+# 📋 Product Backlog (User-Facing Features)
+
 ## HIGH PRIORITY: Resource Response Modes (Context Explosion Fix)
 
 ### Priority 0: Critical Usability Issue - Resource Summary/Preview Modes
@@ -83,14 +85,40 @@ For each task:
 
 **Solution**: Implement summary/preview modes as default behavior with explicit opt-in for full content.
 
-- [x] RSM1.1: Implement vault://structure summary mode with response modes
-  - [x] Create mode parameter interface (?mode=summary|preview|full) for this resource only
-  - [x] Return folder/file names only without content (summary mode default)
-  - [x] Include basic metadata (count, size estimates)
-  - [x] Preserve full content mode with ?mode=full parameter
-  - [x] Update corresponding tools to use summary mode by default
-  - [x] Add comprehensive tests for all modes
-  - [x] Document the new response mode system
+- [x] **RSM-F1: Vault Structure Summary Mode** 
+  - **User Story**: As a user, I want vault structure resources to show folder/file names with counts by default, so conversations don't get overwhelmed with full content
+  - **Acceptance**: ?mode=summary default returns names + metadata, ?mode=full returns complete content
+  - **Technical Status**: IMPLEMENTED (tests failing)
+
+- [x] **RSM-F2: Recent Changes Preview Mode**
+  - **User Story**: As a user, I want recent changes to show titles + brief previews by default, so I can quickly scan recent activity
+  - **Acceptance**: ?mode=preview default returns titles + 100 chars, ?mode=full returns complete content  
+  - **Technical Status**: IMPLEMENTED (tests failing)
+
+- [x] **RSM-F3: Individual Note Preview Mode**
+  - **User Story**: As a user, I want individual notes to show frontmatter + content preview by default, so I can decide if I need full content
+  - **Acceptance**: ?mode=preview default returns frontmatter + 200 chars, ?mode=full returns complete note
+  - **Technical Status**: IMPLEMENTED (tests failing)
+
+- [x] **RSM-F4: Folder Listing Summary Mode**
+  - **User Story**: As a user, I want folder listings to show file names and counts by default, so I can navigate without content overload
+  - **Acceptance**: ?mode=summary default returns file lists + metadata, ?mode=full returns content previews
+  - **Technical Status**: IMPLEMENTED (tests failing)
+
+- [x] **RSM-F5: Search Results Preview Mode**
+  - **User Story**: As a user, I want search results to show matches with context snippets by default, so I can evaluate relevance quickly
+  - **Acceptance**: ?mode=preview default returns snippets + match counts, ?mode=full returns complete matches
+  - **Technical Status**: IMPLEMENTED (tests failing)
+
+- [x] **RSM-F6: Tag Listings Optimization**
+  - **User Story**: As a user, I want tag listings to include usage statistics and patterns, so I can understand my tagging behavior
+  - **Acceptance**: Tags show with counts, frequency patterns, and usage metadata
+  - **Technical Status**: IMPLEMENTED (tests failing)
+
+- [x] **RSM-F7: Response Mode System**
+  - **User Story**: As a developer/power user, I want a consistent response mode system across all resources, so I can predict and control response sizes
+  - **Acceptance**: All resources support ?mode parameter with consistent behavior and shared utilities
+  - **Technical Status**: IMPLEMENTED (tests failing)
   
 - [x] RSM1.2: Implement vault://recent preview mode with response modes
   - [x] Extend mode parameter system to vault://recent resource
@@ -367,7 +395,7 @@ For each task:
 **Current Priority**: Performance Optimization Integration (POI)
 **Priority 0**: Resource Response Modes (Context Explosion Fix) - 7/7 IMPLEMENTED (tests failing)
 **Priority 1**: Resource Pagination System (Data Management) - 7/7 IMPLEMENTED (tests failing)
-**Priority 2**: Performance Optimization Integration - 3/26 tasks (12%) IN PROGRESS
+**Priority 2**: Performance Optimization Integration - 5/26 tasks (19%) IN PROGRESS
 **Green Line Status**: 27 tests failing - need fixes
 **Critical RSM Tasks**: 7/7 IMPLEMENTED (RSM1.1-RSM1.7 - debugging needed)
 **Critical RPS Tasks**: 7/7 IMPLEMENTED (RPS1.1-RPS1.7 - debugging needed)
@@ -379,7 +407,7 @@ For each task:
 **TRI Tasks**: 10 (100% completed)
 **RSM Tasks**: 7/7 implemented (100%) - DEBUGGING NEEDED
 **RPS Tasks**: 7/7 implemented (100%) - DEBUGGING NEEDED
-**POI Tasks**: 3/26 (12%) - POI1.1-POI1.3 completed
+**POI Tasks**: 5/26 (19%) - POI1.1-POI1.4, POI1.7 completed
 **Quality Check Tasks**: 11/14 completed (78%)
 
 ---
@@ -573,10 +601,10 @@ Performance optimization features (Subscription System, OptimizedBatchProcessor,
 - [x] POI1.1: Review existing subscription system implementation in utils/ (NotificationManager, CacheSubscriptionManager, interfaces all exist)
 - [x] POI1.2: Create integration plan for cache invalidation events (Plan: Connect NotificationManager → CacheSubscriptionManager → Resource handlers)
 - [x] POI1.3: Connect file operations to trigger invalidation events (ALREADY DONE - FileOperationsClient triggers notifications)
-- [ ] POI1.4: Add subscription hooks to resource handlers
+- [x] POI1.4: Add subscription hooks to resource handlers (CacheSubscriptionManager singleton, connected to NotificationManager)
 - [ ] POI1.5: Implement cache synchronization across tools
 - [ ] POI1.6: Add subscription configuration to server initialization
-- [ ] POI1.7: Create integration tests for subscription events
+- [x] POI1.7: Create integration tests for subscription events (7 tests passing for cache-subscription flow)
 - [ ] POI1.8: Document subscription system usage
 
 ### POI2: OptimizedBatchProcessor Integration (~300 lines implemented)

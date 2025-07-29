@@ -3,6 +3,7 @@ import { BaseResourceHandler } from './BaseResourceHandler.js';
 import { LRUCache } from '../utils/Cache.js';
 import { CACHE_DEFAULTS } from '../constants.js';
 import { PaginationSystem, PaginationParams } from '../utils/PaginationSystem.js';
+import { CacheNotificationHooks } from './cacheNotifications.js';
 
 /**
  * Configuration for resource caching
@@ -75,6 +76,7 @@ export class CachedResourceHandler extends BaseResourceHandler {
   private config: ResourceCacheConfig;
   private wrappedHandler: BaseResourceHandler;
   private paginatedCacheStats: { paginatedEntries: number; nonPaginatedEntries: number };
+  private notificationHooks?: CacheNotificationHooks;
 
   constructor(handler: BaseResourceHandler, config?: ResourceCacheConfig) {
     super();
@@ -90,6 +92,13 @@ export class CachedResourceHandler extends BaseResourceHandler {
       paginatedEntries: 0,
       nonPaginatedEntries: 0
     };
+  }
+
+  /**
+   * Set notification hooks for cache invalidation
+   */
+  setNotificationHooks(hooks: CacheNotificationHooks): void {
+    this.notificationHooks = hooks;
   }
 
   /**

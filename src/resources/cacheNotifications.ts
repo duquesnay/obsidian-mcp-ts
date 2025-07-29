@@ -47,6 +47,15 @@ export class CacheNotificationHooks {
       await this.server.subscriptionHandlers.notifyResourceUpdate('vault://recent');
     }
   }
+
+  /**
+   * Generic notification for any cache invalidation
+   */
+  async onCacheInvalidated(resourceUri: string): Promise<void> {
+    if (this.server.subscriptionHandlers) {
+      await this.server.subscriptionHandlers.notifyResourceUpdate(resourceUri);
+    }
+  }
 }
 
 /**

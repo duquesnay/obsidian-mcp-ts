@@ -140,6 +140,9 @@ class CacheSubscriptionHandleImpl implements CacheSubscriptionHandle {
  * Cache subscription manager implementation
  */
 export class CacheSubscriptionManager implements ICacheSubscriptionManager {
+  /** Singleton instance */
+  private static instance: CacheSubscriptionManager;
+
   /** Map of event type to subscriptions */
   private subscriptions: Map<string, InternalSubscription[]> = new Map();
   
@@ -151,6 +154,26 @@ export class CacheSubscriptionManager implements ICacheSubscriptionManager {
     totalEventsProcessed: 0,
     totalProcessingTime: 0
   };
+
+  /**
+   * Get the singleton instance of CacheSubscriptionManager
+   */
+  static getInstance(): CacheSubscriptionManager {
+    if (!CacheSubscriptionManager.instance) {
+      CacheSubscriptionManager.instance = new CacheSubscriptionManager();
+    }
+    return CacheSubscriptionManager.instance;
+  }
+
+  /**
+   * Reset the singleton instance (primarily for testing)
+   */
+  static reset(): void {
+    if (CacheSubscriptionManager.instance) {
+      CacheSubscriptionManager.instance.clearSubscriptions();
+      CacheSubscriptionManager.instance = undefined as any;
+    }
+  }
   
   subscribe(config: CacheSubscriptionConfig): CacheSubscriptionHandle {
     const subscription: InternalSubscription = {
