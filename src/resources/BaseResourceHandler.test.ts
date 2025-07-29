@@ -80,9 +80,17 @@ describe('BaseResourceHandler with Response Mode System', () => {
     };
 
     it('should process content for different modes', () => {
-      expect(handler.processResponseContent(testContent, 'full')).toBe('Full content with all details');
-      expect(handler.processResponseContent(testContent, 'preview')).toBe('Preview content');
-      expect(handler.processResponseContent(testContent, 'summary')).toBe('Brief summary');
+      const fullResponse = handler.processResponseContent(testContent, 'full');
+      expect(fullResponse.mode).toBe('full');
+      expect(fullResponse.content).toBe('Full content with all details');
+      
+      const previewResponse = handler.processResponseContent(testContent, 'preview');
+      expect(previewResponse.mode).toBe('preview');
+      expect(previewResponse.content).toBe('Preview content');
+      
+      const summaryResponse = handler.processResponseContent(testContent, 'summary');
+      expect(summaryResponse.mode).toBe('summary');
+      expect(summaryResponse.content).toBe('Brief summary');
     });
 
     it('should auto-generate missing content variants', () => {
@@ -90,9 +98,10 @@ describe('BaseResourceHandler with Response Mode System', () => {
         full: 'A'.repeat(1000)
       };
       
-      const summary = handler.processResponseContent(contentWithoutSummary, 'summary');
-      expect(summary.length).toBeLessThanOrEqual(500);
-      expect(summary.endsWith('...')).toBe(true);
+      const summaryResponse = handler.processResponseContent(contentWithoutSummary, 'summary');
+      expect(summaryResponse.mode).toBe('summary');
+      expect(summaryResponse.content.length).toBeLessThanOrEqual(500);
+      expect(summaryResponse.content.endsWith('...')).toBe(true);
     });
   });
 

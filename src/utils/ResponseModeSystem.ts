@@ -3,6 +3,7 @@
  */
 
 import { LRUCache } from './Cache.js';
+import { RESPONSE_MODE_LIMITS, TIME_CONSTANTS, CACHE_DEFAULTS } from '../constants.js';
 
 export type ResponseMode = 'summary' | 'preview' | 'full';
 
@@ -17,27 +18,20 @@ export interface ModeResponse {
   content: string;
 }
 
-/**
- * Constants for response size limits
- */
-const RESPONSE_LIMITS = {
-  SUMMARY_MAX_LENGTH: 500,
-  PREVIEW_MAX_LENGTH: 2000,
-  TRUNCATION_INDICATOR: '...'
-} as const;
+// Use imported constants from central constants file
 
 /**
  * Shared system for processing content in different response modes
  */
 export class ResponseModeSystem {
   private static previewCache = new LRUCache<string, string>({ 
-    maxSize: 100, 
-    ttl: 5 * 60 * 1000 // 5 minutes 
+    maxSize: CACHE_DEFAULTS.MAX_SIZE, 
+    ttl: CACHE_DEFAULTS.STABLE_TTL
   });
   
   private static summaryCache = new LRUCache<string, string>({ 
-    maxSize: 100, 
-    ttl: 5 * 60 * 1000 // 5 minutes 
+    maxSize: CACHE_DEFAULTS.MAX_SIZE, 
+    ttl: CACHE_DEFAULTS.STABLE_TTL
   });
 
   /**
@@ -80,11 +74,11 @@ export class ResponseModeSystem {
 
     let result: string;
     
-    if (content.length <= RESPONSE_LIMITS.SUMMARY_MAX_LENGTH) {
+    if (content.length <= RESPONSE_MODE_LIMITS.SUMMARY_MAX_LENGTH) {
       result = content;
     } else {
-      const maxContentLength = RESPONSE_LIMITS.SUMMARY_MAX_LENGTH - RESPONSE_LIMITS.TRUNCATION_INDICATOR.length;
-      result = content.substring(0, maxContentLength) + RESPONSE_LIMITS.TRUNCATION_INDICATOR;
+      const maxContentLength = RESPONSE_MODE_LIMITS.SUMMARY_MAX_LENGTH - RESPONSE_MODE_LIMITS.TRUNCATION_INDICATOR.length;
+      result = content.substring(0, maxContentLength) + RESPONSE_MODE_LIMITS.TRUNCATION_INDICATOR;
     }
 
     // Cache if key provided
@@ -109,11 +103,11 @@ export class ResponseModeSystem {
 
     let result: string;
     
-    if (content.length <= RESPONSE_LIMITS.PREVIEW_MAX_LENGTH) {
+    if (content.length <= RESPONSE_MODE_LIMITS.PREVIEW_MAX_LENGTH) {
       result = content;
     } else {
-      const maxContentLength = RESPONSE_LIMITS.PREVIEW_MAX_LENGTH - RESPONSE_LIMITS.TRUNCATION_INDICATOR.length;
-      result = content.substring(0, maxContentLength) + RESPONSE_LIMITS.TRUNCATION_INDICATOR;
+      const maxContentLength = RESPONSE_MODE_LIMITS.PREVIEW_MAX_LENGTH - RESPONSE_MODE_LIMITS.TRUNCATION_INDICATOR.length;
+      result = content.substring(0, maxContentLength) + RESPONSE_MODE_LIMITS.TRUNCATION_INDICATOR;
     }
 
     // Cache if key provided

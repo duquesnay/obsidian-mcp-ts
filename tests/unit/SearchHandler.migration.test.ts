@@ -25,7 +25,17 @@ describe('SearchHandler Migration to Shared Pagination', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockObsidianClient.search.mockResolvedValue(sampleSearchResults);
+    // Mock implementation that simulates pagination based on parameters
+    mockObsidianClient.search.mockImplementation(async (query: string, contextLength?: number, limit = 10, offset = 0) => {
+      const paginatedResults = sampleSearchResults.slice(offset, offset + limit);
+      return {
+        results: paginatedResults,
+        totalResults: sampleSearchResults.length,
+        hasMore: offset + limit < sampleSearchResults.length,
+        offset,
+        limit
+      };
+    });
   });
 
   describe('Pagination Parameters Extraction', () => {

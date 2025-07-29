@@ -103,8 +103,9 @@ export abstract class BaseResourceHandler {
   /**
    * Process content based on response mode using ResponseModeSystem
    */
-  protected processResponseContent(content: ResponseContent, mode: ResponseMode): string {
-    return ResponseModeSystem.processContent(content, mode);
+  protected processResponseContent(content: ResponseContent, mode: ResponseMode): any {
+    // Return structured response object so execute() will detect it as JSON
+    return ResponseModeSystem.createModeResponse(content, mode);
   }
 
   /**

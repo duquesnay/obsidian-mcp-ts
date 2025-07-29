@@ -307,10 +307,10 @@ describe('VaultStructureHandler', () => {
       expect(data.hasMore).toBe(true);
     });
 
-    it('should default to limit=50 when no limit specified', async () => {
+    it('should default to limit=50 when no limit specified but offset is provided', async () => {
       const server = createMockServer();
       const handler = new VaultStructureHandler();
-      const result = await handler.execute('vault://structure', server);
+      const result = await handler.execute('vault://structure?offset=0', server);
       
       const data = JSON.parse(result.contents[0].text);
       expect(data).toHaveProperty('limit', 50);

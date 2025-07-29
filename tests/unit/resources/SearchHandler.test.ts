@@ -43,12 +43,13 @@ describe('SearchHandler', () => {
 
       const result = await handler.handleRequest('vault://search/query-term', mockServer);
 
-      expect(mockClient.search).toHaveBeenCalledWith('query-term', 100, undefined, undefined);
+      expect(mockClient.search).toHaveBeenCalledWith('query-term', 100, 10, 0);
       expect(result).toEqual({
         query: 'query-term',
         results: searchResults.results,
         totalResults: searchResults.totalResults,
-        hasMore: searchResults.hasMore
+        hasMore: searchResults.hasMore,
+        pagination: expect.any(Object)
       });
     });
 
@@ -63,7 +64,7 @@ describe('SearchHandler', () => {
 
       const result = await handler.handleRequest('vault://search/multiple%20words', mockServer);
 
-      expect(mockClient.search).toHaveBeenCalledWith('multiple words', 100, undefined, undefined);
+      expect(mockClient.search).toHaveBeenCalledWith('multiple words', 100, 10, 0);
       expect(result.query).toBe('multiple words');
     });
 
@@ -100,7 +101,7 @@ describe('SearchHandler', () => {
 
         const result = await handler.handleRequest('vault://search/test?limit=2', mockServer);
 
-        expect(mockClient.search).toHaveBeenCalledWith('test', 100, 2, undefined);
+        expect(mockClient.search).toHaveBeenCalledWith('test', 100, 2, 0);
         expect(result.query).toBe('test');
       });
 
@@ -118,7 +119,7 @@ describe('SearchHandler', () => {
 
         const result = await handler.handleRequest('vault://search/test?offset=1', mockServer);
 
-        expect(mockClient.search).toHaveBeenCalledWith('test', 100, undefined, 1);
+        expect(mockClient.search).toHaveBeenCalledWith('test', 100, 10, 1);
         expect(result.query).toBe('test');
       });
 
@@ -154,7 +155,7 @@ describe('SearchHandler', () => {
         const result = await handler.handleRequest('vault://search/test', mockServer);
 
         // Default search limit should be 10 for expensive search results
-        expect(mockClient.search).toHaveBeenCalledWith('test', 100, undefined, undefined);
+        expect(mockClient.search).toHaveBeenCalledWith('test', 100, 10, 0);
       });
 
       it('should include pagination metadata in response', async () => {
@@ -174,7 +175,8 @@ describe('SearchHandler', () => {
           query: 'test',
           results: searchResults.results,
           totalResults: 20,
-          hasMore: true
+          hasMore: true,
+          pagination: expect.any(Object)
         });
       });
 
@@ -195,7 +197,8 @@ describe('SearchHandler', () => {
           results: searchResults.results,
           totalResults: 10,
           hasMore: true,
-          continuationToken: 'eyJ0eXBlIjoic2VhcmNoIiwib2Zmc2V0IjoxfQ=='
+          continuationToken: 'eyJ0eXBlIjoic2VhcmNoIiwib2Zmc2V0IjoxfQ==',
+          pagination: expect.any(Object)
         });
       });
     });
@@ -223,7 +226,7 @@ describe('SearchHandler', () => {
 
         const result = await handler.handleRequest('vault://search/query-term', mockServer);
 
-        expect(mockClient.search).toHaveBeenCalledWith('query-term', 100, undefined, undefined);
+        expect(mockClient.search).toHaveBeenCalledWith('query-term', 100, 10, 0);
         expect(result.results[0].matches[0].context).toHaveLength(100);
         expect(result.results[0].matches[0].context).toBe('This is a very long context that should be truncated to 100 characters in preview mode and this text');
       });
@@ -251,7 +254,7 @@ describe('SearchHandler', () => {
 
         const result = await handler.handleRequest('vault://search/query-term?mode=full', mockServer);
 
-        expect(mockClient.search).toHaveBeenCalledWith('query-term', undefined, undefined, undefined);
+        expect(mockClient.search).toHaveBeenCalledWith('query-term', undefined, 10, 0);
         expect(result.results[0].matches[0].context).toBe(fullContext);
       });
 
@@ -277,7 +280,7 @@ describe('SearchHandler', () => {
 
         const result = await handler.handleRequest('vault://search/query-term?mode=preview', mockServer);
 
-        expect(mockClient.search).toHaveBeenCalledWith('query-term', 100, undefined, undefined);
+        expect(mockClient.search).toHaveBeenCalledWith('query-term', 100, 10, 0);
         expect(result.results[0].matches[0].context).toHaveLength(100);
       });
 
@@ -303,7 +306,7 @@ describe('SearchHandler', () => {
 
         const result = await handler.handleRequest('vault://search/multiple%20words?mode=full', mockServer);
 
-        expect(mockClient.search).toHaveBeenCalledWith('multiple words', undefined, undefined, undefined);
+        expect(mockClient.search).toHaveBeenCalledWith('multiple words', undefined, 10, 0);
         expect(result.query).toBe('multiple words');
       });
 
@@ -329,7 +332,7 @@ describe('SearchHandler', () => {
 
         const result = await handler.handleRequest('vault://search/query?mode=invalid', mockServer);
 
-        expect(mockClient.search).toHaveBeenCalledWith('query', 100, undefined, undefined);
+        expect(mockClient.search).toHaveBeenCalledWith('query', 100, 10, 0);
         expect(result.results[0].matches[0].context).toHaveLength(71); // Length of the test context
       });
 
@@ -344,7 +347,7 @@ describe('SearchHandler', () => {
 
         const result = await handler.handleRequest('vault://search/test?mode=full&other=param', mockServer);
 
-        expect(mockClient.search).toHaveBeenCalledWith('test', undefined, undefined, undefined);
+        expect(mockClient.search).toHaveBeenCalledWith('test', undefined, 10, 0);
         expect(result.query).toBe('test');
       });
     });

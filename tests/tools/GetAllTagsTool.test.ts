@@ -194,16 +194,23 @@ describe('GetAllTagsTool', () => {
     it('should handle pagination for large tag lists', async () => {
       // Generate mock data for a large number of tags
       const totalTags = 5000;
-      const allTags = Array.from({ length: totalTags }, (_, i) => ({
+      const paginatedTags = Array.from({ length: 100 }, (_, i) => ({
         name: `tag-${i}`,
         count: Math.floor(Math.random() * 100) + 1
       }));
       
-      // Mock the cached handler instead of client - should use full mode for pagination
+      // Mock the cached handler to return paginated results (since we're using resource-level pagination)
       defaultCachedHandlers.tags.handleRequest = vi.fn().mockResolvedValue({ 
         mode: 'full',
-        tags: allTags,
-        totalTags: totalTags 
+        tags: paginatedTags,
+        totalTags: totalTags,
+        pagination: {
+          hasMore: true,
+          limit: 100,
+          offset: 0,
+          nextOffset: 100,
+          usageStats: {}
+        }
       });
 
       // Test with pagination parameters
@@ -220,8 +227,8 @@ describe('GetAllTagsTool', () => {
       expect(data.hasMore).toBe(true);
       expect(data.nextOffset).toBe(100);
       
-      // Verify it used full mode
-      expect(defaultCachedHandlers.tags.handleRequest).toHaveBeenCalledWith('vault://tags?mode=full');
+      // Verify it used full mode with pagination parameters
+      expect(defaultCachedHandlers.tags.handleRequest).toHaveBeenCalledWith('vault://tags?mode=full&limit=100&offset=0');
     });
 
     it('should return optimized summary when no pagination is requested', async () => {
@@ -313,14 +320,23 @@ describe('GetAllTagsTool', () => {
     });
 
     it('should combine sorting and pagination', async () => {
-      const tags = Array.from({ length: 100 }, (_, i) => ({
-        name: `tag-${i}`,
-        count: 100 - i // Decreasing count
+      // For sortBy=count with sortOrder=desc, this should use resource-level pagination
+      const paginatedTags = Array.from({ length: 10 }, (_, i) => ({
+        name: `tag-${i + 5}`, // Starting from 6th tag (offset 5)
+        count: 100 - (i + 5) // Decreasing count, starting from 95
       }));
+      
       defaultCachedHandlers.tags.handleRequest = vi.fn().mockResolvedValue({ 
         mode: 'full',
-        tags: tags,
-        totalTags: 100
+        tags: paginatedTags,
+        totalTags: 100,
+        pagination: {
+          hasMore: true,
+          limit: 10,
+          offset: 5,
+          nextOffset: 15,
+          usageStats: {}
+        }
       });
 
       const result = await tool.executeTyped({ 
@@ -337,8 +353,8 @@ describe('GetAllTagsTool', () => {
       expect(data.tags[0].count).toBe(95); // Should start from 6th highest
       expect(data.hasMore).toBe(true);
       
-      // Verify it used full mode for sorting and pagination
-      expect(defaultCachedHandlers.tags.handleRequest).toHaveBeenCalledWith('vault://tags?mode=full');
+      // Verify it used resource-level pagination with parameters
+      expect(defaultCachedHandlers.tags.handleRequest).toHaveBeenCalledWith('vault://tags?mode=full&limit=10&offset=5');
     });
   });
 

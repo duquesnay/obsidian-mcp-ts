@@ -5,25 +5,18 @@ import { OBSIDIAN_DEFAULTS } from '../constants.js';
 
 export class SearchHandler extends BaseResourceHandler {
   async handleRequest(uri: string, server?: any): Promise<any> {
-    const { query, contextLength, limit, offset, token } = this.extractSearchParams(uri);
+    const { query, contextLength } = this.extractSearchParams(uri);
+    
+    // Extract pagination parameters using shared system
+    const paginationParams = this.extractPaginationParameters(uri, {
+      defaultLimit: OBSIDIAN_DEFAULTS.DEFAULT_RESOURCE_SEARCH_LIMIT,
+      maxLimit: OBSIDIAN_DEFAULTS.MAX_SEARCH_RESULTS
+    });
     
     const client = this.getObsidianClient(server);
     
     try {
-      // Handle continuation token if provided
-      let actualOffset = offset;
-      if (token && !offset) {
-        try {
-          const decoded = JSON.parse(atob(token));
-          if (decoded.type === 'search' && decoded.query === query) {
-            actualOffset = decoded.offset;
-          }
-        } catch (e) {
-          // Invalid token, ignore and use provided offset
-        }
-      }
-      
-      const searchResults = await client.search(query, contextLength, limit, actualOffset);
+      const searchResults = await client.search(query, contextLength, paginationParams.limit, paginationParams.offset);
       
       // If we're in preview mode (contextLength is defined), truncate contexts
       let processedResults = searchResults.results;
@@ -31,14 +24,18 @@ export class SearchHandler extends BaseResourceHandler {
         processedResults = this.truncateContexts(searchResults.results, contextLength);
       }
       
+      // Create standardized pagination metadata
+      const paginationMetadata = this.generatePaginationMetadata(paginationParams, searchResults.totalResults);
+      
       const response: any = {
         query,
         results: processedResults,
         totalResults: searchResults.totalResults,
-        hasMore: searchResults.hasMore
+        hasMore: searchResults.hasMore,
+        pagination: paginationMetadata
       };
       
-      // Include continuation token if available
+      // Include continuation token if available from client
       if (searchResults.continuationToken) {
         response.continuationToken = searchResults.continuationToken;
       }
@@ -49,7 +46,7 @@ export class SearchHandler extends BaseResourceHandler {
     }
   }
   
-  private extractSearchParams(uri: string): { query: string; contextLength?: number; limit?: number; offset?: number; token?: string } {
+  private extractSearchParams(uri: string): { query: string; contextLength?: number } {
     const prefix = 'vault://search/';
     
     // Extract the part after vault://search/
@@ -89,15 +86,7 @@ export class SearchHandler extends BaseResourceHandler {
       contextLength = OBSIDIAN_DEFAULTS.CONTEXT_LENGTH;
     }
     
-    // Extract pagination parameters
-    const limitParam = urlParams.get('limit');
-    const offsetParam = urlParams.get('offset');
-    const token = urlParams.get('token');
-    
-    const limit = limitParam ? parseInt(limitParam, 10) : undefined;
-    const offset = offsetParam ? parseInt(offsetParam, 10) : undefined;
-    
-    return { query, contextLength, limit, offset, token };
+    return { query, contextLength };
   }
   
   private truncateContexts(results: any[], maxLength: number): any[] {

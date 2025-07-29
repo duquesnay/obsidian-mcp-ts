@@ -149,7 +149,7 @@ describe('RecentHandler', () => {
       // Assert
       expect(result.notes).toHaveLength(10);
       expect(result.pagination).toBeDefined();
-      expect(result.pagination.totalNotes).toBe(25);
+      expect(result.pagination.totalItems).toBe(25);
       expect(result.pagination.hasMore).toBe(true);
       expect(result.pagination.limit).toBe(10);
       expect(result.pagination.offset).toBe(0);

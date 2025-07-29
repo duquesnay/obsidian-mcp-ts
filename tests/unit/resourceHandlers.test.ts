@@ -60,7 +60,7 @@ describe('Resource Handlers', () => {
       
       const data = JSON.parse(result.contents[0].text);
       expect(data).toHaveProperty('notes');
-      expect(data.notes).toHaveLength(10);
+      expect(data.notes).toHaveLength(20);
       
       data.notes.forEach((note: any) => {
         expect(note).toHaveProperty('path');

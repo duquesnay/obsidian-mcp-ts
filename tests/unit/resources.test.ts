@@ -159,7 +159,7 @@ describe('MCP Resources', () => {
       const content = JSON.parse(result.contents[0].text);
       expect(content).toHaveProperty('notes');
       expect(Array.isArray(content.notes)).toBe(true);
-      expect(content.notes.length).toBe(10);
+      expect(content.notes.length).toBe(20);
       
       // Check each note has required fields
       content.notes.forEach((note: any) => {

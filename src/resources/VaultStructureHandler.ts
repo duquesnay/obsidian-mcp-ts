@@ -34,11 +34,17 @@ interface PreviewFolderStructure {
 }
 
 interface VaultStructureResponse {
-  structure: FolderStructure | PreviewFolderStructure;
+  structure?: FolderStructure | PreviewFolderStructure;
   totalFiles: number;
-  totalFolders: number;
-  mode: ResponseMode;
+  totalFolders?: number;
+  mode?: ResponseMode;
   message?: string;
+  // Pagination mode properties
+  paginatedFiles?: string[];
+  hasMore?: boolean;
+  limit?: number;
+  offset?: number;
+  nextUri?: string;
 }
 
 export class VaultStructureHandler extends BaseResourceHandler {
@@ -48,10 +54,21 @@ export class VaultStructureHandler extends BaseResourceHandler {
     const client = this.getObsidianClient(server);
     
     try {
-      // Parse query parameters for mode
+      // Parse query parameters for mode and pagination
       const url = new URL(uri, 'vault://');
       const modeParam = url.searchParams.get('mode') || RESPONSE_MODES.SUMMARY;
       const maxDepth = parseInt(url.searchParams.get('maxDepth') || '0') || 0;
+      const limitParam = url.searchParams.get('limit');
+      const offsetParam = url.searchParams.get('offset');
+      const legacyMode = url.searchParams.get('legacy') === 'true';
+      
+      // Check if pagination is requested (limit or offset parameters present)
+      const isPaginationRequested = (limitParam !== null || offsetParam !== null) && !legacyMode;
+      
+      if (isPaginationRequested) {
+        // Use pagination mode - return flat file list with pagination metadata
+        return this.handlePaginatedRequest(client, limitParam, offsetParam, url);
+      }
       
       // Validate and set mode (default to summary for invalid modes)
       const validModes: ResponseMode[] = Object.values(RESPONSE_MODES);
@@ -248,5 +265,49 @@ export class VaultStructureHandler extends BaseResourceHandler {
     }
     
     return root;
+  }
+  
+  private async handlePaginatedRequest(client: any, limitParam: string | null, offsetParam: string | null, url: URL): Promise<VaultStructureResponse> {
+    // Get all files in the vault
+    const allFiles = await client.listFilesInVault();
+    const totalFiles = allFiles.length;
+    
+    // Parse pagination parameters
+    const defaultLimit = 50; // Default limit for pagination mode
+    const limit = limitParam ? Math.max(1, parseInt(limitParam, 10)) : defaultLimit;
+    const offset = offsetParam ? Math.max(0, parseInt(offsetParam, 10)) : 0;
+    
+    // Apply pagination to the flat file list
+    const startIndex = offset;
+    const endIndex = Math.min(startIndex + limit, totalFiles);
+    const paginatedFiles = allFiles.slice(startIndex, endIndex);
+    const hasMore = endIndex < totalFiles;
+    
+    // Generate nextUri if there are more results
+    let nextUri: string | undefined;
+    if (hasMore) {
+      const nextOffset = endIndex;
+      const nextUrl = new URL(url);
+      nextUrl.searchParams.set('limit', limit.toString());
+      nextUrl.searchParams.set('offset', nextOffset.toString());
+      nextUri = nextUrl.toString();
+    }
+    
+    // Get mode for mixed pagination + mode requests
+    const modeParam = url.searchParams.get('mode');
+    const validModes: ResponseMode[] = Object.values(RESPONSE_MODES);
+    const mode: ResponseMode | undefined = validModes.includes(modeParam as ResponseMode) 
+      ? (modeParam as ResponseMode) 
+      : undefined;
+    
+    return {
+      paginatedFiles,
+      totalFiles,
+      hasMore,
+      limit,
+      offset,
+      nextUri,
+      mode // Include mode if specified (for mixed pagination + mode requests)
+    };
   }
 }

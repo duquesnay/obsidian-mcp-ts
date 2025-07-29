@@ -66,7 +66,7 @@ describe('Concrete Resource Handlers', () => {
       const handler = new RecentHandler();
       const result = await handler.execute('vault://recent', server);
       
-      expect(mockGetRecentChanges).toHaveBeenCalledWith(undefined, 10);
+      expect(mockGetRecentChanges).toHaveBeenCalledWith(undefined, 100);
       const data = JSON.parse(result.contents[0].text);
       expect(data.notes).toHaveLength(2);
       expect(data.notes[0]).toHaveProperty('path', 'recent1.md');

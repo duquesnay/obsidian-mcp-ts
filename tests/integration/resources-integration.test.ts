@@ -169,7 +169,7 @@ describe('MCP Resources Integration Tests', () => {
       expect(tagsResource).toEqual({
         uri: 'vault://tags',
         name: 'Vault Tags',
-        description: 'All tags in the vault with usage counts (cached 5min)',
+        description: 'All tags in the vault with usage counts (cached 5min). Returns summary with top tags and usage stats by default. Use ?mode=full for complete tag list.',
         mimeType: 'application/json'
       });
 
@@ -225,7 +225,7 @@ describe('MCP Resources Integration Tests', () => {
         id: requestId++,
         method: 'resources/read',
         params: {
-          uri: 'vault://tags'
+          uri: 'vault://tags?mode=full'
         }
       };
 
@@ -239,7 +239,7 @@ describe('MCP Resources Integration Tests', () => {
       expect(response.result.contents).toHaveLength(1);
 
       const content = response.result.contents[0];
-      expect(content.uri).toBe('vault://tags');
+      expect(content.uri).toBe('vault://tags?mode=full');
       expect(content.mimeType).toBe('application/json');
       expect(content.text).toBeDefined();
 
@@ -398,7 +398,7 @@ describe('MCP Resources Integration Tests', () => {
         id: requestId++,
         method: 'resources/read',
         params: {
-          uri: firstResource.uri
+          uri: firstResource.uri + '?mode=full'
         }
       };
 
@@ -407,7 +407,7 @@ describe('MCP Resources Integration Tests', () => {
 
       expect(readResponse.error).toBeUndefined();
       expect(readResponse.result?.contents).toBeDefined();
-      expect(readResponse.result.contents[0].uri).toBe(firstResource.uri);
+      expect(readResponse.result.contents[0].uri).toBe(firstResource.uri + '?mode=full');
       expect(readResponse.result.contents[0].mimeType).toBe(firstResource.mimeType);
 
       // Verify we can parse the content

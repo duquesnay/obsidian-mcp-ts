@@ -274,16 +274,15 @@ describe('ListFilesInVaultTool', () => {
 
   describe('pagination support', () => {
     it('should handle paginated vault structure responses', async () => {
-      const mockPaginatedResponse = {
-        paginatedFiles: ['file1.md', 'file2.md', 'file3.md'],
-        totalFiles: 100,
-        hasMore: true,
-        limit: 3,
-        offset: 0,
-        nextUri: 'vault://structure?limit=3&offset=3'
+      // Mock structure that will be flattened into 100 files total
+      const mockStructureResponse = {
+        structure: {
+          files: Array.from({ length: 100 }, (_, i) => `file${i + 1}.md`),
+          folders: {}
+        }
       };
 
-      vi.spyOn(defaultCachedHandlers.structure, 'handleRequest').mockResolvedValue(mockPaginatedResponse);
+      vi.spyOn(defaultCachedHandlers.structure, 'handleRequest').mockResolvedValue(mockStructureResponse);
 
       const result = await tool.execute({ limit: 3, offset: 0 });
       const response = JSON.parse(result.text);
@@ -323,31 +322,30 @@ describe('ListFilesInVaultTool', () => {
     });
 
     it('should correctly construct vault URI with pagination parameters', async () => {
-      const mockPaginatedResponse = {
-        paginatedFiles: ['file1.md'],
-        totalFiles: 50,
-        hasMore: false,
-        limit: 10,
-        offset: 5
+      const mockStructureResponse = {
+        structure: {
+          files: Array.from({ length: 50 }, (_, i) => `file${i + 1}.md`),
+          folders: {}
+        }
       };
 
-      const handleRequestSpy = vi.spyOn(defaultCachedHandlers.structure, 'handleRequest').mockResolvedValue(mockPaginatedResponse);
+      const handleRequestSpy = vi.spyOn(defaultCachedHandlers.structure, 'handleRequest').mockResolvedValue(mockStructureResponse);
 
       await tool.execute({ limit: 10, offset: 5 });
 
-      expect(handleRequestSpy).toHaveBeenCalledWith('vault://structure?limit=10&offset=5');
+      // The tool always requests full mode from the structure handler, not pagination parameters
+      expect(handleRequestSpy).toHaveBeenCalledWith('vault://structure?mode=full');
     });
 
     it('should handle case where offset exceeds available files', async () => {
-      const mockEmptyResponse = {
-        paginatedFiles: [],
-        totalFiles: 10,
-        hasMore: false,
-        limit: 5,
-        offset: 15
+      const mockStructureResponse = {
+        structure: {
+          files: Array.from({ length: 10 }, (_, i) => `file${i + 1}.md`),
+          folders: {}
+        }
       };
 
-      vi.spyOn(defaultCachedHandlers.structure, 'handleRequest').mockResolvedValue(mockEmptyResponse);
+      vi.spyOn(defaultCachedHandlers.structure, 'handleRequest').mockResolvedValue(mockStructureResponse);
 
       const result = await tool.execute({ limit: 5, offset: 15 });
       const response = JSON.parse(result.text);
