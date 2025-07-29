@@ -4,6 +4,7 @@
 
 import { LRUCache } from './Cache.js';
 import { RESPONSE_MODE_LIMITS, TIME_CONSTANTS, CACHE_DEFAULTS } from '../constants.js';
+import { CacheRegistry } from './CacheRegistry.js';
 
 export type ResponseMode = 'summary' | 'preview' | 'full';
 
@@ -33,6 +34,29 @@ export class ResponseModeSystem {
     maxSize: CACHE_DEFAULTS.MAX_SIZE, 
     ttl: CACHE_DEFAULTS.STABLE_TTL
   });
+
+  private static initialized = false;
+
+  /**
+   * Initialize and register caches
+   */
+  private static initialize(): void {
+    if (!this.initialized) {
+      const registry = CacheRegistry.getInstance();
+      registry.register('response-mode-preview', this.previewCache);
+      registry.register('response-mode-summary', this.summaryCache);
+      this.initialized = true;
+    }
+  }
+
+  /**
+   * Reset for testing
+   */
+  static reset(): void {
+    this.previewCache.clear();
+    this.summaryCache.clear();
+    this.initialized = false;
+  }
 
   /**
    * Parse and validate response mode parameter
@@ -64,6 +88,8 @@ export class ResponseModeSystem {
    * Create optimized summary (under 500 characters)
    */
   static createSummary(content: string, cacheKey?: string): string {
+    this.initialize();
+    
     // Check cache first if key provided
     if (cacheKey) {
       const cached = this.summaryCache.get(cacheKey);
@@ -94,6 +120,8 @@ export class ResponseModeSystem {
    * Create optimized preview (under 2000 characters)
    */
   static createPreview(content: string, cacheKey?: string): string {
+    this.initialize();
+    
     // Check cache first if key provided
     if (cacheKey) {
       const cached = this.previewCache.get(cacheKey);

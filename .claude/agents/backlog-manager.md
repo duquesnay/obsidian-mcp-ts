@@ -61,7 +61,10 @@ Use Task tool with these specialist agents:
 ## Agile Backlog Format Requirements
 
 **Format Standards**:
-1. **Compact Priority-Ordered Lists**: Keep existing IDs (RSM1.1, POI1.4, etc.) as unique identifiers. List order = priority order.
+1. **Compact Priority-Ordered Lists**: Each line format: `- [x] ID: Action-based title`
+   - Example: `- [x] RSM1.1: See vault structure without context overflow`
+   - Keep existing IDs (RSM1.1, POI1.4, etc.) as unique identifiers
+   - List order = priority order
 2. **Action-Based Titles**: Use proper user story format with action verbs (see, browse, receive, navigate) - NOT "I want" or "I can"
 3. **Separate Product from Technical**: Clear separation between user-facing features and code implementation tasks
 4. **User Story Details Section**: Use format "As a [user], I [action verb] [capability], So that [outcome]"

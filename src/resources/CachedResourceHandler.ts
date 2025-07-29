@@ -4,6 +4,7 @@ import { LRUCache } from '../utils/Cache.js';
 import { CACHE_DEFAULTS } from '../constants.js';
 import { PaginationSystem, PaginationParams } from '../utils/PaginationSystem.js';
 import { CacheNotificationHooks } from './cacheNotifications.js';
+import { CacheRegistry } from '../utils/CacheRegistry.js';
 
 /**
  * Configuration for resource caching
@@ -92,6 +93,11 @@ export class CachedResourceHandler extends BaseResourceHandler {
       paginatedEntries: 0,
       nonPaginatedEntries: 0
     };
+
+    // Register cache with central registry
+    const registry = CacheRegistry.getInstance();
+    const handlerName = handler.constructor.name;
+    registry.register(`resource-${handlerName}`, this.cache);
   }
 
   /**
