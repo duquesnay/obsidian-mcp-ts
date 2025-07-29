@@ -17,6 +17,17 @@ A TypeScript MCP server to interact with Obsidian via the Local REST API communi
 
 The Obsidian MCP server automatically optimizes performance through intelligent internal resource caching. This system provides significant speed improvements for frequently used operations while remaining completely transparent to users.
 
+### Real-time Cache Synchronization
+
+The server includes a sophisticated subscription system that automatically invalidates cached data when files change. This ensures you always see current data without manual cache clearing:
+
+- **Automatic Updates**: File operations (create, update, delete) trigger immediate cache invalidation
+- **Smart Invalidation**: Only affected caches are cleared, preserving unrelated cached data
+- **MCP Client Notifications**: Connected clients receive real-time resource update notifications
+- **Zero Configuration**: The subscription system works automatically with no setup required
+
+For technical details, see the [Subscription System Documentation](docs/SUBSCRIPTION_SYSTEM.md).
+
 ### How It Works
 
 Several major tools now use internal MCP resources with smart caching instead of making direct API calls every time:
