@@ -1,9 +1,9 @@
-# Obsidian MCP TypeScript - Quality Improvement Backlog
+# Obsidian MCP TypeScript - Agile Product Backlog
 
 ## 🤖 AI Agent Instructions
 
 ### Overview
-This backlog decomposes quality improvement recommendations into fine-grained, incremental tasks. Each task must be implemented using the Task tool to launch a sub-agent.
+This backlog follows agile practices with priority-ordered user stories and separate technical implementation tasks. Each user story must be implemented using the Task tool to launch a sub-agent.
 
 ### Available Agents
 See `.claude/agents/README.md` for the complete list of specialized agents and their capabilities. Key agents include:
@@ -17,7 +17,7 @@ See `.claude/agents/README.md` for the complete list of specialized agents and t
 When creating a sub-agent with the Task tool, include these instructions:
 
 ```
-You are implementing task [TASK_ID]: [TASK_DESCRIPTION]
+You are implementing user story [STORY_ID]: [STORY_DESCRIPTION]
 
 Follow this TDD workflow:
 1. Write failing test first (Red phase)
@@ -47,11 +47,11 @@ Return a summary of:
 ```
 
 ### Backlog Update Template
-For each task:
+For each user story:
 1. Mark as [⏳] when starting (work in progress)
 2. Delegate to appropriate sub-agent via Task tool
 3. After sub-agent completes:
-   - Mark the task as [x] in the backlog
+   - Mark the user story as [x] in the backlog
    - Add completion notes if needed
    - Update the Progress Status section
    - never use emojis to indicate finish
@@ -66,7 +66,7 @@ For each task:
 - Each increment adds user value
 
 ### Implementation Principles
-- Each task should produce working software
+- Each user story should produce working software
 - Refactor only when patterns emerge (Rule of Three)
 - Test at every step - no big bang integration
 - Document as you go - not at the end
@@ -74,51 +74,51 @@ For each task:
 
 ---
 
-# 📋 Backlog Items
+# 📋 Product Backlog (Priority-Ordered User Stories)
 
-# 📋 Product Backlog (User-Facing Features)
+## HIGH PRIORITY: Vault Data Access (Critical Usability)
 
-## HIGH PRIORITY: Resource Response Modes (Context Explosion Fix)
+### RSM-F1: Browse vault structure efficiently
+- **ID**: RSM-F1
+- **Status**: [x] IMPLEMENTED (tests failing)
+- **User Story**: As a user, I browse vault structure with folder/file names and counts by default, so conversations don't get overwhelmed with full content
+- **Acceptance**: Summary mode returns names + metadata by default, full mode available via ?mode=full
 
-### Priority 0: Critical Usability Issue - Resource Summary/Preview Modes
-**Problem**: Resources currently return full content causing context overflow in conversations and forcing users to rewind.
+### RSM-F2: Scan recent changes quickly  
+- **ID**: RSM-F2
+- **Status**: [x] IMPLEMENTED (tests failing)
+- **User Story**: As a user, I scan recent changes with titles and brief previews by default, so I can quickly identify relevant recent activity
+- **Acceptance**: Preview mode returns titles + 100 chars by default, full content via ?mode=full
 
-**Solution**: Implement summary/preview modes as default behavior with explicit opt-in for full content.
+### RSM-F3: Preview individual notes efficiently
+- **ID**: RSM-F3
+- **Status**: [x] IMPLEMENTED (tests failing)
+- **User Story**: As a user, I preview individual notes with frontmatter and content snippets by default, so I can decide if I need full content
+- **Acceptance**: Preview mode returns frontmatter + 200 chars by default, complete note via ?mode=full
 
-- [x] **RSM-F1: Vault Structure Summary Mode** 
-  - **User Story**: As a user, I want vault structure resources to show folder/file names with counts by default, so conversations don't get overwhelmed with full content
-  - **Acceptance**: ?mode=summary default returns names + metadata, ?mode=full returns complete content
-  - **Technical Status**: IMPLEMENTED (tests failing)
+### RSM-F4: Navigate folder listings without overload
+- **ID**: RSM-F4
+- **Status**: [x] IMPLEMENTED (tests failing)
+- **User Story**: As a user, I navigate folder listings with file names and counts by default, so I can browse without content overload
+- **Acceptance**: Summary mode returns file lists + metadata by default, previews via ?mode=full
 
-- [x] **RSM-F2: Recent Changes Preview Mode**
-  - **User Story**: As a user, I want recent changes to show titles + brief previews by default, so I can quickly scan recent activity
-  - **Acceptance**: ?mode=preview default returns titles + 100 chars, ?mode=full returns complete content  
-  - **Technical Status**: IMPLEMENTED (tests failing)
+### RSM-F5: Evaluate search results efficiently
+- **ID**: RSM-F5
+- **Status**: [x] IMPLEMENTED (tests failing)
+- **User Story**: As a user, I evaluate search results with context snippets by default, so I can assess relevance quickly
+- **Acceptance**: Preview mode returns snippets + match counts by default, complete matches via ?mode=full
 
-- [x] **RSM-F3: Individual Note Preview Mode**
-  - **User Story**: As a user, I want individual notes to show frontmatter + content preview by default, so I can decide if I need full content
-  - **Acceptance**: ?mode=preview default returns frontmatter + 200 chars, ?mode=full returns complete note
-  - **Technical Status**: IMPLEMENTED (tests failing)
+### RSM-F6: Understand tag usage patterns
+- **ID**: RSM-F6
+- **Status**: [x] IMPLEMENTED (tests failing)
+- **User Story**: As a user, I see tag listings with usage statistics and patterns, so I can understand my tagging behavior
+- **Acceptance**: Tags display with counts, frequency patterns, and usage metadata
 
-- [x] **RSM-F4: Folder Listing Summary Mode**
-  - **User Story**: As a user, I want folder listings to show file names and counts by default, so I can navigate without content overload
-  - **Acceptance**: ?mode=summary default returns file lists + metadata, ?mode=full returns content previews
-  - **Technical Status**: IMPLEMENTED (tests failing)
-
-- [x] **RSM-F5: Search Results Preview Mode**
-  - **User Story**: As a user, I want search results to show matches with context snippets by default, so I can evaluate relevance quickly
-  - **Acceptance**: ?mode=preview default returns snippets + match counts, ?mode=full returns complete matches
-  - **Technical Status**: IMPLEMENTED (tests failing)
-
-- [x] **RSM-F6: Tag Listings Optimization**
-  - **User Story**: As a user, I want tag listings to include usage statistics and patterns, so I can understand my tagging behavior
-  - **Acceptance**: Tags show with counts, frequency patterns, and usage metadata
-  - **Technical Status**: IMPLEMENTED (tests failing)
-
-- [x] **RSM-F7: Response Mode System**
-  - **User Story**: As a developer/power user, I want a consistent response mode system across all resources, so I can predict and control response sizes
-  - **Acceptance**: All resources support ?mode parameter with consistent behavior and shared utilities
-  - **Technical Status**: IMPLEMENTED (tests failing)
+### RSM-F7: Control response sizes consistently
+- **ID**: RSM-F7
+- **Status**: [x] IMPLEMENTED (tests failing)
+- **User Story**: As a power user, I control response modes consistently across all resources, so I can predict and manage response sizes
+- **Acceptance**: All resources support ?mode parameter with consistent behavior
   
 - [x] RSM1.2: Implement vault://recent preview mode with response modes
   - [x] Extend mode parameter system to vault://recent resource

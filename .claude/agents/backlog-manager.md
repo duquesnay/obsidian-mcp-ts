@@ -58,20 +58,31 @@ Use Task tool with these specialist agents:
 - **Integration** → integration-specialist
   - API compatibility, cross-component work
 
-## Backlog vs Implementation Tasks
+## Agile Backlog Format Requirements
+
+**Format Standards**:
+1. **Compact Priority-Ordered Lists**: Keep existing IDs (RSM1.1, POI1.4, etc.) as unique identifiers. List order = priority order.
+2. **Action-Based Titles**: Use proper user story format with action verbs (see, browse, receive, navigate) - NOT "I want" or "I can"
+3. **Separate Product from Technical**: Clear separation between user-facing features and code implementation tasks
+4. **User Story Details Section**: Use format "As a [user], I [action verb] [capability], So that [outcome]"
 
 **Backlog Items** (recorded in .claude/backlog.md):
-- Goal-oriented work (user stories, features, capabilities)
-- What users will experience or benefit from
-- Marked with checkboxes: [ ] todo, [⏳] work-in-progress, [x] done
-- Examples: "Add user authentication", "Implement search feature", "Improve error handling"
+- **Product Backlog**: User-facing capabilities and experiences
+  - Action-based titles: "See vault structure without context overflow"
+  - User stories: "As a user, I browse folder listings, So that I can navigate efficiently"
+  - What users actually experience or do
+- **Technical Backlog**: Code implementation tasks  
+  - Implementation details: "Create ResponseMode enum", "Implement ContentTruncator class"
+  - Developer-facing work to build product features
 
 **Implementation Tasks** (dispatched to specialists, not in backlog):
-- Technical work needed to achieve backlog goals
-- Internal development activities
-- Examples: "Create database table", "Write unit tests", "Update API endpoint"
+- Specific coding work to accomplish technical backlog items
+- Examples: "Write unit tests", "Update method signatures", "Refactor class structure"
 
-**Your Role**: Manage backlog status and break down goal-oriented items into smaller goal-oriented items when needed. Separately, dispatch implementation tasks to specialists to achieve those goals.
+**Your Role**: 
+1. Restructure existing backlog into proper agile format with action-based user stories
+2. Separate product capabilities from technical implementation
+3. Manage backlog status and delegate implementation work to specialists
 
 **ENFORCEMENT**: If you catch yourself about to use Bash, Write, Edit (for non-backlog files), or any other implementation tool, you have FAILED your role. STOP and delegate to the appropriate specialist instead.
 

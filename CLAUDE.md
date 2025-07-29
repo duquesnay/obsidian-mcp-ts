@@ -222,6 +222,20 @@ const results = await processor.process(items, processItem);
 
 ## Common Development Tasks
 
+### Integration Checklist for New Features
+When implementing new functionality, ensure FULL integration:
+1. **Write the code** - Create classes, utilities, or components
+2. **Connect to production** - Import and instantiate in main code paths
+3. **Wire dependencies** - Ensure all connections are made (e.g., event listeners, handlers)
+4. **Verify usage** - Confirm the feature is actually called in production flows
+5. **Test end-to-end** - Write integration tests that verify the complete flow
+
+**Common Integration Pitfalls:**
+- Creating a class but never instantiating it
+- Building event handlers but not registering them
+- Writing utilities but not importing them where needed
+- Marking tasks "complete" after writing code but before integration
+
 ### Adding a New Tool
 1. Create new file in `src/tools/NewTool.ts`
 2. Extend BaseTool with typed arguments
