@@ -50,6 +50,27 @@ class TestResourceHandler extends BaseResourceHandler {
     
     throw new Error(`Test path not found: ${path} from ${uri}`);
   }
+  
+  // Expose protected methods for testing
+  public testExtractModeFromUri(uri: string): ResponseMode {
+    return this.extractModeFromUri(uri);
+  }
+  
+  public testProcessResponseContent(content: ResponseContent, mode: ResponseMode): any {
+    return this.processResponseContent(content, mode);
+  }
+  
+  public testCreateSummaryResponse(content: string, cacheKey?: string): string {
+    return this.createSummaryResponse(content, cacheKey);
+  }
+  
+  public testCreatePreviewResponse(content: string, cacheKey?: string): string {
+    return this.createPreviewResponse(content, cacheKey);
+  }
+  
+  public testFormatModeResponse(uri: string, content: ResponseContent, mode: ResponseMode) {
+    return this.formatModeResponse(uri, content, mode);
+  }
 }
 
 describe('BaseResourceHandler with Response Mode System', () => {
@@ -61,14 +82,14 @@ describe('BaseResourceHandler with Response Mode System', () => {
 
   describe('extractModeFromUri', () => {
     it('should extract mode from URI query parameters', () => {
-      expect(handler.extractModeFromUri('vault://test?mode=full')).toBe('full');
-      expect(handler.extractModeFromUri('vault://test?mode=preview')).toBe('preview');
-      expect(handler.extractModeFromUri('vault://test?mode=summary')).toBe('summary');
+      expect(handler.testExtractModeFromUri('vault://test?mode=full')).toBe('full');
+      expect(handler.testExtractModeFromUri('vault://test?mode=preview')).toBe('preview');
+      expect(handler.testExtractModeFromUri('vault://test?mode=summary')).toBe('summary');
     });
 
     it('should default to summary when no mode parameter', () => {
-      expect(handler.extractModeFromUri('vault://test')).toBe('summary');
-      expect(handler.extractModeFromUri('vault://test?other=value')).toBe('summary');
+      expect(handler.testExtractModeFromUri('vault://test')).toBe('summary');
+      expect(handler.testExtractModeFromUri('vault://test?other=value')).toBe('summary');
     });
   });
 
@@ -80,15 +101,15 @@ describe('BaseResourceHandler with Response Mode System', () => {
     };
 
     it('should process content for different modes', () => {
-      const fullResponse = handler.processResponseContent(testContent, 'full');
+      const fullResponse = handler.testProcessResponseContent(testContent, 'full');
       expect(fullResponse.mode).toBe('full');
       expect(fullResponse.content).toBe('Full content with all details');
       
-      const previewResponse = handler.processResponseContent(testContent, 'preview');
+      const previewResponse = handler.testProcessResponseContent(testContent, 'preview');
       expect(previewResponse.mode).toBe('preview');
       expect(previewResponse.content).toBe('Preview content');
       
-      const summaryResponse = handler.processResponseContent(testContent, 'summary');
+      const summaryResponse = handler.testProcessResponseContent(testContent, 'summary');
       expect(summaryResponse.mode).toBe('summary');
       expect(summaryResponse.content).toBe('Brief summary');
     });
@@ -98,7 +119,7 @@ describe('BaseResourceHandler with Response Mode System', () => {
         full: 'A'.repeat(1000)
       };
       
-      const summaryResponse = handler.processResponseContent(contentWithoutSummary, 'summary');
+      const summaryResponse = handler.testProcessResponseContent(contentWithoutSummary, 'summary');
       expect(summaryResponse.mode).toBe('summary');
       expect(summaryResponse.content.length).toBeLessThanOrEqual(500);
       expect(summaryResponse.content.endsWith('...')).toBe(true);
@@ -108,7 +129,7 @@ describe('BaseResourceHandler with Response Mode System', () => {
   describe('createSummaryResponse and createPreviewResponse', () => {
     it('should create proper summary responses', () => {
       const longContent = 'B'.repeat(1000);
-      const summary = handler.createSummaryResponse(longContent);
+      const summary = handler.testCreateSummaryResponse(longContent);
       
       expect(summary.length).toBeLessThanOrEqual(500);
       expect(summary.endsWith('...')).toBe(true);
@@ -116,7 +137,7 @@ describe('BaseResourceHandler with Response Mode System', () => {
 
     it('should create proper preview responses', () => {
       const longContent = 'C'.repeat(3000);
-      const preview = handler.createPreviewResponse(longContent);
+      const preview = handler.testCreatePreviewResponse(longContent);
       
       expect(preview.length).toBeLessThanOrEqual(2000);
       expect(preview.endsWith('...')).toBe(true);
@@ -126,8 +147,8 @@ describe('BaseResourceHandler with Response Mode System', () => {
       const content = 'D'.repeat(1000);
       const key = 'test-cache-key';
       
-      const result1 = handler.createSummaryResponse(content, key);
-      const result2 = handler.createSummaryResponse(content, key);
+      const result1 = handler.testCreateSummaryResponse(content, key);
+      const result2 = handler.testCreateSummaryResponse(content, key);
       
       expect(result1).toBe(result2);
     });
@@ -140,10 +161,10 @@ describe('BaseResourceHandler with Response Mode System', () => {
         summary: 'Summary'
       };
       
-      const response = handler.formatModeResponse('vault://test', content, 'summary');
+      const response = handler.testFormatModeResponse('vault://test', content, 'summary');
       
       expect(response.contents[0].mimeType).toBe('application/json');
-      const parsedContent = JSON.parse(response.contents[0].text);
+      const parsedContent = JSON.parse(response.contents[0].text as string);
       expect(parsedContent.mode).toBe('summary');
       expect(parsedContent.content).toBe('Summary');
     });
@@ -161,7 +182,7 @@ describe('BaseResourceHandler with Response Mode System', () => {
       const result = await handler.execute('vault://test/complex');
       
       expect(result.contents[0].mimeType).toBe('application/json');
-      const parsedContent = JSON.parse(result.contents[0].text);
+      const parsedContent = JSON.parse(result.contents[0].text as string);
       expect(parsedContent.title).toBe('Test Note');
       expect(parsedContent.content).toBeDefined();
     });
@@ -170,7 +191,7 @@ describe('BaseResourceHandler with Response Mode System', () => {
       const result = await handler.execute('vault://test/mode-aware?mode=summary');
       
       expect(result.contents[0].mimeType).toBe('application/json');
-      const parsedContent = JSON.parse(result.contents[0].text);
+      const parsedContent = JSON.parse(result.contents[0].text as string);
       expect(parsedContent.mode).toBe('summary');
       expect(parsedContent.content).toBe('Brief summary');
     });
@@ -179,7 +200,7 @@ describe('BaseResourceHandler with Response Mode System', () => {
       const result = await handler.execute('vault://test/mode-aware?mode=preview');
       
       expect(result.contents[0].mimeType).toBe('application/json');
-      const parsedContent = JSON.parse(result.contents[0].text);
+      const parsedContent = JSON.parse(result.contents[0].text as string);
       expect(parsedContent.mode).toBe('preview');
       expect(parsedContent.content).toBe('Preview content with moderate detail level');
     });

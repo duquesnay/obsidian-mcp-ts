@@ -25,13 +25,14 @@ export class SearchHandler extends BaseResourceHandler {
       }
       
       // Create standardized pagination metadata
-      const paginationMetadata = this.generatePaginationMetadata(paginationParams, searchResults.totalResults);
+      const totalResults = 'totalResults' in searchResults ? (searchResults.totalResults as number) : 0;
+      const paginationMetadata = this.generatePaginationMetadata(paginationParams, totalResults);
       
       const response: any = {
         query,
         results: processedResults,
-        totalResults: searchResults.totalResults,
-        hasMore: searchResults.hasMore,
+        totalResults: totalResults,
+        hasMore: 'hasMore' in searchResults ? searchResults.hasMore : false,
         pagination: paginationMetadata
       };
       
