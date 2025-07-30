@@ -35,11 +35,73 @@ import {
   resetAllCacheStats
 } from './cachedHandlers.js';
 import { createTagsHandler, createStatsHandler, createRecentHandler, createNoteHandler, createFolderHandler, createDailyNoteHandler, createTagNotesHandler, createVaultStructureHandler, createSearchHandler } from './handlers.js';
+import { CacheSubscriptionManager } from '../utils/CacheSubscriptionManager.js';
+import { NotificationManager } from '../utils/NotificationManager.js';
+import { SUBSCRIPTION_EVENTS } from '../constants.js';
 
 // Extend Server type to include obsidianClient for testing
 interface ServerWithClient extends Server {
   obsidianClient?: ObsidianClient;
   resourceRegistry?: ResourceRegistry;
+  subscriptionHandlers?: {
+    notifyResourceUpdate(resourceUri: string): Promise<void>;
+  };
+}
+
+/**
+ * Initialize cache subscription system
+ * Connects CacheSubscriptionManager to NotificationManager for automatic cache invalidation notifications
+ */
+function initializeCacheSubscriptionSystem(server: ServerWithClient): void {
+  // Get global instances
+  const cacheSubscriptionManager = CacheSubscriptionManager.getInstance();
+  const notificationManager = NotificationManager.getInstance();
+
+  // Connect cache subscription manager to notification manager
+  notificationManager.subscribe(SUBSCRIPTION_EVENTS.CACHE_INVALIDATED, async (data) => {
+    await cacheSubscriptionManager.processEvent(SUBSCRIPTION_EVENTS.CACHE_INVALIDATED, data);
+  });
+
+  // Subscribe to forward cache invalidation events to MCP clients
+  cacheSubscriptionManager.subscribe({
+    eventType: SUBSCRIPTION_EVENTS.CACHE_INVALIDATED,
+    callback: async (data) => {
+      if (data.key && server.subscriptionHandlers) {
+        await server.subscriptionHandlers.notifyResourceUpdate(data.key);
+      }
+    }
+  });
+
+  // Set up cache invalidation rules for file operations
+  const cacheInvalidationRules = {
+    [SUBSCRIPTION_EVENTS.FILE_CREATED]: ['vault://recent', 'vault://structure', 'vault://stats'],
+    [SUBSCRIPTION_EVENTS.FILE_UPDATED]: ['vault://recent'],
+    [SUBSCRIPTION_EVENTS.FILE_DELETED]: ['vault://recent', 'vault://structure', 'vault://stats'],
+    [SUBSCRIPTION_EVENTS.DIRECTORY_CREATED]: ['vault://structure'],
+    [SUBSCRIPTION_EVENTS.DIRECTORY_DELETED]: ['vault://structure'],
+    [SUBSCRIPTION_EVENTS.TAG_ADDED]: ['vault://tags'],
+    [SUBSCRIPTION_EVENTS.TAG_REMOVED]: ['vault://tags'],
+  };
+
+  // Connect file operation events to cache invalidation
+  Object.entries(cacheInvalidationRules).forEach(([event, resources]) => {
+    cacheSubscriptionManager.subscribe({
+      eventType: event,
+      callback: async () => {
+        // Notify MCP clients about resource updates
+        if (server.subscriptionHandlers) {
+          for (const resource of resources) {
+            await server.subscriptionHandlers.notifyResourceUpdate(resource);
+          }
+        }
+      }
+    });
+
+    // Connect to notification manager for this event
+    notificationManager.subscribe(event, async (data) => {
+      await cacheSubscriptionManager.processEvent(event, data);
+    });
+  });
 }
 
 /**
@@ -47,6 +109,9 @@ interface ServerWithClient extends Server {
  * Uses intelligent caching with resource-specific TTLs
  */
 export async function registerResources(server: ServerWithClient): Promise<void> {
+  // Initialize cache subscription system
+  initializeCacheSubscriptionSystem(server);
+
   // Create resource registry (or use provided one for testing)
   const registry = server.resourceRegistry || new ResourceRegistry();
   
@@ -54,7 +119,7 @@ export async function registerResources(server: ServerWithClient): Promise<void>
   registry.registerResource({
     uri: 'vault://tags',
     name: 'Vault Tags',
-    description: 'All tags in the vault with usage counts (cached 5min)',
+    description: 'All tags in the vault with usage counts (cached 5min). Returns summary with top tags and usage stats by default. Use ?mode=full for complete tag list.',
     mimeType: 'application/json'
   }, createCachedTagsHandler());
   
@@ -90,7 +155,7 @@ export async function registerResources(server: ServerWithClient): Promise<void>
   registry.registerResource({
     uri: 'vault://folder/{path}',
     name: 'Folder',
-    description: 'Browse folder contents (cached 2min per folder) - e.g., vault://folder/Projects',
+    description: 'Browse folder contents (cached 2min per folder) - e.g., vault://folder/Projects. Returns summary by default, use ?mode=full for complete listings.',
     mimeType: 'application/json'
   }, createCachedFolderHandler());
   
@@ -126,7 +191,7 @@ export async function registerResources(server: ServerWithClient): Promise<void>
   registry.registerResourceTemplate({
     name: 'Folder',
     uriTemplate: 'vault://folder/{path}',
-    description: 'Browse folder contents - e.g., vault://folder/Projects or vault://folder/Daily. Returns list of files and subfolders within the specified path.',
+    description: 'Browse folder contents - e.g., vault://folder/Projects or vault://folder/Daily. Returns summary with file counts and folder lists by default. Use ?mode=full for complete file listings.',
     mimeType: 'application/json'
   });
   
@@ -186,8 +251,8 @@ export async function registerUncachedResources(server: ServerWithClient): Promi
   // Register static resources without caching
   registry.registerResource({
     uri: 'vault://tags',
-    name: 'Vault Tags',
-    description: 'All tags in the vault with usage counts',
+    name: 'Tags',
+    description: 'All tags in the vault with usage counts. Returns summary with top tags and usage stats by default. Use ?mode=full for complete tag list.',
     mimeType: 'application/json'
   }, createTagsHandler());
   
@@ -223,7 +288,7 @@ export async function registerUncachedResources(server: ServerWithClient): Promi
   registry.registerResource({
     uri: 'vault://folder/{path}',
     name: 'Folder',
-    description: 'Browse folder contents (e.g., vault://folder/Projects)',
+    description: 'Browse folder contents (e.g., vault://folder/Projects). Returns summary by default, use ?mode=full for complete listings.',
     mimeType: 'application/json'
   }, createFolderHandler());
   

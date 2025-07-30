@@ -162,25 +162,25 @@ describe('Resource Discovery Enhancement Integration Tests', () => {
       const getFileContentsTool = tools.find((t: any) => t.name === 'obsidian_get_file_contents');
       expect(getFileContentsTool).toBeDefined();
       expect(getFileContentsTool.description).toContain('vault://note/{path}');
-      expect(getFileContentsTool.description).toMatch(/2\s*min(ute)?\s*cache/i);
+      expect(getFileContentsTool.description).toMatch(/2(\s*(minute|min)\s*cache|[-\s]min(ute)?\s*caching?)/i);
       
       // Check SimpleSearchTool mentions vault://search/{query}
       const simpleSearchTool = tools.find((t: any) => t.name === 'obsidian_simple_search');
       expect(simpleSearchTool).toBeDefined();
       expect(simpleSearchTool.description).toContain('vault://search/{query}');
-      expect(simpleSearchTool.description).toMatch(/1[- ]?min(ute)?\s*cach/i);
+      expect(simpleSearchTool.description).toMatch(/1(\s*(minute|min)\s*cache|[-\s]min(ute)?\s*caching?)/i);
       
       // Check ListFilesInVaultTool mentions vault://structure
       const listFilesInVaultTool = tools.find((t: any) => t.name === 'obsidian_list_files_in_vault');
       expect(listFilesInVaultTool).toBeDefined();
       expect(listFilesInVaultTool.description).toContain('vault://structure');
-      expect(listFilesInVaultTool.description).toMatch(/5\s*minute\s*cache/i);
+      expect(listFilesInVaultTool.description).toMatch(/5(\s*(minute|min)\s*cache|[-\s]min(ute)?\s*caching?)/i);
       
       // Check ListFilesInDirTool mentions vault://folder/{path}
       const listFilesInDirTool = tools.find((t: any) => t.name === 'obsidian_list_files_in_dir');
       expect(listFilesInDirTool).toBeDefined();
       expect(listFilesInDirTool.description).toContain('vault://folder/{path}');
-      expect(listFilesInDirTool.description).toMatch(/2[- ]?min(ute)?\s*cach/i);
+      expect(listFilesInDirTool.description).toMatch(/2(\s*(minute|min)\s*cache|[-\s]min(ute)?\s*caching?)/i);
     });
   });
 

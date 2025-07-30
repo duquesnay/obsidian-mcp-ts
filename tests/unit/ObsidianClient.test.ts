@@ -406,7 +406,8 @@ describe('ObsidianClient', () => {
         totalResults: 1,
         hasMore: false,
         offset: 0,
-        limit: 1
+        limit: 10,
+        continuationToken: undefined
       });
     });
 

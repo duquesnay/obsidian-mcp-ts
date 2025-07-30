@@ -1,6 +1,7 @@
 import { FindEmptyDirectoriesArgs } from './types/FindEmptyDirectoriesArgs.js';
 import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { getErrorMessage } from '../utils/errorTypeGuards.js';
+import type { IObsidianClient } from '../obsidian/interfaces/IObsidianClient.js';
 
 export class FindEmptyDirectoriesTool extends BaseTool<FindEmptyDirectoriesArgs> {
   name = 'obsidian_find_empty_directories';
@@ -72,50 +73,30 @@ export class FindEmptyDirectoriesTool extends BaseTool<FindEmptyDirectoriesArgs>
       // Find empty directories
       const emptyDirectories: string[] = [];
       
-      for (const dir of directories) {
-        try {
-          // Check if directory has any files
-          const filesInDir = filesInDirectories.get(dir) || [];
-          
-          // If we're not including hidden files, filter them out
-          const relevantFiles = includeHiddenFiles 
-            ? filesInDir 
-            : filesInDir.filter(f => !f.startsWith('.'));
-          
-          // Also check by listing the directory directly
-          try {
-            const directoryToCheck = dir.startsWith(searchPath) ? dir.substring(searchPath.length) : dir;
-            const directListing = await client.listFilesInDir(directoryToCheck);
-            
-            // If we get an empty array, it's empty
-            if (directListing.length === 0) {
-              emptyDirectories.push(dir);
-            } else if (!includeHiddenFiles) {
-              // Check if all files are hidden
-              const nonHiddenFiles = directListing.filter(f => {
-                const filename = f.split('/').pop() || f;
-                return !filename.startsWith('.');
-              });
-              
-              if (nonHiddenFiles.length === 0) {
-                emptyDirectories.push(dir);
-              }
-            }
-          } catch (error: unknown) {
-            // If we get a 404, the directory might be empty
-            const errorMessage = getErrorMessage(error);
-            if (errorMessage.includes('404') || errorMessage.includes('Not Found')) {
-              // Verify it's actually a directory that exists
-              const pathToCheck = dir.startsWith(searchPath) ? dir.substring(searchPath.length) : dir;
-              const pathExists = await client.checkPathExists(pathToCheck);
-              if (pathExists.exists && pathExists.type === 'directory') {
-                emptyDirectories.push(dir);
-              }
-            }
+      // For large directory sets (>500), use streaming approach with batch processor
+      const dirsArray = Array.from(directories);
+      if (dirsArray.length > 500) {
+        const { OptimizedBatchProcessor } = await import('../utils/OptimizedBatchProcessor.js');
+        const processor = new OptimizedBatchProcessor({
+          maxConcurrency: 10,
+          retryAttempts: 2
+        });
+        
+        // Process directories in streaming mode
+        for await (const result of processor.processStream(dirsArray, async (dir) => {
+          return await this.checkIfDirectoryEmpty(client, dir, searchPath, filesInDirectories, includeHiddenFiles);
+        })) {
+          if (!result.error && result.result?.isEmpty) {
+            emptyDirectories.push(result.result.directory);
           }
-        } catch (error) {
-          // Continue checking other directories
-          continue;
+        }
+      } else {
+        // For smaller sets, use regular iteration
+        for (const dir of directories) {
+          const result = await this.checkIfDirectoryEmpty(client, dir, searchPath, filesInDirectories, includeHiddenFiles);
+          if (result.isEmpty) {
+            emptyDirectories.push(result.directory);
+          }
         }
       }
       
@@ -130,6 +111,64 @@ export class FindEmptyDirectoriesTool extends BaseTool<FindEmptyDirectoriesArgs>
       });
     } catch (error) {
       return this.handleError(error);
+    }
+  }
+
+  /**
+   * Check if a directory is empty based on the criteria
+   */
+  private async checkIfDirectoryEmpty(
+    client: IObsidianClient,
+    dir: string,
+    searchPath: string,
+    filesInDirectories: Map<string, string[]>,
+    includeHiddenFiles: boolean
+  ): Promise<{ isEmpty: boolean; directory: string }> {
+    try {
+      // Check if directory has any files
+      const filesInDir = filesInDirectories.get(dir) || [];
+      
+      // If we're not including hidden files, filter them out
+      const relevantFiles = includeHiddenFiles 
+        ? filesInDir 
+        : filesInDir.filter(f => !f.startsWith('.'));
+      
+      // Also check by listing the directory directly
+      try {
+        const directoryToCheck = dir.startsWith(searchPath) ? dir.substring(searchPath.length) : dir;
+        const directListing = await client.listFilesInDir(directoryToCheck);
+        
+        // If we get an empty array, it's empty
+        if (directListing.length === 0) {
+          return { isEmpty: true, directory: dir };
+        } else if (!includeHiddenFiles) {
+          // Check if all files are hidden
+          const nonHiddenFiles = directListing.filter(f => {
+            const filename = f.split('/').pop() || f;
+            return !filename.startsWith('.');
+          });
+          
+          if (nonHiddenFiles.length === 0) {
+            return { isEmpty: true, directory: dir };
+          }
+        }
+      } catch (error: unknown) {
+        // If we get a 404, the directory might be empty
+        const errorMessage = getErrorMessage(error);
+        if (errorMessage.includes('404') || errorMessage.includes('Not Found')) {
+          // Verify it's actually a directory that exists
+          const pathToCheck = dir.startsWith(searchPath) ? dir.substring(searchPath.length) : dir;
+          const pathExists = await client.checkPathExists(pathToCheck);
+          if (pathExists.exists && pathExists.type === 'directory') {
+            return { isEmpty: true, directory: dir };
+          }
+        }
+      }
+      
+      return { isEmpty: false, directory: dir };
+    } catch (error) {
+      // If there's an error checking a specific directory, consider it not empty
+      return { isEmpty: false, directory: dir };
     }
   }
 }

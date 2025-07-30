@@ -11,7 +11,7 @@ interface FolderStructure {
 
 export class ListFilesInVaultTool extends BaseTool<ListFilesArgs> {
   name = 'obsidian_list_files_in_vault';
-  description = 'List all notes and folders in your Obsidian vault root (NOT filesystem access - Obsidian vault files only). Uses vault://structure resource internally with 5 minute cache for optimal performance.';
+  description = 'List all notes and folders in your Obsidian vault root (NOT filesystem access - Obsidian vault files only). Uses vault://structure resource internally with 5 minute cache for optimal performance. Requests full mode for complete file listings.';
   
   metadata: ToolMetadata = {
     category: 'file-operations',
@@ -70,7 +70,8 @@ export class ListFilesInVaultTool extends BaseTool<ListFilesArgs> {
       }
       
       // Use cached resource handler instead of direct client call for better performance
-      const resourceData = await defaultCachedHandlers.structure.handleRequest('vault://structure');
+      // Explicitly request full mode since we need actual file lists for flattening
+      const resourceData = await defaultCachedHandlers.structure.handleRequest('vault://structure?mode=full');
       const files = this.flattenStructure(resourceData.structure);
       
       // Handle pagination

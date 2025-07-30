@@ -37,7 +37,7 @@ describe('Vault Structure Resource', () => {
       }
     };
     
-    const result = await handler!('vault://structure', mockServer);
+    const result = await handler!('vault://structure?mode=full', mockServer);
     expect(result).toBeDefined();
     expect(result.contents).toHaveLength(1);
     expect(result.contents[0].mimeType).toBe('application/json');

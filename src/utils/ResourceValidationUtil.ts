@@ -9,9 +9,12 @@ export class ResourceValidationUtil {
    * Handles edge cases like trailing slashes and URL encoding
    */
   static extractUriParameter(uri: string, prefix: string, paramName: string): string {
+    // Remove query parameters first
+    const cleanUri = uri.split('?')[0];
+    
     // Normalize the prefix to handle trailing slash variations
     const normalizedPrefix = prefix.endsWith('/') ? prefix.slice(0, -1) : prefix;
-    const normalizedUri = uri.endsWith('/') && uri.length > normalizedPrefix.length + 1 ? uri.slice(0, -1) : uri;
+    const normalizedUri = cleanUri.endsWith('/') && cleanUri.length > normalizedPrefix.length + 1 ? cleanUri.slice(0, -1) : cleanUri;
     
     // Validate that URI starts with the expected prefix
     if (!normalizedUri.startsWith(normalizedPrefix)) {

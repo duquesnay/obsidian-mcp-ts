@@ -17,6 +17,17 @@ A TypeScript MCP server to interact with Obsidian via the Local REST API communi
 
 The Obsidian MCP server automatically optimizes performance through intelligent internal resource caching. This system provides significant speed improvements for frequently used operations while remaining completely transparent to users.
 
+### Real-time Cache Synchronization
+
+The server includes a sophisticated subscription system that automatically invalidates cached data when files change. This ensures you always see current data without manual cache clearing:
+
+- **Automatic Updates**: File operations (create, update, delete) trigger immediate cache invalidation
+- **Smart Invalidation**: Only affected caches are cleared, preserving unrelated cached data
+- **MCP Client Notifications**: Connected clients receive real-time resource update notifications
+- **Zero Configuration**: The subscription system works automatically with no setup required
+
+For technical details, see the [Subscription System Documentation](docs/SUBSCRIPTION_SYSTEM.md).
+
 ### How It Works
 
 Several major tools now use internal MCP resources with smart caching instead of making direct API calls every time:
@@ -24,7 +35,7 @@ Several major tools now use internal MCP resources with smart caching instead of
 | Tool | Internal Resource | Cache Duration | Performance Benefit |
 |------|------------------|----------------|-------------------|
 | `obsidian_get_all_tags` | `vault://tags` | 5 minutes | 10-50x faster for tag operations |
-| `obsidian_get_recent_changes` | `vault://recent` | 30 seconds | Near-instant recent file listings |
+| `obsidian_get_recent_changes` | `vault://recent` | 30 seconds | Near-instant recent file listings with titles & previews |
 | `obsidian_get_file_contents` | `vault://note/{path}` | 2 minutes | Dramatically faster for repeated file access |
 | `obsidian_simple_search` | `vault://search/{query}` | 1 minute | Cached search results for common queries |
 | `obsidian_list_files_in_vault` | `vault://structure` | 5 minutes | Instant vault browsing after first load |
@@ -65,7 +76,7 @@ MCP Resources provide read-only access to data from your Obsidian vault through 
 |----------|-------------|-------------|
 | **Vault Tags** | All unique tags with usage counts | `vault://tags` |
 | **Vault Statistics** | File and note counts for the vault | `vault://stats` |
-| **Recent Changes** | Recently modified notes (cached 30s) | `vault://recent` |
+| **Recent Changes** | Recently modified notes with preview mode (cached 30s) | `vault://recent` or `vault://recent?mode=full` |
 | **Vault Structure** | Complete hierarchical structure | `vault://structure` |
 
 #### Dynamic Resources (Cached 1-2min)
@@ -91,6 +102,14 @@ const tags = await client.readResource('vault://tags');
 const stats = await client.readResource('vault://stats');
 const note = await client.readResource('vault://note/meeting-notes.md');
 const folder = await client.readResource('vault://folder/Projects');
+
+// Recent changes with preview mode (default)
+const recentPreview = await client.readResource('vault://recent');
+// Returns: { notes: [{ path, title, modifiedAt, preview }], mode: 'preview' }
+
+// Recent changes with full content 
+const recentFull = await client.readResource('vault://recent?mode=full');
+// Returns: { notes: [{ path, title, modifiedAt, content }], mode: 'full' }
 ```
 
 **⚠️ Claude Desktop Limitation:** Resources currently cannot be accessed directly in Claude Desktop due to a [known limitation](https://github.com/modelcontextprotocol/typescript-sdk/issues/686). However, equivalent tools provide the same functionality with automatic caching benefits. See [TROUBLESHOOTING.md](TROUBLESHOOTING.md#claude-desktop-mcp-resource-limitation) for details.
@@ -238,46 +257,154 @@ Tools are organized into categories for better discoverability:
 
 ## Configuration
 
-### Obsidian REST API Key
+### Configuration Overview
 
-The MCP server needs an API key to connect to Obsidian. There are multiple ways to provide it (in order of precedence):
+The Obsidian MCP server supports flexible configuration through a hierarchical system that checks multiple sources in order of precedence. This allows you to configure the server in the way that best fits your workflow.
 
-1. **Environment variables** (highest priority)
+### Configuration Hierarchy
+
+The server loads configuration from these sources in order (higher priority overrides lower):
+
+1. **Environment Variables** (highest priority)
+   - `OBSIDIAN_API_KEY` - Your Obsidian REST API key
+   - `OBSIDIAN_HOST` - Obsidian REST API host (default: `127.0.0.1`)
+   - `OBSIDIAN_CONFIG_FILE` - Path to custom config file
+
+2. **Config File** (recommended for persistent setup)
+   - Default location: `~/.config/mcp/obsidian.json`
+   - Custom location via `OBSIDIAN_CONFIG_FILE` environment variable
+
+3. **Default Values** (lowest priority)
+   - Host: `127.0.0.1`
+   - Port: `27124` (Obsidian REST API default)
+
+### Configuration Methods
+
+#### Method 1: Environment Variables
+
+Best for: Temporary sessions, testing, CI/CD environments
+
+```bash
+# Set API key (required)
+export OBSIDIAN_API_KEY=your_api_key_here
+
+# Set custom host (optional, defaults to 127.0.0.1)
+export OBSIDIAN_HOST=192.168.1.100
+
+# Use custom config file location (optional)
+export OBSIDIAN_CONFIG_FILE=/path/to/your/config.json
+```
+
+#### Method 2: Configuration File
+
+Best for: Persistent setup, multiple vaults, shared configurations
+
+**Default location**: `~/.config/mcp/obsidian.json`
+
+```json
+{
+  "apiKey": "your_api_key_here",
+  "host": "127.0.0.1"
+}
+```
+
+**Custom location**: Set via environment variable
+```bash
+export OBSIDIAN_CONFIG_FILE=/path/to/your/custom-config.json
+```
+
+#### Method 3: Claude Desktop Configuration
+
+Best for: Claude Desktop users who want all config in one place
+
+```json
+{
+  "mcpServers": {
+    "obsidian-mcp-ts": {
+      "command": "npx",
+      "args": ["obsidian-mcp-ts"],
+      "env": {
+        "OBSIDIAN_API_KEY": "your_api_key_here",
+        "OBSIDIAN_HOST": "127.0.0.1"
+      }
+    }
+  }
+}
+```
+
+### Configuration Precedence Examples
+
+Example 1: Environment variable overrides config file
+```bash
+# Config file has apiKey: "file-key"
+export OBSIDIAN_API_KEY="env-key"
+# Server will use "env-key"
+```
+
+Example 2: Using config file with custom host
+```json
+// ~/.config/mcp/obsidian.json
+{
+  "apiKey": "your-key",
+  "host": "10.0.0.5"
+}
+```
+
+Example 3: Custom config file location
+```bash
+export OBSIDIAN_CONFIG_FILE=/home/user/vault-configs/work-vault.json
+```
+
+### Finding Your API Key
+
+1. Open Obsidian
+2. Go to Settings → Community Plugins
+3. Find "Local REST API" and click the gear icon
+4. Copy the API key from the plugin settings
+
+### Security Best Practices
+
+1. **Never commit API keys** to version control
+2. **Use config files** instead of environment variables for persistent setups
+3. **Set appropriate permissions** on config files:
    ```bash
-   export OBSIDIAN_API_KEY=your_api_key_here
-   export OBSIDIAN_HOST=127.0.0.1  # optional, defaults to 127.0.0.1
+   chmod 600 ~/.config/mcp/obsidian.json
    ```
+4. **Use different API keys** for different vaults when possible
 
-2. **External config file** (recommended for persistent setup)
-   
-   Create `~/.config/mcp/obsidian.json`:
-   ```json
-   {
-     "apiKey": "your_api_key_here",
-     "host": "127.0.0.1"
-   }
-   ```
-   
-   Or use a custom location:
-   ```bash
-   export OBSIDIAN_CONFIG_FILE=/path/to/your/config.json
-   ```
+### Troubleshooting Configuration Issues
 
-3. **Claude Desktop config** (for Claude Desktop users)
-   ```json
-   {
-     "obsidian-mcp-ts": {
-       "command": "npx",
-       "args": ["obsidian-mcp-ts"],
-       "env": {
-         "OBSIDIAN_API_KEY": "<your_api_key_here>",
-         "OBSIDIAN_HOST": "<your_obsidian_host>"
-       }
-     }
-   }
-   ```
+If the server can't find your API key, it will show:
+```
+OBSIDIAN_API_KEY not found. Please provide it via:
+1. OBSIDIAN_API_KEY environment variable
+2. Config file at ~/.config/mcp/obsidian.json
+3. Custom config file via OBSIDIAN_CONFIG_FILE environment variable
+```
 
-Note: You can find the API key in the Obsidian Local REST API plugin settings.
+Common issues:
+- **Permission denied**: Check your API key is correct
+- **Connection failed**: Verify Obsidian is running and REST API plugin is enabled
+- **File not found**: Ensure config file path is absolute, not relative
+
+### Quick Setup
+
+Use the provided setup script for interactive configuration:
+
+```bash
+./setup-config.sh
+```
+
+Or manually use the configuration template at `obsidian-config-template.json`:
+
+```bash
+cp obsidian-config-template.json ~/.config/mcp/obsidian.json
+# Edit the file and replace YOUR_OBSIDIAN_API_KEY_HERE with your actual key
+```
+
+### Advanced Configuration
+
+For detailed configuration options, multiple vault setups, and troubleshooting, see the [Configuration Guide](docs/CONFIGURATION.md).
 
 ## Quickstart
 

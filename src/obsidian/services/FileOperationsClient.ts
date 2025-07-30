@@ -601,4 +601,95 @@ export class FileOperationsClient implements IFileOperationsClient {
       error: result.error?.message
     }));
   }
+
+  // Streaming versions of batch operations for memory-efficient processing
+
+  /**
+   * Stream file contents for multiple files - memory efficient for large datasets
+   * @param filepaths - Array of file paths to read
+   * @param options - Optional batch operation options
+   * @yields File content results as they complete
+   */
+  async *streamBatchFileContents(
+    filepaths: string[],
+    options?: BatchOperationOptions
+  ): AsyncGenerator<{ filepath: string; content?: string; error?: string }, void, unknown> {
+    validatePaths(filepaths, 'filepaths');
+
+    const processor = new OptimizedBatchProcessor({
+      maxConcurrency: OBSIDIAN_DEFAULTS.BATCH_SIZE,
+      retryAttempts: BATCH_PROCESSOR.DEFAULT_RETRY_ATTEMPTS,
+      retryDelay: BATCH_PROCESSOR.DEFAULT_RETRY_DELAY_MS,
+      onProgress: options?.onProgress
+    });
+
+    for await (const result of processor.processStream(filepaths, async (filepath) => {
+      const content = await this.getFileContents(filepath);
+      return { filepath, content: content as string };
+    })) {
+      if (result.error) {
+        yield { filepath: result.item, error: result.error.message };
+      } else {
+        yield result.result!;
+      }
+    }
+  }
+
+  /**
+   * Stream create operations for multiple files - memory efficient for large batches
+   * @param fileOperations - Array of file create operations
+   * @param options - Optional batch operation options
+   * @yields Operation results as they complete
+   */
+  async *streamBatchCreateFiles(
+    fileOperations: Array<{ filepath: string; content: string }>,
+    options?: BatchOperationOptions
+  ): AsyncGenerator<{ filepath: string; success: boolean; error?: string }, void, unknown> {
+    const processor = new OptimizedBatchProcessor({
+      maxConcurrency: OBSIDIAN_DEFAULTS.BATCH_SIZE,
+      retryAttempts: BATCH_PROCESSOR.DEFAULT_RETRY_ATTEMPTS,
+      retryDelay: BATCH_PROCESSOR.DEFAULT_RETRY_DELAY_MS,
+      onProgress: options?.onProgress
+    });
+
+    for await (const result of processor.processStream(fileOperations, async (operation) => {
+      await this.createFile(operation.filepath, operation.content);
+      return operation.filepath;
+    })) {
+      yield {
+        filepath: result.item.filepath,
+        success: !result.error,
+        error: result.error?.message
+      };
+    }
+  }
+
+  /**
+   * Stream delete operations for multiple files - memory efficient for large batches
+   * @param filepaths - Array of file paths to delete
+   * @param options - Optional batch operation options
+   * @yields Operation results as they complete
+   */
+  async *streamBatchDeleteFiles(
+    filepaths: string[],
+    options?: BatchOperationOptions
+  ): AsyncGenerator<{ filepath: string; success: boolean; error?: string }, void, unknown> {
+    const processor = new OptimizedBatchProcessor({
+      maxConcurrency: OBSIDIAN_DEFAULTS.BATCH_SIZE,
+      retryAttempts: BATCH_PROCESSOR.DEFAULT_RETRY_ATTEMPTS,
+      retryDelay: BATCH_PROCESSOR.DEFAULT_RETRY_DELAY_MS,
+      onProgress: options?.onProgress
+    });
+
+    for await (const result of processor.processStream(filepaths, async (filepath) => {
+      await this.deleteFile(filepath);
+      return filepath;
+    })) {
+      yield {
+        filepath: result.item,
+        success: !result.error,
+        error: result.error?.message
+      };
+    }
+  }
 }

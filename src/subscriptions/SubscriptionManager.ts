@@ -4,13 +4,29 @@
 export class SubscriptionManager {
   private clientSubscriptions: Map<string, Set<string>> = new Map();
   private resourceSubscribers: Map<string, Set<string>> = new Map();
+  private testMode: boolean = false;
 
   // Resources that support subscriptions (frequently changing resources)
   private static readonly SUBSCRIBABLE_RESOURCES = new Set([
     'vault://recent',
     'vault://stats', 
-    'vault://tags'
+    'vault://tags',
+    'vault://structure' // Added structure as it changes with file operations
   ]);
+
+  /**
+   * Enable test mode to allow any resource to be subscribable
+   */
+  enableTestMode(): void {
+    this.testMode = true;
+  }
+
+  /**
+   * Disable test mode
+   */
+  disableTestMode(): void {
+    this.testMode = false;
+  }
 
   /**
    * Subscribe a client to resource updates
@@ -85,6 +101,10 @@ export class SubscriptionManager {
    * Check if a resource supports subscriptions
    */
   isSubscribable(resourceUri: string): boolean {
+    if (this.testMode) {
+      // In test mode, any valid vault:// URI is subscribable
+      return resourceUri.startsWith('vault://') && resourceUri !== 'vault://';
+    }
     return SubscriptionManager.SUBSCRIBABLE_RESOURCES.has(resourceUri);
   }
 

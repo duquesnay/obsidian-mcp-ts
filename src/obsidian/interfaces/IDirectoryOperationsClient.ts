@@ -29,4 +29,19 @@ export interface IDirectoryOperationsClient {
     failedFiles: string[];
     message?: string;
   }>;
+
+  copyDirectoryStream(
+    sourcePath: string, 
+    destinationPath: string, 
+    options?: {
+      overwrite?: boolean;
+      onProgress?: (completed: number, total: number) => void;
+      useStreaming?: boolean;
+    }
+  ): Promise<{
+    filesCopied: number;
+    failedFiles: string[];
+    message?: string;
+    streamingUsed?: boolean;
+  }>;
 }

@@ -1,0 +1,214 @@
+/**
+ * Shared response mode system for handling content processing across all resources
+ */
+
+import { LRUCache } from './Cache.js';
+import { RESPONSE_MODE_LIMITS, TIME_CONSTANTS, CACHE_DEFAULTS } from '../constants.js';
+import { CacheRegistry } from './CacheRegistry.js';
+
+export type ResponseMode = 'summary' | 'preview' | 'full';
+
+export interface ResponseContent {
+  full: string;
+  summary?: string;
+  preview?: string;
+}
+
+export interface ModeResponse {
+  mode: ResponseMode;
+  content: string;
+}
+
+// Use imported constants from central constants file
+
+/**
+ * Shared system for processing content in different response modes
+ */
+export class ResponseModeSystem {
+  private static previewCache = new LRUCache<string, string>({ 
+    maxSize: CACHE_DEFAULTS.MAX_SIZE, 
+    ttl: CACHE_DEFAULTS.STABLE_TTL
+  });
+  
+  private static summaryCache = new LRUCache<string, string>({ 
+    maxSize: CACHE_DEFAULTS.MAX_SIZE, 
+    ttl: CACHE_DEFAULTS.STABLE_TTL
+  });
+
+  private static initialized = false;
+
+  /**
+   * Initialize and register caches
+   */
+  private static initialize(): void {
+    if (!this.initialized) {
+      const registry = CacheRegistry.getInstance();
+      registry.register('response-mode-preview', this.previewCache);
+      registry.register('response-mode-summary', this.summaryCache);
+      this.initialized = true;
+    }
+  }
+
+  /**
+   * Reset for testing
+   */
+  static reset(): void {
+    this.previewCache.clear();
+    this.summaryCache.clear();
+    this.initialized = false;
+  }
+
+  /**
+   * Parse and validate response mode parameter
+   */
+  static parseMode(mode: string | null | undefined): ResponseMode {
+    const validModes: ResponseMode[] = ['summary', 'preview', 'full'];
+    
+    if (mode && validModes.includes(mode as ResponseMode)) {
+      return mode as ResponseMode;
+    }
+    
+    return 'summary'; // Default mode
+  }
+
+  /**
+   * Extract response mode from URI query parameters
+   */
+  static extractModeFromUri(uri: string): ResponseMode {
+    try {
+      const url = new URL(uri, 'vault://');
+      const modeParam = url.searchParams.get('mode');
+      return this.parseMode(modeParam);
+    } catch (error) {
+      return 'summary'; // Default on parse error
+    }
+  }
+
+  /**
+   * Create optimized summary (under 500 characters)
+   */
+  static createSummary(content: string, cacheKey?: string): string {
+    this.initialize();
+    
+    // Check cache first if key provided
+    if (cacheKey) {
+      const cached = this.summaryCache.get(cacheKey);
+      // Only return cached value if it's a valid string (not null/undefined/corrupted)
+      if (cached !== undefined && typeof cached === 'string') {
+        return cached;
+      }
+    }
+
+    let result: string;
+    
+    if (content.length <= RESPONSE_MODE_LIMITS.SUMMARY_MAX_LENGTH) {
+      result = content;
+    } else {
+      const maxContentLength = RESPONSE_MODE_LIMITS.SUMMARY_MAX_LENGTH - RESPONSE_MODE_LIMITS.TRUNCATION_INDICATOR.length;
+      result = content.substring(0, maxContentLength) + RESPONSE_MODE_LIMITS.TRUNCATION_INDICATOR;
+    }
+
+    // Cache if key provided
+    if (cacheKey) {
+      this.summaryCache.set(cacheKey, result);
+    }
+
+    return result;
+  }
+
+  /**
+   * Create optimized preview (under 2000 characters)
+   */
+  static createPreview(content: string, cacheKey?: string): string {
+    this.initialize();
+    
+    // Check cache first if key provided
+    if (cacheKey) {
+      const cached = this.previewCache.get(cacheKey);
+      // Only return cached value if it's a valid string (not null/undefined/corrupted)
+      if (cached !== undefined && typeof cached === 'string') {
+        return cached;
+      }
+    }
+
+    let result: string;
+    
+    if (content.length <= RESPONSE_MODE_LIMITS.PREVIEW_MAX_LENGTH) {
+      result = content;
+    } else {
+      const maxContentLength = RESPONSE_MODE_LIMITS.PREVIEW_MAX_LENGTH - RESPONSE_MODE_LIMITS.TRUNCATION_INDICATOR.length;
+      result = content.substring(0, maxContentLength) + RESPONSE_MODE_LIMITS.TRUNCATION_INDICATOR;
+    }
+
+    // Cache if key provided
+    if (cacheKey) {
+      this.previewCache.set(cacheKey, result);
+    }
+
+    return result;
+  }
+
+  /**
+   * Process content based on response mode with auto-generation of missing modes
+   */
+  static processContent(content: ResponseContent, mode: ResponseMode): string {
+    // Handle null/undefined content gracefully
+    if (!content || typeof content !== 'object') {
+      return '';
+    }
+    
+    // Ensure full content exists
+    const fullContent = content.full || '';
+    
+    switch (mode) {
+      case 'full':
+        return fullContent;
+        
+      case 'preview':
+        return content.preview || this.createPreview(fullContent);
+        
+      case 'summary':
+        return content.summary || this.createSummary(fullContent);
+        
+      default:
+        return content.summary || this.createSummary(fullContent);
+    }
+  }
+
+  /**
+   * Create a structured response with mode information
+   */
+  static createModeResponse(content: ResponseContent, mode: ResponseMode): ModeResponse {
+    return {
+      mode,
+      content: this.processContent(content, mode)
+    };
+  }
+
+  /**
+   * Clear all caches (useful for testing)
+   */
+  static clearCache(): void {
+    this.previewCache.clear();
+    this.summaryCache.clear();
+  }
+
+  /**
+   * Get cache statistics for monitoring
+   */
+  static getCacheStats() {
+    const previewStats = this.previewCache.getStats();
+    const summaryStats = this.summaryCache.getStats();
+    
+    return {
+      preview: {
+        size: previewStats.size,
+        hitRate: previewStats.hitRate
+      },
+      summary: {
+        size: summaryStats.size,
+        hitRate: summaryStats.hitRate
+      }
+    };
+  }
+}

@@ -77,16 +77,16 @@ describe('Cache Performance Demo', () => {
     const recentStats = cachedRecentHandler.getCacheStats();
     
     expect(tagsStats.hits).toBe(1);
-    expect(tagsStats.misses).toBe(1);
-    expect(tagsStats.hitRate).toBe(0.5);
+    expect(tagsStats.misses).toBe(2); // With deduplication: 2 checks on miss
+    expect(tagsStats.hitRate).toBe(1/3); // 1 hit out of 3 total
     
     expect(statsStats.hits).toBe(1);
-    expect(statsStats.misses).toBe(1);
-    expect(statsStats.hitRate).toBe(0.5);
+    expect(statsStats.misses).toBe(2); // With deduplication: 2 checks on miss
+    expect(statsStats.hitRate).toBe(1/3); // 1 hit out of 3 total
     
     expect(recentStats.hits).toBe(1);
-    expect(recentStats.misses).toBe(1);
-    expect(recentStats.hitRate).toBe(0.5);
+    expect(recentStats.misses).toBe(2); // With deduplication: 2 checks on miss
+    expect(recentStats.hitRate).toBe(1/3); // 1 hit out of 3 total
     
     console.log(`Performance improvement: ${Math.round(firstCallTime / cacheCallTime)}x faster with cache`);
     console.log(`First calls: ${firstCallTime}ms, Cached calls: ${cacheCallTime}ms`);
@@ -113,12 +113,12 @@ describe('Cache Performance Demo', () => {
     // First call
     const result1 = await cachedHandler.execute('vault://tags', mockServer);
     const data1 = JSON.parse(result1.contents[0].text);
-    expect(data1.tags[0].name).toBe('#old');
+    expect(data1.topTags[0].name).toBe('#old');
     
     // Immediate second call should use cache
     const result2 = await cachedHandler.execute('vault://tags', mockServer);
     const data2 = JSON.parse(result2.contents[0].text);
-    expect(data2.tags[0].name).toBe('#old'); // Same cached result
+    expect(data2.topTags[0].name).toBe('#old'); // Same cached result
     expect(mockGetAllTags).toHaveBeenCalledTimes(1);
     
     // Wait for TTL expiration
@@ -127,14 +127,14 @@ describe('Cache Performance Demo', () => {
     // Third call should hit API again due to TTL expiration
     const result3 = await cachedHandler.execute('vault://tags', mockServer);
     const data3 = JSON.parse(result3.contents[0].text);
-    expect(data3.tags[0].name).toBe('#new'); // New result from API
+    expect(data3.topTags[0].name).toBe('#new'); // New result from API
     expect(mockGetAllTags).toHaveBeenCalledTimes(2);
     
     // Verify cache statistics reflect the behavior
     const stats = cachedHandler.getCacheStats();
     expect(stats.hits).toBe(1); // Only one cache hit
-    expect(stats.misses).toBe(2); // Two cache misses (initial + after expiration)
-    expect(stats.hitRate).toBeCloseTo(0.333, 2);
+    expect(stats.misses).toBe(4); // With deduplication: 2 actual misses * 2 checks each
+    expect(stats.hitRate).toBeCloseTo(0.2, 2); // 1 hit out of 5 total
   });
 
   it('should handle mixed cache hits and misses for parameterized resources', async () => {
@@ -174,8 +174,8 @@ describe('Cache Performance Demo', () => {
     // Verify cache statistics
     const stats = cachedHandler.getCacheStats();
     expect(stats.hits).toBe(3); // Three cache hits
-    expect(stats.misses).toBe(3); // Three cache misses
-    expect(stats.hitRate).toBe(0.5);
+    expect(stats.misses).toBe(6); // With deduplication: 3 actual misses * 2 checks each
+    expect(stats.hitRate).toBe(1/3); // 3 hits out of 9 total
     expect(stats.size).toBe(3); // Three items cached
   });
 });

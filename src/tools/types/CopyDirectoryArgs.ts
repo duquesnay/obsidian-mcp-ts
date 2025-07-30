@@ -14,4 +14,8 @@ export interface CopyDirectoryArgs extends Record<string, unknown> {
    * Whether to overwrite existing files in the destination (default: false)
    */
   overwrite?: boolean;
+  /**
+   * Use streaming mode for memory-efficient copying of large directories (auto-enabled for >100 files)
+   */
+  useStreaming?: boolean;
 }

@@ -4,6 +4,8 @@ import { ConfigLoader } from '../utils/configLoader.js';
 import { ResourceHandler } from './types.js';
 import { ResourceErrorHandler } from '../utils/ResourceErrorHandler.js';
 import { ResourceValidationUtil } from '../utils/ResourceValidationUtil.js';
+import { ResponseModeSystem, ResponseMode, ResponseContent, ModeResponse } from '../utils/ResponseModeSystem.js';
+import { PaginationSystem, PaginationParams, PaginationOptions } from '../utils/PaginationSystem.js';
 
 // Extend Server type to include obsidianClient for testing
 interface ServerWithClient {
@@ -87,5 +89,99 @@ export abstract class BaseResourceHandler {
    */
   protected handleError(error: any, resourceType: string, path: string): never {
     ResourceErrorHandler.handleApiError(error, resourceType, path);
+  }
+
+  // Response Mode System Integration
+
+  /**
+   * Extract response mode from URI query parameters using ResponseModeSystem
+   */
+  protected extractModeFromUri(uri: string): ResponseMode {
+    return ResponseModeSystem.extractModeFromUri(uri);
+  }
+
+  /**
+   * Process content based on response mode using ResponseModeSystem
+   */
+  protected processResponseContent(content: ResponseContent, mode: ResponseMode): any {
+    // Return structured response object so execute() will detect it as JSON
+    return ResponseModeSystem.createModeResponse(content, mode);
+  }
+
+  /**
+   * Create optimized summary response with optional caching
+   */
+  protected createSummaryResponse(content: string, cacheKey?: string): string {
+    return ResponseModeSystem.createSummary(content, cacheKey);
+  }
+
+  /**
+   * Create optimized preview response with optional caching
+   */
+  protected createPreviewResponse(content: string, cacheKey?: string): string {
+    return ResponseModeSystem.createPreview(content, cacheKey);
+  }
+
+  /**
+   * Format a response with mode information as JSON
+   */
+  protected formatModeResponse(uri: string, content: ResponseContent, mode: ResponseMode): ReadResourceResult {
+    const modeResponse = ResponseModeSystem.createModeResponse(content, mode);
+    return this.formatJsonResponse(uri, modeResponse);
+  }
+
+  /**
+   * Create a structured mode response object
+   */
+  protected createModeResponse(content: ResponseContent, mode: ResponseMode): ModeResponse {
+    return ResponseModeSystem.createModeResponse(content, mode);
+  }
+
+  // Pagination System Integration
+
+  /**
+   * Extract pagination parameters from URI using PaginationSystem
+   */
+  protected extractPaginationParameters(uri: string, options?: PaginationOptions): PaginationParams {
+    return PaginationSystem.parseParameters(uri, options);
+  }
+
+  /**
+   * Create a paginated response with standardized metadata
+   */
+  protected createPaginatedResponse<T>(
+    data: T[],
+    params: PaginationParams,
+    additionalMetadata?: Record<string, any>
+  ) {
+    return PaginationSystem.createPaginatedResponse(data, params, data.length, additionalMetadata);
+  }
+
+  /**
+   * Apply pagination to data array
+   */
+  protected applyPagination<T>(data: T[], params: PaginationParams): T[] {
+    return PaginationSystem.applyPagination(data, params);
+  }
+
+  /**
+   * Generate pagination metadata
+   */
+  protected generatePaginationMetadata(params: PaginationParams, totalItems: number) {
+    return PaginationSystem.generateMetadata(params, totalItems);
+  }
+
+  /**
+   * Check if pagination is requested
+   */
+  protected isPaginationRequested(params: PaginationParams): boolean {
+    return PaginationSystem.isPaginationRequested(params);
+  }
+
+  /**
+   * Generate continuation token for stateful pagination
+   */
+  protected generateContinuationToken(type: string, query: string, offset: number): string {
+    return PaginationSystem.generateContinuationToken(type, query, offset);
   }
 }

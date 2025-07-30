@@ -56,9 +56,11 @@ export async function initializeServer(server: ServerWithSubscriptions): Promise
   validateSubscriptionConfig(config);
 
   // Register components in order
+  // Important: registerSubscriptions must come before registerResources
+  // because resources need subscriptionHandlers to be available for cache invalidation
   await registerTools(server);
-  await registerResources(server);
   await registerSubscriptions(server);
+  await registerResources(server);
 
   // Configure default subscriptions if specified
   if (config.defaultSubscriptions.length > 0 && server.subscriptionManager) {

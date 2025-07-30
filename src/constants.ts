@@ -24,6 +24,9 @@ export const OBSIDIAN_DEFAULTS = {
   /** Default search limit for simple search */
   DEFAULT_SEARCH_LIMIT: 50,
   
+  /** Default search limit for resource search (more expensive) */
+  DEFAULT_RESOURCE_SEARCH_LIMIT: 10,
+  
   /** Maximum search results for simple search */
   MAX_SEARCH_RESULTS: 200,
   
@@ -60,6 +63,25 @@ export const CACHE_DEFAULTS = {
   
   /** TTL for individual notes in milliseconds */
   NOTE_TTL: 120000, // 2 minutes
+} as const;
+
+export const RESPONSE_MODE_LIMITS = {
+  /** Maximum length for summary responses */
+  SUMMARY_MAX_LENGTH: 500,
+  
+  /** Maximum length for preview responses */
+  PREVIEW_MAX_LENGTH: 2000,
+  
+  /** Indicator text for truncated content */
+  TRUNCATION_INDICATOR: '...'
+} as const;
+
+export const TIME_CONSTANTS = {
+  /** Seconds per minute */
+  SECONDS_PER_MINUTE: 60,
+  
+  /** Milliseconds per second */
+  MS_PER_SECOND: 1000
 } as const;
 
 export const LRU_CACHE = {

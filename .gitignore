@@ -33,6 +33,9 @@ test-*.sh
 # Claude settings (personal preferences)
 .claude/settings.local.json
 
+# Claude hook state files (should not be tracked)
+.claude/hooks/feature-commit-counter
+
 # OS
 .DS_Store
 Thumbs.db
