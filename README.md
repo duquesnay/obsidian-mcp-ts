@@ -257,46 +257,154 @@ Tools are organized into categories for better discoverability:
 
 ## Configuration
 
-### Obsidian REST API Key
+### Configuration Overview
 
-The MCP server needs an API key to connect to Obsidian. There are multiple ways to provide it (in order of precedence):
+The Obsidian MCP server supports flexible configuration through a hierarchical system that checks multiple sources in order of precedence. This allows you to configure the server in the way that best fits your workflow.
 
-1. **Environment variables** (highest priority)
+### Configuration Hierarchy
+
+The server loads configuration from these sources in order (higher priority overrides lower):
+
+1. **Environment Variables** (highest priority)
+   - `OBSIDIAN_API_KEY` - Your Obsidian REST API key
+   - `OBSIDIAN_HOST` - Obsidian REST API host (default: `127.0.0.1`)
+   - `OBSIDIAN_CONFIG_FILE` - Path to custom config file
+
+2. **Config File** (recommended for persistent setup)
+   - Default location: `~/.config/mcp/obsidian.json`
+   - Custom location via `OBSIDIAN_CONFIG_FILE` environment variable
+
+3. **Default Values** (lowest priority)
+   - Host: `127.0.0.1`
+   - Port: `27124` (Obsidian REST API default)
+
+### Configuration Methods
+
+#### Method 1: Environment Variables
+
+Best for: Temporary sessions, testing, CI/CD environments
+
+```bash
+# Set API key (required)
+export OBSIDIAN_API_KEY=your_api_key_here
+
+# Set custom host (optional, defaults to 127.0.0.1)
+export OBSIDIAN_HOST=192.168.1.100
+
+# Use custom config file location (optional)
+export OBSIDIAN_CONFIG_FILE=/path/to/your/config.json
+```
+
+#### Method 2: Configuration File
+
+Best for: Persistent setup, multiple vaults, shared configurations
+
+**Default location**: `~/.config/mcp/obsidian.json`
+
+```json
+{
+  "apiKey": "your_api_key_here",
+  "host": "127.0.0.1"
+}
+```
+
+**Custom location**: Set via environment variable
+```bash
+export OBSIDIAN_CONFIG_FILE=/path/to/your/custom-config.json
+```
+
+#### Method 3: Claude Desktop Configuration
+
+Best for: Claude Desktop users who want all config in one place
+
+```json
+{
+  "mcpServers": {
+    "obsidian-mcp-ts": {
+      "command": "npx",
+      "args": ["obsidian-mcp-ts"],
+      "env": {
+        "OBSIDIAN_API_KEY": "your_api_key_here",
+        "OBSIDIAN_HOST": "127.0.0.1"
+      }
+    }
+  }
+}
+```
+
+### Configuration Precedence Examples
+
+Example 1: Environment variable overrides config file
+```bash
+# Config file has apiKey: "file-key"
+export OBSIDIAN_API_KEY="env-key"
+# Server will use "env-key"
+```
+
+Example 2: Using config file with custom host
+```json
+// ~/.config/mcp/obsidian.json
+{
+  "apiKey": "your-key",
+  "host": "10.0.0.5"
+}
+```
+
+Example 3: Custom config file location
+```bash
+export OBSIDIAN_CONFIG_FILE=/home/user/vault-configs/work-vault.json
+```
+
+### Finding Your API Key
+
+1. Open Obsidian
+2. Go to Settings → Community Plugins
+3. Find "Local REST API" and click the gear icon
+4. Copy the API key from the plugin settings
+
+### Security Best Practices
+
+1. **Never commit API keys** to version control
+2. **Use config files** instead of environment variables for persistent setups
+3. **Set appropriate permissions** on config files:
    ```bash
-   export OBSIDIAN_API_KEY=your_api_key_here
-   export OBSIDIAN_HOST=127.0.0.1  # optional, defaults to 127.0.0.1
+   chmod 600 ~/.config/mcp/obsidian.json
    ```
+4. **Use different API keys** for different vaults when possible
 
-2. **External config file** (recommended for persistent setup)
-   
-   Create `~/.config/mcp/obsidian.json`:
-   ```json
-   {
-     "apiKey": "your_api_key_here",
-     "host": "127.0.0.1"
-   }
-   ```
-   
-   Or use a custom location:
-   ```bash
-   export OBSIDIAN_CONFIG_FILE=/path/to/your/config.json
-   ```
+### Troubleshooting Configuration Issues
 
-3. **Claude Desktop config** (for Claude Desktop users)
-   ```json
-   {
-     "obsidian-mcp-ts": {
-       "command": "npx",
-       "args": ["obsidian-mcp-ts"],
-       "env": {
-         "OBSIDIAN_API_KEY": "<your_api_key_here>",
-         "OBSIDIAN_HOST": "<your_obsidian_host>"
-       }
-     }
-   }
-   ```
+If the server can't find your API key, it will show:
+```
+OBSIDIAN_API_KEY not found. Please provide it via:
+1. OBSIDIAN_API_KEY environment variable
+2. Config file at ~/.config/mcp/obsidian.json
+3. Custom config file via OBSIDIAN_CONFIG_FILE environment variable
+```
 
-Note: You can find the API key in the Obsidian Local REST API plugin settings.
+Common issues:
+- **Permission denied**: Check your API key is correct
+- **Connection failed**: Verify Obsidian is running and REST API plugin is enabled
+- **File not found**: Ensure config file path is absolute, not relative
+
+### Quick Setup
+
+Use the provided setup script for interactive configuration:
+
+```bash
+./setup-config.sh
+```
+
+Or manually use the configuration template at `obsidian-config-template.json`:
+
+```bash
+cp obsidian-config-template.json ~/.config/mcp/obsidian.json
+# Edit the file and replace YOUR_OBSIDIAN_API_KEY_HERE with your actual key
+```
+
+### Advanced Configuration
+
+For detailed configuration options, multiple vault setups, and troubleshooting, see the [Configuration Guide](docs/CONFIGURATION.md).
 
 ## Quickstart
 
