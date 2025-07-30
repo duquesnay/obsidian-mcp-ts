@@ -28,6 +28,10 @@ export class CopyDirectoryTool extends BaseTool<CopyDirectoryArgs> {
       overwrite: {
         ...BOOLEAN_FLAG_SCHEMA,
         description: 'Whether to overwrite existing files in the destination (default: false).'
+      },
+      useStreaming: {
+        type: 'boolean',
+        description: 'Use streaming mode for memory-efficient copying of large directories (auto-enabled for >100 files)'
       }
     },
     required: ['sourcePath', 'destinationPath']
@@ -57,7 +61,25 @@ export class CopyDirectoryTool extends BaseTool<CopyDirectoryArgs> {
       }
       
       const client = this.getClient();
-      const result = await client.copyDirectory(sourcePath, destinationPath, args.overwrite || false);
+      
+      // Check if streaming is available
+      const hasStreamingSupport = 'copyDirectoryStream' in client;
+      
+      let result;
+      if (hasStreamingSupport && args.useStreaming !== false) {
+        // Use streaming version if available and not explicitly disabled
+        result = await (client as any).copyDirectoryStream(sourcePath, destinationPath, {
+          overwrite: args.overwrite || false,
+          useStreaming: args.useStreaming,
+          onProgress: (completed: number, total: number) => {
+            // Progress tracking could be exposed through a callback or logged
+            console.log(`Copy progress: ${completed}/${total} files`);
+          }
+        });
+      } else {
+        // Fall back to regular copy
+        result = await client.copyDirectory(sourcePath, destinationPath, args.overwrite || false);
+      }
       
       return this.formatResponse({ 
         success: true, 
@@ -65,7 +87,8 @@ export class CopyDirectoryTool extends BaseTool<CopyDirectoryArgs> {
         sourcePath: sourcePath,
         destinationPath: destinationPath,
         filesCopied: result.filesCopied || 0,
-        failedFiles: result.failedFiles || []
+        failedFiles: result.failedFiles || [],
+        streamingUsed: result.streamingUsed || false
       });
     } catch (error) {
       return this.handleError(error);

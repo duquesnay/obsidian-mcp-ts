@@ -109,17 +109,32 @@ export class SearchClient implements ISearchClient {
         return allResults;
       }
 
+      const defaultLimit = OBSIDIAN_DEFAULTS.DEFAULT_RESOURCE_SEARCH_LIMIT;
       const totalResults = allResults.length;
       const startIndex = offset || 0;
-      const endIndex = limit ? startIndex + limit : totalResults;
+      const actualLimit = limit || defaultLimit;
+      const endIndex = startIndex + actualLimit;
       const paginatedResults = allResults.slice(startIndex, endIndex);
+
+      // Generate continuation token for next page
+      let continuationToken: string | undefined;
+      if (endIndex < totalResults) {
+        const tokenData = {
+          type: 'search',
+          query,
+          offset: endIndex,
+          contextLength
+        };
+        continuationToken = btoa(JSON.stringify(tokenData));
+      }
 
       return {
         results: paginatedResults,
         totalResults: totalResults,
         hasMore: endIndex < totalResults,
         offset: startIndex,
-        limit: limit || totalResults
+        limit: actualLimit,
+        continuationToken
       };
     });
   }

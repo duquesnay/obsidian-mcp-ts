@@ -265,6 +265,14 @@ export class LRUCache<K, V> implements ICacheWithSubscriptions<K, V> {
   }
 
   /**
+   * Get all keys in the cache
+   * @returns Iterator of all cache keys
+   */
+  keys(): IterableIterator<K> {
+    return this.cache.keys();
+  }
+
+  /**
    * Get cache size
    */
   size(): number {

@@ -17,6 +17,9 @@ This guide explains how to use the MCP Resources feature in obsidian-mcp-ts to a
 
 MCP Resources provide a standardized way for AI assistants to access read-only data from your Obsidian vault. Unlike tools which perform actions, resources are designed for retrieving and maintaining context about your vault's content and structure.
 
+**⚠️ Important Note - Claude Desktop Limitation:**
+Due to a [known limitation in Claude Desktop](https://github.com/modelcontextprotocol/typescript-sdk/issues/686), resources cannot be accessed directly by users, even though they appear as "connected" in settings. However, this server implements internal resource integration where tools automatically use resources for caching benefits. All functionality is available through equivalent tools. See the [Troubleshooting Guide](../TROUBLESHOOTING.md#claude-desktop-mcp-resource-limitation) for complete details.
+
 ### Key Benefits
 
 - **Persistent Context**: Resources help AI assistants maintain awareness of your vault structure
@@ -68,20 +71,62 @@ Provides file and note counts for your vault.
 ```
 
 #### 3. **Recent Changes** - `vault://recent`
-Lists recently modified notes (cached for 30 seconds).
+Lists recently modified notes with time-based pagination (cached for 30 seconds).
 
-**Response format:**
+**Parameters:**
+- `mode`: Response mode (`preview` or `full`). Default: `preview`
+- `limit`: Number of items per page (1-1000). Default: `20`
+- `offset`: Number of items to skip for pagination. Default: `0`
+
+**Examples:**
+- `vault://recent` - First 20 recent notes with preview
+- `vault://recent?mode=full` - First 20 recent notes with full content
+- `vault://recent?limit=10&offset=0` - First 10 recent notes
+- `vault://recent?limit=10&offset=10` - Next 10 recent notes
+
+**Response format (preview mode):**
 ```json
 {
-  "files": [
+  "notes": [
     {
       "path": "Daily/2024-01-15.md",
-      "modified": "2024-01-15T10:30:00Z",
-      "size": 2048
+      "title": "2024-01-15",
+      "modifiedAt": "2024-01-15T10:30:00.000Z",
+      "preview": "Today I worked on the MCP server pagination feature..."
     }
-  ]
+  ],
+  "mode": "preview",
+  "pagination": {
+    "totalNotes": 25,
+    "hasMore": true,
+    "limit": 20,
+    "offset": 0,
+    "nextOffset": 20,
+    "continuationToken": "1704096000000"
+  }
 }
 ```
+
+**Response format (full mode):**
+```json
+{
+  "notes": [
+    {
+      "path": "Daily/2024-01-15.md", 
+      "title": "2024-01-15",
+      "modifiedAt": "2024-01-15T10:30:00.000Z",
+      "content": "# Daily Note\n\nToday I worked on..."
+    }
+  ],
+  "mode": "full"  
+}
+```
+
+**Pagination Notes:**
+- Default limit is 20 items per page, optimized for recent items
+- Chronological ordering maintained (most recent first)
+- Continuation tokens enable time-based pagination for large datasets
+- Pagination info only included when multiple pages are available
 
 #### 4. **Vault Structure** - `vault://structure`
 Returns the complete hierarchical structure of your vault.
@@ -324,14 +369,58 @@ for (const file of projectNotes.files) {
 
 #### 3. Daily Review Workflow
 ```typescript
-// Get recent changes
+// Get recent changes with preview (default)
 const recent = await client.readResource('vault://recent');
+
+// Get recent changes with pagination
+const recentPage = await client.readResource('vault://recent?limit=10&offset=0');
+
+// Get full content for deeper review
+const recentFull = await client.readResource('vault://recent?mode=full&limit=5');
 
 // Read today's daily note
 const today = await client.readResource('vault://daily/today');
 
 // Check vault statistics
 const stats = await client.readResource('vault://stats');
+```
+
+#### 4. Paginated Recent Changes Workflow
+```typescript
+// Function to process all recent changes with pagination
+async function processAllRecentChanges() {
+  let offset = 0;
+  const limit = 20;
+  let hasMore = true;
+  
+  while (hasMore) {
+    const response = await client.readResource(`vault://recent?limit=${limit}&offset=${offset}`);
+    const data = JSON.parse(response.contents[0].text);
+    
+    // Process this page of notes
+    for (const note of data.notes) {
+      console.log(`Processing: ${note.title} (${note.modifiedAt})`);
+      console.log(`Preview: ${note.preview}`);
+    }
+    
+    // Check if there are more pages
+    hasMore = data.pagination?.hasMore || false;
+    offset += limit;
+  }
+}
+
+// Use continuation tokens for time-based pagination
+async function getRecentChangesAfter(timestamp: string) {
+  const response = await client.readResource(`vault://recent?limit=50`);
+  const data = JSON.parse(response.contents[0].text);
+  
+  // Filter notes newer than the timestamp
+  const newerNotes = data.notes.filter(note => 
+    new Date(note.modifiedAt).getTime() > parseInt(timestamp)
+  );
+  
+  return newerNotes;
+}
 ```
 
 ## Common Use Cases

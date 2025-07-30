@@ -6,7 +6,7 @@ import { defaultCachedHandlers } from '../resources/CachedConcreteHandlers.js';
 
 export class GetFileContentsTool extends BaseTool<GetFileContentsArgs> {
   name = 'obsidian_get_file_contents';
-  description = 'Read content from an Obsidian vault note (NOT filesystem files - vault notes only). Supports different formats. Uses vault://note/{path} resource internally with 2 min cache for better performance when no format is specified.';
+  description = 'Read content from an Obsidian vault note (NOT filesystem files - vault notes only). Supports different formats. When no format is specified, returns preview mode (frontmatter + first 200 chars + statistics) via vault://note/{path} resource with 2 min cache for optimal performance.';
   
   metadata: ToolMetadata = {
     category: 'file-operations',
@@ -21,7 +21,7 @@ export class GetFileContentsTool extends BaseTool<GetFileContentsArgs> {
       format: {
         type: 'string',
         enum: ['content', 'metadata', 'frontmatter', 'plain', 'html'],
-        description: 'Format to retrieve: content (default), metadata (file info only), frontmatter (YAML only), plain (no markdown), html (rendered)'
+        description: 'Format to retrieve: content (full markdown), metadata (file info only), frontmatter (YAML only), plain (no markdown), html (rendered). If not specified, returns preview mode with frontmatter + first 200 chars + statistics (optimal performance)'
       }
     },
     required: ['filepath']
@@ -47,8 +47,8 @@ export class GetFileContentsTool extends BaseTool<GetFileContentsArgs> {
       }
       
       // Performance optimization: Use cached resource handler when possible
-      // - No format specified: Use vault://note/{path} resource with 2-minute caching
-      // - Format specified: Use direct client call (NoteHandler doesn't support format parameter yet)
+      // - No format specified: Use vault://note/{path} resource with 2 min cache (returns preview mode)
+      // - Format specified: Use direct client call for specific formats
       let result;
       if (!args.format) {
         result = await defaultCachedHandlers.note.handleRequest(`vault://note/${args.filepath}`);

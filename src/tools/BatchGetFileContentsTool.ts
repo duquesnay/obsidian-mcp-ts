@@ -3,10 +3,11 @@ import { BaseTool, ToolMetadata, ToolResponse } from './base.js';
 import { PathValidationUtil, PathValidationType } from '../utils/PathValidationUtil.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
 import { validateRequiredArgs, PAGE_PAGINATION_SCHEMA } from '../utils/validation.js';
+import { BatchOperationOptions } from '../obsidian/interfaces/IFileOperationsClient.js';
 
 export class BatchGetFileContentsTool extends BaseTool<BatchGetFileContentsArgs> {
   name = 'obsidian_batch_get_file_contents';
-  description = 'Read multiple Obsidian vault notes at once (vault-only - NOT filesystem access). Returns concatenated content.';
+  description = 'Read multiple Obsidian vault notes at once (vault-only - NOT filesystem access). Returns concatenated content with optional progress tracking.';
   
   metadata: ToolMetadata = {
     category: 'file-operations',
@@ -54,8 +55,34 @@ export class BatchGetFileContentsTool extends BaseTool<BatchGetFileContentsArgs>
       }
       
       const client = this.getClient();
+      
+      // Track progress information
+      const progressInfo: { completed: number; total: number } = {
+        completed: 0,
+        total: filesToProcess.length
+      };
+      
+      // Create batch options with progress callback
+      const batchOptions: BatchOperationOptions = {
+        onProgress: (completed: number, total: number) => {
+          progressInfo.completed = completed;
+          progressInfo.total = total;
+        }
+      };
+      
       const content = await client.getBatchFileContents(filesToProcess);
-      return this.formatResponse(content);
+      
+      // Create response with progress information
+      const responseData = {
+        content,
+        progress: {
+          completed: progressInfo.completed,
+          total: progressInfo.total,
+          percentage: progressInfo.total > 0 ? Math.round((progressInfo.completed / progressInfo.total) * 100) : 0
+        }
+      };
+      
+      return this.formatResponse(responseData);
     } catch (error) {
       return this.handleError(error);
     }

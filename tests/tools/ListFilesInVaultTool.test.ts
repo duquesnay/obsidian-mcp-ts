@@ -49,8 +49,8 @@ describe('ListFilesInVaultTool', () => {
 
       const result = await tool.executeTyped({});
 
-      // Verify the resource handler was called with correct URI
-      expect(mockHandleRequest).toHaveBeenCalledWith('vault://structure');
+      // Verify the resource handler was called with correct URI (using full mode for file listing)
+      expect(mockHandleRequest).toHaveBeenCalledWith('vault://structure?mode=full');
       
       // Verify the returned files are flattened correctly
       expect(result.type).toBe('text');

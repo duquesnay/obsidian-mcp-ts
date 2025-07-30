@@ -33,6 +33,7 @@ export interface PaginatedSearchResponse {
   hasMore: boolean;
   offset: number;
   limit: number;
+  continuationToken?: string;
 }
 
 // Complex search response (JsonLogic)

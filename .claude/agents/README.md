@@ -11,48 +11,43 @@ This directory contains specialized sub-agent definitions for collaborative deve
    - Handles feature implementation, refactoring, and programming tasks
    - Go-to agent for any coding needs
 
-2. **test-engineer.md** 
-   - TDD methodology expert
-   - Ensures comprehensive test coverage
-   - Required for all development tasks
-
-3. **code-quality-analyst.md**
+2. **code-quality-analyst.md**
    - Identifies code smells and duplication
    - Extracts magic numbers and constants
-   - Ideal for task: CQ9
+   - Ensures adherence to DRY and SOLID principles
 
 ### Architecture & Design Team
 
-4. **architecture-reviewer.md**
+3. **architecture-reviewer.md**
    - SOLID principles enforcement
    - Design pattern expertise
    - Reviews structural changes
 
-5. **performance-optimizer.md**
+4. **performance-optimizer.md**
    - Caching and batching strategies
    - Performance profiling
    - Optimization implementation
 
 ### Support Team
 
-6. **documentation-writer.md**
+5. **documentation-writer.md**
    - Technical documentation
    - API docs and examples
    - Maintains README and CLAUDE.md
 
-7. **integration-specialist.md**
+6. **integration-specialist.md**
    - API compatibility
    - Component integration
    - Cross-cutting concerns
 
-8. **git-workflow-manager.md**
+7. **git-workflow-manager.md**
    - Version control best practices
    - Atomic commits
    - PR management
 
 ### Coordination
 
-9. **backlog-manager.md**
+8. **backlog-manager.md**
    - Strategic project management
    - Backlog tracking and goal management
    - Multi-session project continuity
@@ -71,17 +66,17 @@ Then select the appropriate agent(s) for your task.
 
 ### For Feature Implementation
 - Primary: developer
-- Support: test-engineer, git-workflow-manager
+- Support: git-workflow-manager
 - Review: architecture-reviewer
 
 ### For Code Quality Improvements
 - Primary: code-quality-analyst
-- Support: developer, test-engineer, git-workflow-manager
+- Support: developer, git-workflow-manager
 - Documentation: documentation-writer
 
 ### For Complex Refactoring
 - Primary: developer
-- Support: test-engineer, code-quality-analyst
+- Support: code-quality-analyst
 - Review: architecture-reviewer
 
 ### For Complex Multi-Session Projects
@@ -90,8 +85,8 @@ Then select the appropriate agent(s) for your task.
 
 ## Best Practices
 
-1. Always include test-engineer for any code changes
-2. Use git-workflow-manager for proper commits
+1. Use code-quality-analyst to ensure clean, maintainable code
+2. Use git-workflow-manager for proper commits and version control
 3. Include documentation-writer for user-facing changes
 4. Use backlog-manager for strategic project management across sessions
 

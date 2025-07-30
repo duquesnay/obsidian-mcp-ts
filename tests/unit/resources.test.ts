@@ -24,7 +24,7 @@ describe('MCP Resources', () => {
       expect(result.resources[0]).toEqual({
         uri: 'vault://tags',
         name: 'Vault Tags',
-        description: 'All tags in the vault with usage counts (cached 5min)',
+        description: 'All tags in the vault with usage counts (cached 5min). Returns summary with top tags and usage stats by default. Use ?mode=full for complete tag list.',
         mimeType: 'application/json'
       });
       expect(result.resources[1]).toEqual({
@@ -80,12 +80,12 @@ describe('MCP Resources', () => {
         params: { uri: 'vault://tags' }
       });
       
-      // Should return hardcoded tags data
+      // Should return hardcoded tags data (now in summary mode)
       expect(result.contents).toBeDefined();
       expect(result.contents[0]).toMatchObject({
         uri: 'vault://tags',
         mimeType: 'application/json',
-        text: expect.stringContaining('tags')
+        text: expect.stringContaining('topTags')
       });
     });
 
@@ -159,7 +159,7 @@ describe('MCP Resources', () => {
       const content = JSON.parse(result.contents[0].text);
       expect(content).toHaveProperty('notes');
       expect(Array.isArray(content.notes)).toBe(true);
-      expect(content.notes.length).toBe(10);
+      expect(content.notes.length).toBe(20);
       
       // Check each note has required fields
       content.notes.forEach((note: any) => {
@@ -231,14 +231,13 @@ describe('MCP Resources', () => {
         text: expect.any(String)
       });
       
-      // Verify the content structure
+      // Verify the content structure (new summary mode)
       const content = JSON.parse(result.contents[0].text);
       expect(content).toHaveProperty('path', 'Projects/Work');
-      expect(content).toHaveProperty('items');
-      expect(Array.isArray(content.items)).toBe(true);
-      expect(content.items).toHaveLength(4);
-      expect(content.items).toContain('Note1.md');
-      expect(content.items).toContain('Subfolder');
+      expect(content).toHaveProperty('mode', 'summary');
+      expect(content).toHaveProperty('fileCount');
+      expect(content).toHaveProperty('folders');
+      expect(Array.isArray(content.folders)).toBe(true);
     });
 
     it('should handle root folder (vault://folder/)', async () => {
@@ -271,10 +270,11 @@ describe('MCP Resources', () => {
       // Should call obsidianClient with empty string for root
       expect(mockListFilesInDir).toHaveBeenCalledWith('');
       
-      // Should return the folder contents
+      // Should return the folder contents (new summary mode)
       const content = JSON.parse(result.contents[0].text);
       expect(content.path).toBe('');
-      expect(content.items).toHaveLength(3);
+      expect(content.mode).toBe('summary');
+      expect(content.fileCount).toBe(3); // Mock returns simple filenames
     });
 
     it('should handle root folder without trailing slash', async () => {
@@ -307,10 +307,11 @@ describe('MCP Resources', () => {
       // Should call obsidianClient with empty string for root
       expect(mockListFilesInDir).toHaveBeenCalledWith('');
       
-      // Should return the folder contents
+      // Should return the folder contents (new summary mode)
       const content = JSON.parse(result.contents[0].text);
       expect(content.path).toBe('');
-      expect(content.items).toHaveLength(3);
+      expect(content.mode).toBe('summary');
+      expect(content.fileCount).toBe(3); // Mock returns simple filenames
     });
 
     it('should handle missing folders gracefully', async () => {
@@ -362,7 +363,7 @@ describe('MCP Resources', () => {
       expect(result.resources).toContainEqual({
         uri: 'vault://folder/{path}',
         name: 'Folder',
-        description: 'Browse folder contents (cached 2min per folder) - e.g., vault://folder/Projects',
+        description: 'Browse folder contents (cached 2min per folder) - e.g., vault://folder/Projects. Returns summary by default, use ?mode=full for complete listings.',
         mimeType: 'application/json'
       });
     });
@@ -386,10 +387,10 @@ describe('MCP Resources', () => {
       const readHandler = mockServer.setRequestHandler.mock.calls
         .find(call => call[0] === ReadResourceRequestSchema)?.[1];
       
-      // Test reading a note
+      // Test reading a note (use full mode to get raw markdown)
       const result = await readHandler({ 
         method: 'resources/read',
-        params: { uri: 'vault://note/Daily/2024-01-01.md' }
+        params: { uri: 'vault://note/Daily/2024-01-01.md?mode=full' }
       });
       
       // Should call obsidianClient with the correct path
@@ -398,7 +399,7 @@ describe('MCP Resources', () => {
       // Should return the note content
       expect(result.contents).toBeDefined();
       expect(result.contents[0]).toMatchObject({
-        uri: 'vault://note/Daily/2024-01-01.md',
+        uri: 'vault://note/Daily/2024-01-01.md?mode=full',
         mimeType: 'text/markdown',
         text: '# Test Note\n\nThis is the content.'
       });

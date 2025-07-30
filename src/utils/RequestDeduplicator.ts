@@ -169,7 +169,7 @@ export class RequestDeduplicator {
   private totalResponseTime = 0;
   private completedRequests = 0;
 
-  constructor(ttl = REQUEST_DEDUPLICATOR.DEFAULT_TTL_MS, options: DeduplicatorOptions = {}) {
+  constructor(ttl: number = REQUEST_DEDUPLICATOR.DEFAULT_TTL_MS, options: DeduplicatorOptions = {}) {
     this.ttl = ttl;
     this.options = {
       enableMetricsLogging: REQUEST_DEDUPLICATOR.DEFAULT_METRICS_LOGGING,

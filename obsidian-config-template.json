@@ -1,0 +1,24 @@
+{
+  "apiKey": "YOUR_OBSIDIAN_API_KEY_HERE",
+  "host": "127.0.0.1",
+  "_comment": "Obsidian MCP Server Configuration Template",
+  "_instructions": {
+    "apiKey": "Replace with your API key from Obsidian Local REST API plugin settings",
+    "host": "IP address where Obsidian is running (default: 127.0.0.1 for local)",
+    "location": "Save this file to ~/.config/mcp/obsidian.json or set OBSIDIAN_CONFIG_FILE environment variable"
+  },
+  "_examples": {
+    "local": {
+      "host": "127.0.0.1",
+      "description": "Default for Obsidian running on the same machine"
+    },
+    "remote": {
+      "host": "192.168.1.100",
+      "description": "For Obsidian running on another machine in your network"
+    },
+    "custom_port": {
+      "host": "127.0.0.1:27125",
+      "description": "If you changed the default port in Obsidian REST API settings"
+    }
+  }
+}

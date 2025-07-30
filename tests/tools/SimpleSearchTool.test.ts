@@ -38,8 +38,8 @@ describe('SimpleSearchTool', () => {
       // Act
       const result = await tool.executeTyped({ query });
 
-      // Assert
-      expect(mockHandleRequest).toHaveBeenCalledWith(`vault://search/${encodeURIComponent(query)}`);
+      // Assert - should use preview mode by default
+      expect(mockHandleRequest).toHaveBeenCalledWith(`vault://search/${encodeURIComponent(query)}?mode=preview`);
       expect(result.type).toBe('text');
       expect(result.text).toContain('test content');
     });
@@ -72,8 +72,8 @@ describe('SimpleSearchTool', () => {
         offset 
       });
 
-      // Assert
-      expect(mockHandleRequest).toHaveBeenCalledWith(`vault://search/${encodeURIComponent(query)}`);
+      // Assert - should use full mode when contextLength > default and include pagination params
+      expect(mockHandleRequest).toHaveBeenCalledWith(`vault://search/${encodeURIComponent(query)}?mode=full&limit=25&offset=10`);
       expect(result.type).toBe('text');
     });
 
@@ -86,10 +86,52 @@ describe('SimpleSearchTool', () => {
       // Act
       const result = await tool.executeTyped({ query });
 
-      // Assert
-      expect(mockHandleRequest).toHaveBeenCalledWith(`vault://search/${encodeURIComponent(query)}`);
+      // Assert - should use preview mode by default
+      expect(mockHandleRequest).toHaveBeenCalledWith(`vault://search/${encodeURIComponent(query)}?mode=preview`);
       expect(result.type).toBe('text');
       expect(result.text).toContain('Search service error');
+    });
+
+    it('should use preview mode for contextLength <= default', async () => {
+      // Arrange
+      const query = 'test query';
+      const contextLength = 50; // Less than default (100)
+      const mockResourceData = {
+        query,
+        results: [{ file: 'note1.md', content: 'test', context: 'short' }],
+        totalResults: 1,
+        hasMore: false
+      };
+      
+      const mockHandleRequest = vi.fn().mockResolvedValue(mockResourceData);
+      vi.spyOn(defaultCachedHandlers.search, 'handleRequest').mockImplementation(mockHandleRequest);
+
+      // Act
+      const result = await tool.executeTyped({ query, contextLength });
+
+      // Assert - should use preview mode when contextLength <= default
+      expect(mockHandleRequest).toHaveBeenCalledWith(`vault://search/${encodeURIComponent(query)}?mode=preview`);
+    });
+
+    it('should use preview mode when contextLength equals default', async () => {
+      // Arrange
+      const query = 'test query';
+      const contextLength = 100; // Equal to default
+      const mockResourceData = {
+        query,
+        results: [{ file: 'note1.md', content: 'test', context: 'default' }],
+        totalResults: 1,
+        hasMore: false
+      };
+      
+      const mockHandleRequest = vi.fn().mockResolvedValue(mockResourceData);
+      vi.spyOn(defaultCachedHandlers.search, 'handleRequest').mockImplementation(mockHandleRequest);
+
+      // Act
+      const result = await tool.executeTyped({ query, contextLength });
+
+      // Assert - should use preview mode when contextLength equals default
+      expect(mockHandleRequest).toHaveBeenCalledWith(`vault://search/${encodeURIComponent(query)}?mode=preview`);
     });
   });
 

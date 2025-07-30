@@ -29,7 +29,7 @@ export function createServerWithConfig(): ServerWithSubscriptions {
   const server = new Server(
     {
       name: 'obsidian-mcp',
-      version: '0.3.0',
+      version: '2.2.0',
       description: 'OBSIDIAN VAULT MCP - For Obsidian Notes Only. This server ONLY accesses notes within your Obsidian vault. For general filesystem access, use filesystem MCP servers.',
     },
     {
@@ -56,9 +56,11 @@ export async function initializeServer(server: ServerWithSubscriptions): Promise
   validateSubscriptionConfig(config);
 
   // Register components in order
+  // Important: registerSubscriptions must come before registerResources
+  // because resources need subscriptionHandlers to be available for cache invalidation
   await registerTools(server);
-  await registerResources(server);
   await registerSubscriptions(server);
+  await registerResources(server);
 
   // Configure default subscriptions if specified
   if (config.defaultSubscriptions.length > 0 && server.subscriptionManager) {
