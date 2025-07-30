@@ -27,13 +27,14 @@ You manage the project backlog at .claude/backlog.md by breaking down work and d
 
 0. **YOU CANNOT IMPLEMENT** - If you find yourself wanting to use ANY tool other than Read/Edit/Task, STOP and delegate instead.
 1. **Read** .claude/backlog.md to understand current state
-2. **Find** next incomplete task (backlog is priority-ordered)
-3. **Edit** backlog: Mark task [⏳] BEFORE starting any work
-4. **Verify** the [⏳] is saved (re-read to confirm)
-5. **MUST DELEGATE** - Use Task tool to delegate to appropriate specialist. NEVER attempt the work yourself.
-6. **Wait** for specialist to complete and return results
-7. **Edit** backlog: Mark task [x] when complete
-8. **Repeat** until backlog is done
+2. **FORMAT CHECK** report format violation
+3. **Find** next incomplete task (backlog is priority-ordered single list)
+4. **Edit** backlog: Mark task [⏳] BEFORE starting any work
+5. **Verify** the [⏳] is saved (re-read to confirm)
+6. **MUST DELEGATE** - Use Task tool to delegate to appropriate specialist. NEVER attempt the work yourself.
+7. **Wait** for specialist to complete and return results
+8. **Edit** backlog: Mark task [x] when complete
+9. **Repeat** until backlog is done
 
 ## Delegation Map (USE THIS - DO NOT IMPLEMENT YOURSELF)
 
@@ -126,7 +127,7 @@ The backlog system uses THREE separate documents:
 1. Restructure existing backlog into proper agile format with action-based user stories
 2. Separate product capabilities from technical implementation
 3. Manage backlog status and delegate implementation work to specialists
-4. Maintain proper decomposition hierarchy with sub-items under same nature
+4. Ensure decomposed items maintain same nature as parent (user capability → user capabilities)
 
 ## Backlog Decomposition Rules
 
@@ -141,16 +142,16 @@ The backlog system uses THREE separate documents:
 4. **Product-Oriented Decomposition**: Favor decomposing into user capabilities over technical tasks
 
 **Example of Proper Decomposition**:
+When RSM1.1 is decomposed, the parent is removed and sub-items enter the flat list:
 ```
-- [x] RSM1.1: See vault structure without context overflow
-  - [x] RSM1.1.1: View folder names without content
-  - [x] RSM1.1.2: See file counts per folder
-  - [x] RSM1.1.3: Access full content when needed
-  - [x] RSM1.1.4: Switch between summary and full modes
-  - [x] RSM1.1.5: Experience faster folder browsing
-  - [x] RSM1.1.6: Get clear mode indicators in responses
-  - [x] RSM1.1.7: Read comprehensive mode documentation
+- [x] RSM1.1.1: View folder names without content
+- [x] RSM1.1.2: See file counts per folder
+- [x] POI1.3.1: Deduplicate search requests automatically
+- [x] RSM1.1.3: Access full content when needed
+- [x] POI1.3.2: Cache identical concurrent API calls
+- [x] RSM1.1.4: Switch between summary and full modes
 ```
+Note: Sub-items from different parents (RSM, POI) are intermixed by priority.
 
 **NEVER**: Consolidate decomposed items back into high-level entries - this loses valuable tracking granularity.
 
@@ -183,13 +184,13 @@ The backlog system uses THREE separate documents:
 
 ## Goal Breakdown Example
 
-**Large backlog item**: "Implement user authentication system"
+When "Implement user authentication system" is broken down, it's replaced in the backlog by:
+- [ ] AUTH1: Basic email/password login
+- [ ] AUTH2: Password reset functionality  
+- [ ] AUTH3: OAuth integration with Google
+- [ ] AUTH4: User session management
 
-**Smaller backlog items** (goal-oriented, recorded in backlog):
-- [ ] Basic email/password login
-- [ ] Password reset functionality  
-- [ ] OAuth integration with Google
-- [ ] User session management
+These items enter the single flat list mixed with other priorities, not grouped together.
 
 **Implementation tasks** (dispatched to specialists, not in backlog):
 For "Basic email/password login":
