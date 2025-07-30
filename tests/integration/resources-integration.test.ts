@@ -322,8 +322,8 @@ describe('MCP Resources Integration Tests', () => {
       expect(parsedContent.notes).toBeDefined();
       expect(Array.isArray(parsedContent.notes)).toBe(true);
       
-      // Should return up to 10 recent notes
-      expect(parsedContent.notes.length).toBeLessThanOrEqual(10);
+      // Should return up to 20 recent notes (default limit)
+      expect(parsedContent.notes.length).toBeLessThanOrEqual(20);
       
       // Each note should have path and modifiedAt
       parsedContent.notes.forEach((note: any) => {

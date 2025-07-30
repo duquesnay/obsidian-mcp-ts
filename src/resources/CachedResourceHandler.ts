@@ -5,6 +5,7 @@ import { CACHE_DEFAULTS } from '../constants.js';
 import { PaginationSystem, PaginationParams } from '../utils/PaginationSystem.js';
 import { CacheNotificationHooks } from './cacheNotifications.js';
 import { CacheRegistry } from '../utils/CacheRegistry.js';
+import { RequestDeduplicator } from '../utils/RequestDeduplicator.js';
 
 /**
  * Configuration for resource caching
@@ -21,10 +22,16 @@ export interface ResourceCacheConfig {
   
   /** Enable pagination-aware caching optimization */
   paginationOptimization?: boolean;
+  
+  /** Enable request deduplication for concurrent requests */
+  enableDeduplication?: boolean;
+  
+  /** TTL for deduplication cache in milliseconds */
+  deduplicationTtl?: number;
 }
 
 /**
- * Enhanced cache statistics with pagination metrics
+ * Enhanced cache statistics with pagination and deduplication metrics
  */
 export interface PaginatedCacheStats {
   hits: number;
@@ -33,6 +40,12 @@ export interface PaginatedCacheStats {
   size: number;
   paginatedEntries: number;
   nonPaginatedEntries: number;
+  deduplication?: {
+    hits: number;
+    misses: number;
+    hitRate: number;
+    activeRequests: number;
+  };
 }
 
 /**
@@ -42,6 +55,8 @@ const DEFAULT_CACHE_CONFIG: ResourceCacheConfig = {
   maxSize: CACHE_DEFAULTS.MAX_SIZE,
   defaultTtl: CACHE_DEFAULTS.STABLE_TTL,
   paginationOptimization: true,
+  enableDeduplication: true,
+  deduplicationTtl: 5000, // 5 seconds - enough for concurrent requests
   resourceTtls: {
     // Static resources - longer TTL
     'vault://tags': CACHE_DEFAULTS.STABLE_TTL,
@@ -78,6 +93,7 @@ export class CachedResourceHandler extends BaseResourceHandler {
   private wrappedHandler: BaseResourceHandler;
   private paginatedCacheStats: { paginatedEntries: number; nonPaginatedEntries: number };
   private notificationHooks?: CacheNotificationHooks;
+  private deduplicator?: RequestDeduplicator;
 
   constructor(handler: BaseResourceHandler, config?: ResourceCacheConfig) {
     super();
@@ -94,6 +110,13 @@ export class CachedResourceHandler extends BaseResourceHandler {
       nonPaginatedEntries: 0
     };
 
+    // Initialize deduplicator if enabled
+    if (this.config.enableDeduplication) {
+      this.deduplicator = new RequestDeduplicator(
+        this.config.deduplicationTtl || 5000
+      );
+    }
+
     // Register cache with central registry
     const registry = CacheRegistry.getInstance();
     const handlerName = handler.constructor.name;
@@ -108,7 +131,7 @@ export class CachedResourceHandler extends BaseResourceHandler {
   }
 
   /**
-   * Handle request with caching layer
+   * Handle request with caching layer and optional deduplication
    */
   async handleRequest(uri: string, server?: any): Promise<any> {
     const cacheKey = this.generateCacheKey(uri);
@@ -119,7 +142,31 @@ export class CachedResourceHandler extends BaseResourceHandler {
       return this.extractDataFromResult(cachedResult);
     }
 
-    // Cache miss - call underlying handler
+    // Cache miss - use deduplicator if enabled
+    if (this.deduplicator) {
+      return this.deduplicator.dedupe(cacheKey, async () => {
+        // Double-check cache inside dedupe to handle race conditions
+        const cachedResult = this.cache.get(cacheKey);
+        if (cachedResult) {
+          return this.extractDataFromResult(cachedResult);
+        }
+
+        // Fetch data from underlying handler
+        const data = await this.wrappedHandler.handleRequest(uri, server);
+        
+        // Create result and cache it
+        const result = this.createResultFromData(uri, data);
+        const ttl = this.getTtlForResource(uri);
+        this.cache.set(cacheKey, result, ttl);
+        
+        // Update pagination stats
+        this.updatePaginationStats(uri);
+        
+        return data;
+      });
+    }
+
+    // No deduplication - call underlying handler directly
     const data = await this.wrappedHandler.handleRequest(uri, server);
     
     // Create result and cache it
@@ -141,14 +188,27 @@ export class CachedResourceHandler extends BaseResourceHandler {
   }
 
   /**
-   * Get enhanced cache statistics with pagination metrics
+   * Get enhanced cache statistics with pagination and deduplication metrics
    */
   getPaginatedCacheStats(): PaginatedCacheStats {
     const baseStats = this.cache.getStats();
-    return {
+    const stats: PaginatedCacheStats = {
       ...baseStats,
       ...this.paginatedCacheStats
     };
+
+    // Add deduplication stats if available
+    if (this.deduplicator) {
+      const dedupStats = this.deduplicator.getStats();
+      stats.deduplication = {
+        hits: dedupStats.hits,
+        misses: dedupStats.misses,
+        hitRate: dedupStats.hitRate,
+        activeRequests: dedupStats.activeRequests
+      };
+    }
+
+    return stats;
   }
 
   /**
@@ -156,6 +216,9 @@ export class CachedResourceHandler extends BaseResourceHandler {
    */
   resetCacheStats(): void {
     this.cache.resetStats();
+    if (this.deduplicator) {
+      this.deduplicator.resetStats();
+    }
   }
 
   /**
@@ -165,6 +228,9 @@ export class CachedResourceHandler extends BaseResourceHandler {
     this.cache.clear();
     this.paginatedCacheStats.paginatedEntries = 0;
     this.paginatedCacheStats.nonPaginatedEntries = 0;
+    if (this.deduplicator) {
+      this.deduplicator.clear();
+    }
   }
 
   /**
