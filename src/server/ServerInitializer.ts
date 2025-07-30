@@ -29,7 +29,7 @@ export function createServerWithConfig(): ServerWithSubscriptions {
   const server = new Server(
     {
       name: 'obsidian-mcp',
-      version: '0.3.0',
+      version: '2.2.0',
       description: 'OBSIDIAN VAULT MCP - For Obsidian Notes Only. This server ONLY accesses notes within your Obsidian vault. For general filesystem access, use filesystem MCP servers.',
     },
     {
