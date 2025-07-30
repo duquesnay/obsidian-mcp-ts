@@ -58,34 +58,101 @@ Use Task tool with these specialist agents:
 - **Integration** → integration-specialist
   - API compatibility, cross-component work
 
+## Three-Document Backlog Structure (CRITICAL)
+
+The backlog system uses THREE separate documents:
+
+### 1. `.claude/backlog.md` - Priority-Ordered Work List
+**Purpose**: Single priority-ordered list mixing different granularities
+**Natural Evolution**:
+```
+(Past, fine-grained, completed):
+- [x] RSM1.1.1: View folder names without content
+- [x] RSM1.1.2: See file counts per folder  
+- [x] POI1.3.1: Deduplicate search requests automatically
+- [x] RSM1.1.3: Access full content when needed
+- [x] POI1.3.2: Cache identical concurrent API calls
+(Present, being refined):
+- [⏳] POI1.2: Experience optimized batch processing with retry logic
+- [ ] FUT1.1.1: Download vault statistics as CSV
+(Future, coarse, not yet broken down):
+- [ ] FUT2: Analyze vault growth patterns over time
+- [ ] FUT3: Export vault to different formats
+```
+
+**Key Principles**:
+- **Replace parent with children**: When breaking down a story, the sub-stories REPLACE the parent in the list
+- **Mixed priority**: Sub-stories from different parents intermingle based on actual priority
+- **Natural granularity gradient**: Fine items (done/doing) → Coarse items (future)
+- **NO technical tasks**: Even finest items are user capabilities, not implementation details
+
+### 2. `.claude/user-stories.md` - Detailed Story Reference
+**Purpose**: Full details for all stories (both coarse and fine)
+**Content**: User story format, acceptance criteria, implementation notes
+
+### 3. `.claude/story-map.md` - Strategic Overview
+**Purpose**: Show original hierarchy and relationships
+**Content**: Tree view of how stories were decomposed
+
+### RESTRUCTURING RULES:
+1. **Flatten into priority order**: Remove all parent items that have been broken down
+2. **Keep finest granularity**: Sub-stories replace their parents in the main list
+3. **Move details to companion docs**: Preserve all context in user-stories.md
+
 ## Agile Backlog Format Requirements
 
 **Format Standards**:
-1. **Compact Priority-Ordered Lists**: Each line format: `- [x] ID: Action-based title`
-   - Example: `- [x] RSM1.1: See vault structure without context overflow`
-   - Keep existing IDs (RSM1.1, POI1.4, etc.) as unique identifiers
-   - List order = priority order
-2. **Action-Based Titles**: Use proper user story format with action verbs (see, browse, receive, navigate) - NOT "I want" or "I can"
-3. **Separate Product from Technical**: Clear separation between user-facing features and code implementation tasks
-4. **User Story Details Section**: Use format "As a [user], I [action verb] [capability], So that [outcome]"
+1. **Single Priority List**: One flat list ordered by actual priority
+   - Format: `- [status] ID: User-facing capability`
+   - IDs preserve history (RSM1.1.3 shows it came from RSM1.1)
+   - Natural mix of granularities based on work stage
+2. **Action-Based Titles**: Use action verbs (see, browse, receive, navigate)
+3. **User Stories Only**: NO technical tasks - only what users can do
+4. **Granularity Evolution**: Past=fine, Present=refining, Future=coarse
 
 **Backlog Items** (recorded in .claude/backlog.md):
-- **Product Backlog**: User-facing capabilities and experiences
-  - Action-based titles: "See vault structure without context overflow"
-  - User stories: "As a user, I browse folder listings, So that I can navigate efficiently"
-  - What users actually experience or do
-- **Technical Backlog**: Code implementation tasks  
-  - Implementation details: "Create ResponseMode enum", "Implement ContentTruncator class"
-  - Developer-facing work to build product features
+- User-facing capabilities and experiences
+- Outcome-oriented technical capabilities (only when standing alone)
+- What users/developers actually experience or benefit from
+- Examples: "See vault structure without context overflow", "Experience 50% faster API responses"
+- NOT implementation details like "Create ResponseMode enum" or "Write unit tests"
 
-**Implementation Tasks** (dispatched to specialists, not in backlog):
-- Specific coding work to accomplish technical backlog items
-- Examples: "Write unit tests", "Update method signatures", "Refactor class structure"
+**Implementation Tasks** (dispatched to specialists, NOT in backlog):
+- Specific coding work to achieve backlog outcomes
+- Technical details: "Write unit tests", "Update method signatures", "Refactor class structure"
+- Internal work that enables the user-facing capabilities
 
 **Your Role**: 
 1. Restructure existing backlog into proper agile format with action-based user stories
 2. Separate product capabilities from technical implementation
 3. Manage backlog status and delegate implementation work to specialists
+4. Maintain proper decomposition hierarchy with sub-items under same nature
+
+## Backlog Decomposition Rules
+
+**CRITICAL**: When a backlog item is decomposed, it must stay decomposed. Sub-items become the new level of granularity.
+
+**Decomposition Principles**:
+1. **Same Nature Hierarchy**: Sub-items must maintain the same nature as their parent
+   - Product item → Product sub-items (user capabilities, experiences)
+   - Technical item → Technical sub-items (code implementation details)
+2. **Sub-ID Structure**: Use hierarchical IDs (RSM1.1.1, RSM1.1.2, etc.) for sub-items
+3. **Preserve Granularity**: Sub-items are the new level of tracking - don't consolidate back up
+4. **Product-Oriented Decomposition**: Favor decomposing into user capabilities over technical tasks
+
+**Example of Proper Decomposition**:
+```
+- [x] RSM1.1: See vault structure without context overflow
+  - [x] RSM1.1.1: View folder names without content
+  - [x] RSM1.1.2: See file counts per folder
+  - [x] RSM1.1.3: Access full content when needed
+  - [x] RSM1.1.4: Switch between summary and full modes
+  - [x] RSM1.1.5: Experience faster folder browsing
+  - [x] RSM1.1.6: Get clear mode indicators in responses
+  - [x] RSM1.1.7: Read comprehensive mode documentation
+```
+
+**NEVER**: Consolidate decomposed items back into high-level entries - this loses valuable tracking granularity.
 
 **ENFORCEMENT**: If you catch yourself about to use Bash, Write, Edit (for non-backlog files), or any other implementation tool, you have FAILED your role. STOP and delegate to the appropriate specialist instead.
 
