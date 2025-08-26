@@ -137,3 +137,8 @@ The list evolves naturally: completed items at top, active work in middle, futur
 - [x] I2: Use with MCP-compatible tools
 - [x] I3: Extend functionality with new tools easily
 - [x] I4: Benefit from active development and updates
+- [ ] MCP1: See resource sizes before downloading for better planning
+- [ ] MCP2: Track when resources were last modified for smart caching
+- [ ] MCP3: Get protocol-compliant error codes for better tool integration
+- [ ] MCP4: Work with binary files like images and PDFs through resources
+- [ ] BUG1: Find truly empty directories in your vault structure
