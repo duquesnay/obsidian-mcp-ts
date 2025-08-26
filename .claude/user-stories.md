@@ -2022,3 +2022,70 @@
 ### POI2.8: Create config file template and examples
 **Status**: Completed (template and setup script created)
 **Technical Task**: Creation of configuration file template and interactive setup script
+
+## MCP Resource Fine Standard (MCP)
+
+### MCP1: View resource metadata for better transparency
+**User Story**: As an API consumer, I want to see resource size metadata when listing resources, so that I can understand data volume before requesting full content.
+
+**Acceptance Criteria**:
+- Resource listings include optional `size` field in bytes
+- Size information displayed for both static and dynamic resources
+- Size estimates provided for generated content (e.g., search results)
+- Null/undefined size for resources with unknown size
+- Size metadata cached appropriately with content
+
+**Implementation Notes**:
+- Add size calculation to resource registration
+- Support size estimation for dynamic resources
+- Include size in resource listing responses
+- Cache size metadata with appropriate TTL
+
+### MCP2: Track resource freshness with modification timestamps
+**User Story**: As a caching-aware user, I want to see lastModified timestamps in resource responses, so that I can make intelligent caching decisions and avoid stale data.
+
+**Acceptance Criteria**:
+- Resource responses include `lastModified` annotation
+- Timestamps in ISO 8601 format
+- Dynamic resources show generation timestamp
+- Static resources track actual modification time
+- Timestamps preserved through caching layers
+
+**Implementation Notes**:
+- Add lastModified tracking to BaseResourceHandler
+- Include modification dates in response annotations
+- Support timestamp propagation through cache layers
+- Provide modification tracking for vault resources
+
+### MCP3: Receive protocol-compliant error responses
+**User Story**: As an MCP client developer, I want to receive MCP-specific error codes, so that I can handle errors according to the protocol specification.
+
+**Acceptance Criteria**:
+- Use error code -32002 for "Resource not found"
+- Use error code -32603 for internal server errors
+- Include descriptive error messages with codes
+- Maintain backward compatibility with existing error handling
+- Log detailed errors while returning protocol-compliant responses
+
+**Implementation Notes**:
+- Extend ResourceErrorHandler to use MCP error codes
+- Map existing error types to MCP error codes
+- Preserve error context and suggestions
+- Update error handling documentation
+
+### MCP4: Access binary vault attachments through resources
+**User Story**: As a vault user with attachments, I want to access binary files (PDFs, images) through MCP resources, so that I can work with all vault content types.
+
+**Acceptance Criteria**:
+- Support binary content types (PDF, images, etc.)
+- Detect MIME types automatically for attachments
+- Return base64-encoded content for binary files
+- Handle large binary files efficiently
+- Provide appropriate error messages for unsupported formats
+
+**Implementation Notes**:
+- Note: We already support HTML rendering via format parameter
+- Check if Obsidian REST API supports binary file access
+- Implement base64 encoding for binary content if supported
+- Add MIME type detection for various file formats
+- Consider streaming for large binary files

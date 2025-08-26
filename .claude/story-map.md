@@ -161,6 +161,39 @@ POI1: Integrate performance optimizations
     └── POI2.8: Create config template and examples ✅
 ```
 
+### MCP Resource Fine Standard (MCP) - Planned
+
+```
+MCP: Enhance resource protocol compliance
+├── MCP1: View resource metadata for better transparency
+│   ├── MCP1.1: Add size field to resource registration
+│   ├── MCP1.2: Calculate sizes for static resources
+│   ├── MCP1.3: Estimate sizes for dynamic resources
+│   ├── MCP1.4: Include size in ListResources responses
+│   └── MCP1.5: Cache size metadata with content
+│
+├── MCP2: Track resource freshness with modification timestamps
+│   ├── MCP2.1: Add lastModified to BaseResourceHandler
+│   ├── MCP2.2: Track modification times for vault files
+│   ├── MCP2.3: Generate timestamps for dynamic resources
+│   ├── MCP2.4: Include timestamps in response annotations
+│   └── MCP2.5: Preserve timestamps through cache layers
+│
+├── MCP3: Receive protocol-compliant error responses
+│   ├── MCP3.1: Define MCP error code constants
+│   ├── MCP3.2: Extend ResourceErrorHandler with MCP codes
+│   ├── MCP3.3: Map existing errors to MCP error codes
+│   ├── MCP3.4: Maintain backward compatibility
+│   └── MCP3.5: Update error handling documentation
+│
+└── MCP4: Access binary vault attachments through resources
+    ├── MCP4.1: Check Obsidian API binary support
+    ├── MCP4.2: Implement MIME type detection
+    ├── MCP4.3: Add base64 encoding for binary content
+    ├── MCP4.4: Handle large file streaming
+    └── MCP4.5: Add binary format tests
+```
+
 ## Summary
 
 ### Completed Capabilities
