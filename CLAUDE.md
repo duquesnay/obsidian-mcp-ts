@@ -458,6 +458,13 @@ git commit -m "claude: add implementation notes"
 git commit -m "claude: document architectural decisions"
 ```
 
+#### For Backlog-Related Files:
+```bash
+git commit -m "backlog: add new feature goals"
+git commit -m "backlog: update story map with completed tasks"
+git commit -m "backlog: document user story acceptance criteria"
+```
+
 This separation enables clean PRs by cherry-picking only non-claude commits.
 
 
