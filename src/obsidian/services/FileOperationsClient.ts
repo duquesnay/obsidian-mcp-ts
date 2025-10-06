@@ -329,14 +329,18 @@ export class FileOperationsClient implements IFileOperationsClient {
     validatePath(path, 'path');
 
     return this.safeCall(async () => {
+      // Try as file first
       try {
         await this.getFileContents(path);
         return { exists: true, type: 'file' as const };
       } catch (fileError) {
+        // Not a file, try as directory
+        // With fixed API, empty directories return {"files": []} instead of 404
         try {
           await this.listFilesInDir(path);
           return { exists: true, type: 'directory' as const };
         } catch (dirError) {
+          // Neither file nor directory - doesn't exist
           return { exists: false, type: null };
         }
       }

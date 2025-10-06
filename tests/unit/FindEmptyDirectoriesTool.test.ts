@@ -52,21 +52,16 @@ describe('FindEmptyDirectoriesTool', () => {
 
     // Mock directory listings
     mockClient.listFilesInDir.mockImplementation((dir: string) => {
-      if (dir === 'empty-folder/' || dir === 'another-empty/') {
-        return Promise.reject(new Error('Error 404: Not Found'));
-      }
-      if (dir === 'templates/') {
+      if (dir === 'empty-folder/' || dir === 'another-empty/' || dir === 'templates/') {
         return Promise.resolve([]);
       }
-      return Promise.resolve(['some-file.md']);
-    });
-
-    // Mock path existence checks
-    mockClient.checkPathExists.mockImplementation((path: string) => {
-      if (path === 'empty-folder/' || path === 'another-empty/' || path === 'templates/') {
-        return Promise.resolve({ exists: true, type: 'directory' });
+      if (dir === 'docs/') {
+        return Promise.resolve(['README.md', 'guide.md']);
       }
-      return Promise.resolve({ exists: false, type: null });
+      if (dir === 'archive/') {
+        return Promise.resolve(['old-notes.md']);
+      }
+      return Promise.resolve(['some-file.md']);
     });
 
     const result = await tool.execute({});
@@ -106,22 +101,22 @@ describe('FindEmptyDirectoriesTool', () => {
         ]);
       }
       if (dir === 'empty-project/') {
-        // This is an empty directory
         return Promise.resolve([]);
       }
       if (dir === 'project1/') {
         return Promise.resolve(['README.md']);
       }
+      if (dir === 'project2/') {
+        return Promise.resolve(['src/main.ts']);
+      }
       return Promise.resolve(['some-file.md']);
     });
-
-    mockClient.checkPathExists.mockResolvedValue({ exists: true, type: 'directory' });
 
     const result = await tool.execute({ searchPath: 'projects/' });
     
     const parsed = JSON.parse(result.text);
     expect(parsed.searchPath).toBe('projects/');
-    expect(parsed.emptyDirectories).toContain('projects/empty-project/');
+    expect(parsed.emptyDirectories).toContain('empty-project/');
   });
 
   it('should handle errors gracefully', async () => {

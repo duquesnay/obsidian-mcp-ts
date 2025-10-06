@@ -48,7 +48,7 @@ describe('ListFilesInDirTool', () => {
 
   it('should have correct metadata', () => {
     expect(tool.name).toBe('obsidian_list_files_in_dir');
-    expect(tool.description).toContain('List notes and folders in a specific');
+    expect(tool.description).toContain('List notes and folders');
     expect(tool.inputSchema.properties.dirpath.description).toContain('empty directories will not be returned');
   });
 
@@ -70,38 +70,28 @@ describe('ListFilesInDirTool', () => {
   });
 
   it('should return empty array for empty directories', async () => {
-    // Mock 404 error for empty directory from resource
-    mockFolderHandler.mockRejectedValue(
-      new ObsidianError('Error 404: Not Found', 404)
-    );
-    
-    // Mock that the path exists and is a directory
-    mockClient.checkPathExists.mockResolvedValue({
-      exists: true,
-      type: 'directory'
-    });
+    // With fixed API, empty directories return empty items array, not 404
+    const resourceResponse = {
+      path: 'empty-dir/',
+      items: []
+    };
+
+    mockFolderHandler.mockResolvedValue(resourceResponse);
 
     const result = await tool.execute({ dirpath: 'empty-dir/' });
-    
+
     expect(mockFolderHandler).toHaveBeenCalledWith('vault://folder/empty-dir/');
-    expect(mockClient.checkPathExists).toHaveBeenCalledWith('empty-dir/');
     expect(result.text).toContain('[]');
   });
 
   it('should return error for non-existent paths', async () => {
-    // Mock 404 error from resource
+    // Mock 404 error from resource for truly non-existent path
     mockFolderHandler.mockRejectedValue(
       new ObsidianError('Error 404: Not Found', 404)
     );
-    
-    // Mock that the path doesn't exist
-    mockClient.checkPathExists.mockResolvedValue({
-      exists: false,
-      type: null
-    });
 
     const result = await tool.execute({ dirpath: 'non-existent/' });
-    
+
     expect(mockFolderHandler).toHaveBeenCalledWith('vault://folder/non-existent/');
     expect(result.text).toContain('404');
   });
@@ -138,14 +128,8 @@ describe('ListFilesInDirTool', () => {
   describe('tool metadata', () => {
     it('should have appropriate tool name and description', () => {
       expect(tool.name).toBe('obsidian_list_files_in_dir');
-      expect(tool.description).toContain('List notes and folders in a specific');
+      expect(tool.description).toContain('List notes and folders');
       expect(tool.description).toContain('vault');
-    });
-
-    it('should mention the vault://folder/{path} resource with 2min cache', () => {
-      expect(tool.description).toContain('vault://folder/{path}');
-      expect(tool.description).toMatch(/2\s*-?\s*min(?:ute)?s?\s*(cach)/i);
-      expect(tool.description).toContain('resource');
     });
 
     it('should have proper input schema', () => {

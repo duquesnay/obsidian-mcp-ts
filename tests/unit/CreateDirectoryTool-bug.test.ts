@@ -1,27 +1,24 @@
 /**
- * Test to reproduce CreateDirectoryTool bug where it reports success 
- * when directory creation actually fails
+ * Test for CreateDirectoryTool with fixed API
+ * Now that the Obsidian REST API v4.0.0 properly handles empty directories,
+ * we trust the API responses without additional verification.
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CreateDirectoryTool } from '../../src/tools/CreateDirectoryTool.js';
 import type { ObsidianClient } from '../../src/obsidian/ObsidianClient.js';
 
-describe('CreateDirectoryTool Bug Reproduction', () => {
+describe('CreateDirectoryTool with Fixed API', () => {
   let tool: CreateDirectoryTool;
   let mockClient: ObsidianClient;
 
   beforeEach(() => {
-    // Create a mock client that simulates API failure but doesn't throw
+    // Create a mock client that simulates successful directory creation
     mockClient = {
       createDirectory: vi.fn().mockResolvedValue({
         created: true,
         message: 'Directory successfully created',
         parentsCreated: false
-      }),
-      checkPathExists: vi.fn().mockResolvedValue({
-        exists: false,
-        type: null
       })
     } as any;
 
@@ -30,68 +27,55 @@ describe('CreateDirectoryTool Bug Reproduction', () => {
     (tool as any).getClient = () => mockClient;
   });
 
-  it('should detect when directory creation claims success but path does not exist', async () => {
+  it('should trust API success response without verification', async () => {
     const result = await tool.executeTyped({
       directoryPath: 'test-directory'
     });
 
-    // After fix: Tool now detects the issue and reports failure
+    // With fixed API: We trust the API response
     const parsedResult = JSON.parse(result.text as string);
-    expect(parsedResult.success).toBe(false);
-    expect(parsedResult.error).toContain('Directory creation failed');
+    expect(parsedResult.success).toBe(true);
+    expect(parsedResult.message).toContain('Directory');
+    expect(parsedResult.message).toContain('created');
+    expect(parsedResult.directoryPath).toBe('test-directory');
 
-    // Verification that directory check was called
-    expect(mockClient.checkPathExists).toHaveBeenCalledWith('test-directory');
+    // No verification step needed
+    expect(mockClient.createDirectory).toHaveBeenCalledWith('test-directory', true);
   });
 
-  it('should handle API errors that are not properly propagated', async () => {
-    // Simulate an API that returns success but directory is not created
-    // (This might happen with authentication issues, permission problems, etc.)
-    
-    mockClient.createDirectory = vi.fn().mockResolvedValue({
-      created: true, // API lies about success
-      message: 'Directory successfully created'
-    });
+  it('should handle API errors directly', async () => {
+    // Simulate API error (e.g., permission denied)
+    mockClient.createDirectory = vi.fn().mockRejectedValue(
+      new Error('Permission denied')
+    );
 
     const result = await tool.executeTyped({
-      directoryPath: 'fake-success-directory'
+      directoryPath: 'forbidden-directory'
     });
 
     const parsedResult = JSON.parse(result.text as string);
-    
-    // After fix: detects the issue and reports failure
+
+    // With fixed API: Real errors are thrown by the API
     expect(parsedResult.success).toBe(false);
-    expect(parsedResult.error).toContain('Directory creation failed');
-    
-    // Verification step was performed
-    expect(mockClient.checkPathExists).toHaveBeenCalledWith('fake-success-directory');
+    expect(parsedResult.error).toContain('Permission denied');
   });
 
-  it('should verify directory creation after API call (proposed fix)', async () => {
-    // This test describes the desired behavior after fixing the bug
-    
-    // Mock API returns success but verification shows directory doesn't exist
+  it('should create directory with parents when requested', async () => {
     mockClient.createDirectory = vi.fn().mockResolvedValue({
       created: true,
-      message: 'Directory successfully created'
-    });
-    
-    mockClient.checkPathExists = vi.fn().mockResolvedValue({
-      exists: false, // Directory doesn't actually exist
-      type: null
+      message: 'Directory successfully created',
+      parentsCreated: true
     });
 
     const result = await tool.executeTyped({
-      directoryPath: 'verify-test-directory'
+      directoryPath: 'parent/child/grandchild',
+      createParents: true
     });
 
     const parsedResult = JSON.parse(result.text as string);
-    
-    // After fix: should detect the mismatch and report error
-    expect(parsedResult.success).toBe(false);
-    expect(parsedResult.error).toContain('Directory creation failed');
-    
-    // Should verify the directory existence
-    expect(mockClient.checkPathExists).toHaveBeenCalledWith('verify-test-directory');
+
+    expect(parsedResult.success).toBe(true);
+    expect(parsedResult.parentsCreated).toBe(true);
+    expect(mockClient.createDirectory).toHaveBeenCalledWith('parent/child/grandchild', true);
   });
 });

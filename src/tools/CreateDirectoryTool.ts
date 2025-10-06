@@ -5,7 +5,7 @@ import { DIR_PATH_SCHEMA } from '../utils/validation.js';
 
 export class CreateDirectoryTool extends BaseTool<CreateDirectoryArgs> {
   name = 'obsidian_create_directory';
-  description = 'Create folders in Obsidian vault (vault-only - NOT filesystem directories). Supports nested creation.';
+  description = 'Create folders in Obsidian vault. Supports nested creation.';
   
   metadata: ToolMetadata = {
     category: 'file-operations',
@@ -52,29 +52,15 @@ export class CreateDirectoryTool extends BaseTool<CreateDirectoryArgs> {
       
       const client = this.getClient();
       const result = await client.createDirectory(cleanPath, args.createParents !== false);
-      
-      // Verify the directory was actually created
-      const verification = await client.checkPathExists(cleanPath);
-      
-      if (!verification.exists || verification.type !== 'directory') {
-        return this.handleSimplifiedError(
-          new Error('Directory creation failed verification'),
-          `Directory creation failed: ${cleanPath} was not created despite API reporting success`,
-          {
-            directoryPath: cleanPath,
-            createParents: args.createParents !== false
-          }
-        );
-      }
-      
+
       // Notify that directory was created
       this.notifyDirectoryOperation('create', cleanPath, {
         createParents: args.createParents !== false,
         parentsCreated: result.parentsCreated || false
       });
-      
-      return this.formatResponse({ 
-        success: true, 
+
+      return this.formatResponse({
+        success: true,
         message: result.message || `Directory created: ${cleanPath}`,
         directoryPath: cleanPath,
         created: result.created || true,

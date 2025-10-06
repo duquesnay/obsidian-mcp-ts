@@ -55,6 +55,7 @@ The list evolves naturally: completed items at top, active work in middle, futur
 - [x] N6: Filter content by file type or extension
 - [x] N7: Track folder organization patterns
 - [x] N8: Identify and clean up empty directories
+- [x] N9: Manage empty directories with enhanced creation feedback and reliable cleanup
 - [x] S1: Search text across all notes instantly
 - [x] S2: Get search results with surrounding context
 - [x] S3: Use advanced filters for precise searches
@@ -137,8 +138,17 @@ The list evolves naturally: completed items at top, active work in middle, futur
 - [x] I2: Use with MCP-compatible tools
 - [x] I3: Extend functionality with new tools easily
 - [x] I4: Benefit from active development and updates
+- [ ] BM1: Create and manage bookmark collections for quick note access
+- [ ] BM2: Add notes to bookmarks with custom categories
+- [ ] BM3: Access recent bookmarks instantly from any context
+- [ ] BM4: Search within bookmarked notes specifically
+- [ ] BM5: Export bookmark collections for sharing or backup
+- [ ] OBS1: Use shorter obs:// URI scheme instead of verbose vault://
+- [ ] OBS2: Support backwards compatibility with vault:// resources
+- [x] BUG1: Empty directory visibility - External API limitation (reported to plugin maintainers)
 - [ ] MCP1: See resource sizes before downloading for better planning
 - [ ] MCP2: Track when resources were last modified for smart caching
 - [ ] MCP3: Get protocol-compliant error codes for better tool integration
 - [ ] MCP4: Work with binary files like images and PDFs through resources
-- [ ] BUG1: Find truly empty directories in your vault structure
+- [ ] FILE1: Reference Obsidian notes with @file:///obsidian/ syntax
+- [ ] FILE2: Enable native Claude workflows (Grep, search) on vault content
