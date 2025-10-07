@@ -1,5 +1,6 @@
 import { BaseResourceHandler } from './BaseResourceHandler.js';
 import { ResourceErrorHandler } from '../utils/ResourceErrorHandler.js';
+import { ResourceMetadataUtil } from '../utils/ResourceMetadataUtil.js';
 
 /**
  * Response modes and pagination for vault://recent resource
@@ -31,6 +32,11 @@ interface RecentNote {
   modifiedAt: string;
   preview?: string;
   content?: string;
+  _meta?: {
+    size: number;
+    sizeFormatted: string;
+    lastModified: string;
+  };
 }
 
 interface PaginationInfo {
@@ -78,11 +84,17 @@ export class RecentChangesHandler extends BaseResourceHandler {
       
       // Get recent changes from the client, using a higher limit to ensure we have enough data
       const maxFetchLimit = Math.max(
-        paginationParams.limit + paginationParams.offset + RecentChangesHandler.PAGINATION_BUFFER, 
+        paginationParams.limit + paginationParams.offset + RecentChangesHandler.PAGINATION_BUFFER,
         RecentChangesHandler.MIN_FETCH_LIMIT
       );
       const recentChanges = await client.getRecentChanges(undefined, maxFetchLimit);
-      
+
+      // Extract unique file paths for metadata fetching
+      const filePaths = recentChanges.map(change => change.path);
+
+      // Batch fetch metadata for all files
+      const metadataMap = await ResourceMetadataUtil.batchFetchMetadata(client, filePaths);
+
       // Transform all available data to match expected format
       const allNotes: RecentNote[] = recentChanges.map(change => {
         const note: RecentNote = {
@@ -90,13 +102,19 @@ export class RecentChangesHandler extends BaseResourceHandler {
           title: this.extractTitle(change.path),
           modifiedAt: new Date(change.mtime).toISOString()
         };
-        
+
         if (mode === RESPONSE_MODES.PREVIEW) {
           note.preview = this.createPreview(change.content);
         } else if (mode === RESPONSE_MODES.FULL) {
           note.content = change.content;
         }
-        
+
+        // Add metadata if available
+        const metadata = metadataMap.get(change.path);
+        if (metadata) {
+          note._meta = metadata;
+        }
+
         return note;
       });
       

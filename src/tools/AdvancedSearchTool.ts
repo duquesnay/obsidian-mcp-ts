@@ -6,7 +6,7 @@ import { PAGINATION_SCHEMA, TAGS_ARRAY_SCHEMA, CONTEXT_LENGTH_SCHEMA } from '../
 
 export class AdvancedSearchTool extends BaseTool<AdvancedSearchArgs> {
   name = 'obsidian_advanced_search';
-  description = 'Advanced search in Obsidian vault notes (vault-only - NOT filesystem). Filter by content, metadata, tags.';
+  description = 'Advanced search in Obsidian vault notes. Filter by content, metadata, tags.';
   
   metadata: ToolMetadata = {
     category: 'search',

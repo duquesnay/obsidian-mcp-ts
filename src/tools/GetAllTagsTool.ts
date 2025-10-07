@@ -6,7 +6,7 @@ import { defaultCachedHandlers } from '../resources/CachedConcreteHandlers.js';
 
 export class GetAllTagsTool extends BaseTool<GetAllTagsArgs> {
   name = 'obsidian_get_all_tags';
-  description = 'List all unique tags in the vault with their usage counts. Includes both inline tags (#tag) and frontmatter tags. Uses vault://tags resource internally with 5-minute caching and optimized response modes for optimal performance. Returns conversational summary by default, switches to full mode for sorting/pagination.';
+  description = 'List all unique tags in the vault with usage counts.';
   
   metadata: ToolMetadata = {
     category: 'tags',

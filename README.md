@@ -12,6 +12,8 @@ A TypeScript MCP server to interact with Obsidian via the Local REST API communi
 - **🎯 Smart Error Handling**: Simplified error responses with actionable suggestions
 - **📦 Modular Architecture**: Clean separation of concerns with reusable utilities
 - **📊 MCP Resources**: Read-only access to vault data through the resources protocol
+- **📏 Resource Metadata**: File size and last modified timestamps for better cache optimization
+- **⚠️ Protocol-Compliant Errors**: Standard MCP error codes for consistent error handling
 
 ## Performance Optimization: Internal Resource Caching
 
@@ -59,6 +61,67 @@ The optimization works by:
 4. **Memory Efficient**: Uses LRU caching with automatic cleanup to prevent memory leaks
 
 This optimization is part of our commitment to making the Obsidian MCP server both powerful and performant for daily use.
+
+## MCP Resource Enhancements
+
+### Resource Metadata (v2.3.0)
+
+All MCP resources now include optional metadata in the `_meta` field, providing file size and modification timestamps without requiring additional API calls. This enables better cache optimization and resource management by clients.
+
+#### Metadata Structure
+
+```typescript
+{
+  "uri": "vault://note/meeting-notes.md",
+  "name": "Meeting Notes",
+  "mimeType": "text/plain",
+  "text": "# Meeting Notes\n...",
+  "_meta": {
+    "size": 2048,                           // File size in bytes
+    "sizeFormatted": "2.00 KB",             // Human-readable size
+    "lastModified": "2025-10-07T14:30:00.000Z"  // ISO 8601 timestamp (UTC)
+  }
+}
+```
+
+#### Use Cases
+
+- **Cache Validation**: Use `lastModified` timestamps to determine if cached resources are stale
+- **Resource Filtering**: Filter resources by size before fetching full content
+- **Performance Monitoring**: Track resource sizes to optimize batch operations
+- **User Feedback**: Display file sizes and modification dates in UI
+
+#### Graceful Degradation
+
+The `_meta` field is optional. If metadata cannot be fetched (e.g., API errors), resources will still work without metadata. This ensures backward compatibility and reliability.
+
+### Protocol-Compliant Error Handling
+
+Error handling now uses standard MCP error codes for consistent protocol integration:
+
+| HTTP Status | MCP Error Code | Usage |
+|------------|---------------|-------|
+| 404 | `MethodNotFound` (-32601) | Resource or file not found |
+| 400, 401, 403 | `InvalidParams` (-32602) | Validation or authentication errors |
+| 500, 502, 503, 504 | `InternalError` (-32603) | Server errors |
+
+**Error Response Example:**
+```typescript
+// Before: Tool-specific error format
+{
+  "success": false,
+  "error": "File not found",
+  "tool": "obsidian_get_file_contents"
+}
+
+// After: MCP protocol-compliant
+throw new McpError(
+  ErrorCode.MethodNotFound,
+  "Resource not found: vault://note/missing.md"
+);
+```
+
+This standardization enables better error handling across all MCP clients and tools.
 
 ## Feature Status
 

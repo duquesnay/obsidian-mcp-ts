@@ -1,11 +1,12 @@
 import { ReadResourceResult } from '@modelcontextprotocol/sdk/types.js';
 import { ObsidianClient } from '../obsidian/ObsidianClient.js';
 import { ConfigLoader } from '../utils/configLoader.js';
-import { ResourceHandler } from './types.js';
+import { ResourceHandler, ResourceMetadata } from './types.js';
 import { ResourceErrorHandler } from '../utils/ResourceErrorHandler.js';
 import { ResourceValidationUtil } from '../utils/ResourceValidationUtil.js';
 import { ResponseModeSystem, ResponseMode, ResponseContent, ModeResponse } from '../utils/ResponseModeSystem.js';
 import { PaginationSystem, PaginationParams, PaginationOptions } from '../utils/PaginationSystem.js';
+import { ResourceMetadataUtil } from '../utils/ResourceMetadataUtil.js';
 
 // Extend Server type to include obsidianClient for testing
 interface ServerWithClient {
@@ -44,7 +45,7 @@ export abstract class BaseResourceHandler {
       }]
     };
   }
-  
+
   /**
    * Format text as a resource response
    */
@@ -56,6 +57,23 @@ export abstract class BaseResourceHandler {
         text
       }]
     };
+  }
+
+  /**
+   * Fetch resource metadata for a file path
+   * @param filepath Path to the file in the vault
+   * @param server Server instance containing ObsidianClient
+   * @returns Resource metadata with size and lastModified, or null if unavailable
+   */
+  protected async getResourceMetadata(filepath: string, server: ServerWithClient): Promise<ResourceMetadata | null> {
+    try {
+      const client = this.getObsidianClient(server);
+      return await ResourceMetadataUtil.fetchMetadata(client, filepath);
+    } catch (error) {
+      // Return null if metadata can't be fetched
+      // Resources should still work without metadata
+      return null;
+    }
   }
   
   /**

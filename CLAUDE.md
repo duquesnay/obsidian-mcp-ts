@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Agent Usage Requirement
+
+**MANDATORY**: Always use specialized agents for development work. Delegate all tasks using the Task tool - never perform complex work directly.
+
 ## Project Overview
 
 obsidian-mcp-ts is a TypeScript Model Context Protocol (MCP) server that provides an interface for AI assistants to interact with Obsidian vaults via the Local REST API community plugin. It enables reading, writing, searching, and managing notes programmatically.
@@ -470,6 +474,17 @@ This separation enables clean PRs by cherry-picking only non-claude commits.
 
 ## Project Learnings
 
+### 2025-10-07 - MCP Resource Enhancement (MCP1-MCP3)
+
+**Technical:**
+- **Metadata Utility Pattern**: The `ResourceMetadataUtil` provides a clean separation of concerns for fetching resource metadata. By using the existing `getFileContents(filepath, 'metadata')` API call, we avoid adding new API dependencies while providing size and timestamp information efficiently.
+- **Graceful Degradation Strategy**: The `_meta` field is optional and metadata fetching uses try-catch with fallback defaults. This ensures resources remain functional even when metadata fetch fails, prioritizing reliability over complete information.
+- **Error Code Mapping**: HTTP status codes map to MCP error codes based on semantic meaning: 404 (not found) → MethodNotFound, validation errors → InvalidParams, server errors → InternalError. This maintains protocol compliance while preserving meaningful error context.
+
+**Methodological:**
+- **Optional Metadata Design**: Making `_meta` optional in the Resource interface enables backward compatibility and graceful degradation. Clients can check for metadata presence and adapt behavior accordingly, preventing breaking changes.
+- **Batch Metadata Fetching**: The `batchFetchMetadata` utility with concurrency control (BATCH_SIZE = 5) balances performance with API rate limits. This pattern prevents overwhelming the Obsidian API while enabling efficient multi-file metadata retrieval.
+
 ### 2025-01-29 - RSM/RPS Test Debugging and Coverage Enhancement
 
 **Methodological:**
@@ -490,3 +505,4 @@ This separation enables clean PRs by cherry-picking only non-claude commits.
 - **Obsidian API limitation**: The getPeriodicNote('daily') endpoint returns the current daily note only, not historical dates. This means vault://daily/{date} currently works the same for any date - it returns today's note. Future API updates may support date-specific queries.
 - **SSL verficiation must be deactivated since obsidian is accessed locally**
 - **Claude Desktop resource limitation**: Resources appear as "connected" but cannot be accessed by users due to [TypeScript SDK #686](https://github.com/modelcontextprotocol/typescript-sdk/issues/686) and [Python SDK #263](https://github.com/modelcontextprotocol/python-sdk/issues/263). Our internal resource integration provides the same benefits through tools with automatic caching.
+- ALWAYS delegate to sub agents, even for small tasks

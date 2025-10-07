@@ -11,7 +11,7 @@ interface FolderStructure {
 
 export class ListFilesInVaultTool extends BaseTool<ListFilesArgs> {
   name = 'obsidian_list_files_in_vault';
-  description = 'List all notes and folders in your Obsidian vault root (NOT filesystem access - Obsidian vault files only). Uses vault://structure resource internally with 5 minute cache for optimal performance. Requests full mode for complete file listings.';
+  description = 'List all notes and folders in vault root.';
   
   metadata: ToolMetadata = {
     category: 'file-operations',

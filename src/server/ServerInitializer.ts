@@ -30,7 +30,7 @@ export function createServerWithConfig(): ServerWithSubscriptions {
     {
       name: 'obsidian-mcp',
       version: '2.2.0',
-      description: 'OBSIDIAN VAULT MCP - For Obsidian Notes Only. This server ONLY accesses notes within your Obsidian vault. For general filesystem access, use filesystem MCP servers.',
+      description: 'Obsidian vault operations. All tools work exclusively with vault notes, not general filesystem files. Use Read/Write/Edit tools for project files. Links auto-update on moves/renames. Tags support inline (#tag) and frontmatter formats.',
     },
     {
       capabilities: {

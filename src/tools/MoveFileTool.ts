@@ -5,7 +5,7 @@ import { validateRequiredArgs, FILE_PATH_SCHEMA } from '../utils/validation.js';
 
 export class MoveFileTool extends BaseTool<MoveFileArgs> {
   name = 'obsidian_move_file';
-  description = 'Move Obsidian vault notes between folders (vault-only - NOT filesystem moves). Updates all internal links.';
+  description = 'Move Obsidian vault notes between folders.';
   
   metadata: ToolMetadata = {
     category: 'file-operations',

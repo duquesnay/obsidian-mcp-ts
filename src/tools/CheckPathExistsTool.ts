@@ -5,7 +5,7 @@ import { validateRequiredArgs, PATH_SCHEMA } from '../utils/validation.js';
 
 export class CheckPathExistsTool extends BaseTool<CheckPathExistsArgs> {
   name = 'obsidian_check_path_exists';
-  description = 'Check if note or folder exists in Obsidian vault (vault-only - NOT filesystem paths). Returns type info.';
+  description = 'Check if note or folder exists in Obsidian vault. Returns type info.';
   
   metadata: ToolMetadata = {
     category: 'file-operations',

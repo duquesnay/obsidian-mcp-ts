@@ -6,7 +6,7 @@ import { REGEX_PATTERNS } from '../constants.js';
 
 export class CopyDirectoryTool extends BaseTool<CopyDirectoryArgs> {
   name = 'obsidian_copy_directory';
-  description = 'Copy folders within Obsidian vault (vault-only - NOT filesystem operations). Preserves folder structure.';
+  description = 'Copy folders within Obsidian vault. Preserves folder structure.';
   
   metadata: ToolMetadata = {
     category: 'file-operations',

@@ -6,7 +6,7 @@ import { hasHttpResponse, hasMessage, getHttpStatus, getErrorMessage } from '../
 
 export class AppendContentTool extends BaseTool<AppendContentArgs> {
   name = 'obsidian_append_content';
-  description = 'Append content to Obsidian vault notes (NOT filesystem files - vault notes only). Auto-adds newline between content.';
+  description = 'Append content to vault note. Creates file if missing (default). Auto-adds newline.';
   
   metadata: ToolMetadata = {
     category: 'editing',

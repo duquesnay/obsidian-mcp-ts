@@ -6,7 +6,7 @@ import { REGEX_PATTERNS } from '../constants.js';
 
 export class MoveDirectoryTool extends BaseTool<MoveDirectoryArgs> {
   name = 'obsidian_move_directory';
-  description = 'Move folders within Obsidian vault (vault-only - NOT filesystem operations). Preserves structure and updates links.';
+  description = 'Move folders within Obsidian vault. Preserves structure and updates links.';
   
   metadata: ToolMetadata = {
     category: 'file-operations',

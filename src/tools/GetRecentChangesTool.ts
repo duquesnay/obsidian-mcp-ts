@@ -31,7 +31,7 @@ interface RecentChangesResourceResponse {
 
 export class GetRecentChangesTool extends BaseTool<GetRecentChangesArgs> {
   name = 'obsidian_get_recent_changes';
-  description = 'Get recently modified files in the vault with titles and previews. Supports pagination with default limit of 20 items per page. Uses vault://recent resource internally with 30 second caching for optimal performance.';
+  description = 'Get recently modified files in the vault with titles and previews. Supports pagination';
   
   metadata: ToolMetadata = {
     category: 'file-operations',

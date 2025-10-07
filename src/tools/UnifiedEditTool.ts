@@ -18,7 +18,7 @@ import { UnifiedEditArgs, BatchOperationInput } from './types/UnifiedEditArgs.js
 
 export class UnifiedEditTool extends BaseTool<UnifiedEditArgs> {
   name = 'obsidian_edit';
-  description = 'Edit Obsidian vault notes with smart operations (vault-only - NOT filesystem files). Supports append, find/replace, and heading-based insertions.';
+  description = 'Edit Obsidian vault notes with smart operations. Supports append, find/replace, and heading-based insertions.';
   
   private strategies: Map<string, IEditStrategy>;
 

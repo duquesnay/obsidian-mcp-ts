@@ -1,50 +1,75 @@
 import { BaseResourceHandler } from './BaseResourceHandler.js';
 import { ResourceErrorHandler } from '../utils/ResourceErrorHandler.js';
 import { ResourceValidationUtil } from '../utils/ResourceValidationUtil.js';
+import { ResourceMetadataUtil } from '../utils/ResourceMetadataUtil.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
 
 export class SearchHandler extends BaseResourceHandler {
   async handleRequest(uri: string, server?: any): Promise<any> {
     const { query, contextLength } = this.extractSearchParams(uri);
-    
+
     // Extract pagination parameters using shared system
     const paginationParams = this.extractPaginationParameters(uri, {
       defaultLimit: OBSIDIAN_DEFAULTS.DEFAULT_RESOURCE_SEARCH_LIMIT,
       maxLimit: OBSIDIAN_DEFAULTS.MAX_SEARCH_RESULTS
     });
-    
+
     const client = this.getObsidianClient(server);
-    
+
     try {
       const searchResults = await client.search(query, contextLength, paginationParams.limit, paginationParams.offset);
-      
+
       // If we're in preview mode (contextLength is defined), truncate contexts
       let processedResults = searchResults.results;
       if (contextLength !== undefined && Array.isArray(searchResults.results)) {
         processedResults = this.truncateContexts(searchResults.results, contextLength);
       }
-      
+
+      // Enhance results with metadata (only if we have an array)
+      const enhancedResults = Array.isArray(processedResults)
+        ? await this.addMetadataToResults(processedResults, client)
+        : processedResults;
+
       // Create standardized pagination metadata
       const totalResults = 'totalResults' in searchResults ? (searchResults.totalResults as number) : 0;
       const paginationMetadata = this.generatePaginationMetadata(paginationParams, totalResults);
-      
+
       const response: any = {
         query,
-        results: processedResults,
+        results: enhancedResults,
         totalResults: totalResults,
         hasMore: 'hasMore' in searchResults ? searchResults.hasMore : false,
         pagination: paginationMetadata
       };
-      
+
       // Include continuation token if available from client
       if (searchResults.continuationToken) {
         response.continuationToken = searchResults.continuationToken;
       }
-      
+
       return response;
     } catch (error: unknown) {
       ResourceErrorHandler.handle(error, 'Search results', query);
     }
+  }
+
+  private async addMetadataToResults(results: any[], client: any): Promise<any[]> {
+    // Extract unique file paths from results
+    const filePaths = [...new Set(results.map(r => r.path).filter(Boolean))];
+
+    // Batch fetch metadata for all files
+    const metadataMap = await ResourceMetadataUtil.batchFetchMetadata(client, filePaths);
+
+    // Enhance results with metadata
+    return results.map(result => {
+      if (result.path && metadataMap.has(result.path)) {
+        return {
+          ...result,
+          _meta: metadataMap.get(result.path)
+        };
+      }
+      return result;
+    });
   }
   
   private extractSearchParams(uri: string): { query: string; contextLength?: number } {

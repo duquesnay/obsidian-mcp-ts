@@ -37,6 +37,34 @@ Due to a [known limitation in Claude Desktop](https://github.com/modelcontextpro
 | **Protocol** | `resources/list`, `resources/read` | `tools/list`, `tools/call` |
 | **Use Case** | Reference data, browsing | Creating, editing, searching |
 
+### Resource Metadata (v2.3.0)
+
+All MCP resources now include optional metadata in the `_meta` field, providing file size and modification timestamps for better cache optimization.
+
+**Metadata Structure:**
+```typescript
+{
+  "uri": "vault://note/meeting-notes.md",
+  "name": "Meeting Notes",
+  "mimeType": "text/plain",
+  "text": "# Meeting Notes\n...",
+  "_meta": {
+    "size": 2048,                              // File size in bytes
+    "sizeFormatted": "2.00 KB",                // Human-readable size
+    "lastModified": "2025-10-07T14:30:00.000Z" // ISO 8601 timestamp (UTC)
+  }
+}
+```
+
+**Benefits:**
+- **Cache Validation**: Use `lastModified` to determine if cached resources are stale
+- **Resource Filtering**: Filter by size before fetching full content
+- **Performance Monitoring**: Track resource sizes to optimize batch operations
+- **User Feedback**: Display file sizes and modification dates in UIs
+
+**Graceful Degradation:**
+The `_meta` field is optional. If metadata cannot be fetched (e.g., API errors), resources still work without metadata, ensuring reliability and backward compatibility.
+
 ## Available Resources
 
 ### Static Resources

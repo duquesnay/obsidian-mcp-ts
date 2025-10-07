@@ -50,7 +50,7 @@ function isValidJsonLogic(query: unknown): boolean {
 
 export class ComplexSearchTool extends BaseTool<ComplexSearchArgs> {
   name = 'obsidian_complex_search';
-  description = 'Complex search in Obsidian vault using JsonLogic (vault-only - NOT filesystem search).';
+  description = 'Complex search in Obsidian vault using JsonLogic.';
   
   metadata: ToolMetadata = {
     category: 'search',

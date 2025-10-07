@@ -6,22 +6,23 @@ export class DailyNoteHandler extends BaseResourceHandler {
   async handleRequest(uri: string, server?: any): Promise<any> {
     const dateParam = this.extractDateParameter(uri);
     const date = this.validateAndNormalizeDate(dateParam);
-    
+
     const client = this.getObsidianClient(server);
-    
+
     try {
       // Get the daily note from Obsidian
       const noteData = await client.getPeriodicNote('daily');
-      
+
       // For now, we're getting the current daily note
       // In the future, we might need to handle specific dates differently
       // if the API supports it
-      
-      // Return the content directly
+
+      // Return the content directly as a string for backward compatibility
+      // The string response ensures it's returned as markdown
       return noteData.content || '';
     } catch (error: unknown) {
       // Handle 404 errors with special format for compatibility
-      if (error && typeof error === 'object' && 'response' in error && 
+      if (error && typeof error === 'object' && 'response' in error &&
           (error as any).response && typeof (error as any).response === 'object' &&
           'status' in (error as any).response && (error as any).response.status === 404) {
         throw new Error(`Resource not found: Daily note at ${date}`);

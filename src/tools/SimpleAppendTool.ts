@@ -6,7 +6,7 @@ import { hasHttpResponse } from '../utils/errorTypeGuards.js';
 
 export class SimpleAppendTool extends BaseTool<SimpleAppendArgs> {
   name = 'obsidian_simple_append';
-  description = 'Append text to Obsidian vault notes (vault-only - NOT filesystem files). Simple text additions.';
+  description = 'Append text to vault note. Requires existing file (no auto-create by default).';
   
   metadata: ToolMetadata = {
     category: 'editing',

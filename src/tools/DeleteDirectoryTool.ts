@@ -6,7 +6,7 @@ import { REGEX_PATTERNS } from '../constants.js';
 
 export class DeleteDirectoryTool extends BaseTool<DeleteDirectoryArgs> {
   name = 'obsidian_delete_directory';
-  description = 'Delete folders from Obsidian vault (vault-only - NOT filesystem deletion). Supports recursive deletion.';
+  description = 'Delete folders from Obsidian vault. Supports recursive deletion.';
   
   metadata: ToolMetadata = {
     category: 'file-operations',

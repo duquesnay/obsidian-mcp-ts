@@ -4,7 +4,7 @@ import { PathValidationUtil, PathValidationType } from '../utils/PathValidationU
 
 export class GetFileFrontmatterTool extends BaseTool<GetFileFrontmatterArgs> {
   name = 'obsidian_get_file_frontmatter';
-  description = 'Get frontmatter from Obsidian notes (vault-only - NOT filesystem files). Returns YAML metadata only.';
+  description = 'Get frontmatter from Obsidian notes. Returns YAML metadata only.';
   
   metadata: ToolMetadata = {
     category: 'file-operations',

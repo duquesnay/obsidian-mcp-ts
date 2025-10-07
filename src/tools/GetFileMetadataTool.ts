@@ -4,7 +4,7 @@ import { PathValidationUtil, PathValidationType } from '../utils/PathValidationU
 
 export class GetFileMetadataTool extends BaseTool<GetFileMetadataArgs> {
   name = 'obsidian_get_file_metadata';
-  description = 'Get Obsidian note metadata without content (vault-only - NOT filesystem metadata). Efficient for large notes.';
+  description = 'Get Obsidian note metadata without content. Efficient for large notes.';
   
   metadata: ToolMetadata = {
     category: 'file-operations',

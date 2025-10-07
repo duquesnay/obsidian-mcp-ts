@@ -6,7 +6,7 @@ import { hasHttpResponse } from '../utils/errorTypeGuards.js';
 
 export class SimpleReplaceTool extends BaseTool<SimpleReplaceArgs> {
   name = 'obsidian_simple_replace';
-  description = 'Replace text in Obsidian vault notes (vault-only - NOT filesystem files). Simple find-and-replace.';
+  description = 'Replace text in Obsidian vault notes. Simple find-and-replace.';
   
   metadata: ToolMetadata = {
     category: 'editing',

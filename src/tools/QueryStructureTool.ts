@@ -43,7 +43,7 @@ interface StructureQueryResult {
 
 export class QueryStructureTool extends BaseTool<QueryStructureArgs> {
   name = 'obsidian_query_structure';
-  description = 'Query structure of Obsidian notes (vault-only - NOT filesystem files). Get headings and blocks for editing.';
+  description = 'Query structure of Obsidian notes. Get headings and blocks for editing.';
   
   metadata: ToolMetadata = {
     category: 'editing',

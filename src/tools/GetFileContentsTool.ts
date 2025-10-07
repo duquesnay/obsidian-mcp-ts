@@ -6,7 +6,7 @@ import { defaultCachedHandlers } from '../resources/CachedConcreteHandlers.js';
 
 export class GetFileContentsTool extends BaseTool<GetFileContentsArgs> {
   name = 'obsidian_get_file_contents';
-  description = 'Read content from an Obsidian vault note (NOT filesystem files - vault notes only). Supports different formats. When no format is specified, returns preview mode (frontmatter + first 200 chars + statistics) via vault://note/{path} resource with 2 min cache for optimal performance.';
+  description = 'Read vault note. Returns preview by default, or specify format (content/metadata/frontmatter/plain/html).';
   
   metadata: ToolMetadata = {
     category: 'file-operations',

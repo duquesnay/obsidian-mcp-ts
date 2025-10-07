@@ -6,7 +6,7 @@ import { defaultCachedHandlers } from '../resources/CachedConcreteHandlers.js';
 
 export class SimpleSearchTool extends BaseTool<SimpleSearchArgs> {
   name = 'obsidian_simple_search';
-  description = 'Search text in Obsidian vault notes (vault-only - NOT filesystem search). Returns paginated results with 100-character context snippets by default (preview mode). Default limit: 50 results, supports relevance scoring and continuation tokens. Uses vault://search/{query} resource internally with 1-minute caching for optimal performance.';
+  description = 'Search text in vault notes. Returns paginated results with context snippets.';
   
   metadata: ToolMetadata = {
     category: 'search',

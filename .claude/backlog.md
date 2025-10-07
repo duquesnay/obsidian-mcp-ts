@@ -138,6 +138,11 @@ The list evolves naturally: completed items at top, active work in middle, futur
 - [x] I2: Use with MCP-compatible tools
 - [x] I3: Extend functionality with new tools easily
 - [x] I4: Benefit from active development and updates
+- [x] BUG1: Empty directory visibility - External API limitation (reported to plugin maintainers)
+- [ ] MCP1: See resource sizes before downloading for better planning
+- [ ] MCP4: Work with binary files like images and PDFs through resources
+- [ ] MCP2: Track when resources were last modified for smart caching
+- [ ] MCP3: Get protocol-compliant error codes for better tool integration
 - [ ] BM1: Create and manage bookmark collections for quick note access
 - [ ] BM2: Add notes to bookmarks with custom categories
 - [ ] BM3: Access recent bookmarks instantly from any context
@@ -145,10 +150,5 @@ The list evolves naturally: completed items at top, active work in middle, futur
 - [ ] BM5: Export bookmark collections for sharing or backup
 - [ ] OBS1: Use shorter obs:// URI scheme instead of verbose vault://
 - [ ] OBS2: Support backwards compatibility with vault:// resources
-- [x] BUG1: Empty directory visibility - External API limitation (reported to plugin maintainers)
-- [ ] MCP1: See resource sizes before downloading for better planning
-- [ ] MCP2: Track when resources were last modified for smart caching
-- [ ] MCP3: Get protocol-compliant error codes for better tool integration
-- [ ] MCP4: Work with binary files like images and PDFs through resources
 - [ ] FILE1: Reference Obsidian notes with @file:///obsidian/ syntax
 - [ ] FILE2: Enable native Claude workflows (Grep, search) on vault content

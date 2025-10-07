@@ -7,7 +7,7 @@ import { BatchOperationOptions } from '../obsidian/interfaces/IFileOperationsCli
 
 export class BatchGetFileContentsTool extends BaseTool<BatchGetFileContentsArgs> {
   name = 'obsidian_batch_get_file_contents';
-  description = 'Read multiple Obsidian vault notes at once (vault-only - NOT filesystem access). Returns concatenated content with optional progress tracking.';
+  description = 'Read multiple Obsidian vault notes at once. Returns concatenated content with optional progress tracking.';
   
   metadata: ToolMetadata = {
     category: 'file-operations',

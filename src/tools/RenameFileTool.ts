@@ -5,7 +5,7 @@ import { FILE_PATH_SCHEMA } from '../utils/validation.js';
 
 export class RenameFileTool extends BaseTool<RenameFileArgs> {
   name = 'obsidian_rename_file';
-  description = 'Rename an Obsidian vault note within same directory (vault-only - NOT filesystem). Updates all links automatically.';
+  description = 'Rename an Obsidian vault note within same directory. Updates all links automatically.';
   
   metadata: ToolMetadata = {
     category: 'file-operations',

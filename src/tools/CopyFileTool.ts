@@ -5,7 +5,7 @@ import { CopyFileArgs } from './types/CopyFileArgs.js';
 
 export class CopyFileTool extends BaseTool<CopyFileArgs> {
   name = 'obsidian_copy_file';
-  description = 'Copy Obsidian vault notes to new location (vault-only - NOT filesystem copying). Creates duplicate with content.';
+  description = 'Copy Obsidian vault notes to new location. Creates duplicate with content.';
   
   metadata: ToolMetadata = {
     category: 'file-operations',
