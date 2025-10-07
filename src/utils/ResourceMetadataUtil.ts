@@ -1,6 +1,6 @@
 import { ObsidianClient } from '../obsidian/ObsidianClient.js';
 import { FileMetadata } from '../types/obsidian.js';
-import { OBSIDIAN_DEFAULTS } from '../constants.js';
+import { OBSIDIAN_DEFAULTS, CACHE_DEFAULTS } from '../constants.js';
 import { LRUCache } from './Cache.js';
 
 /**
@@ -54,7 +54,7 @@ export class ResourceMetadataUtil {
    */
   private static metadataCache = new LRUCache<string, ResourceMetadata>({
     maxSize: 500,  // Store up to 500 file metadata entries
-    ttl: 120000    // 2 minutes TTL (120,000 milliseconds)
+    ttl: CACHE_DEFAULTS.NOTE_TTL  // 2 minutes TTL
   });
 
   /**
