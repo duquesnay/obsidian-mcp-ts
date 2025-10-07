@@ -332,7 +332,7 @@ OBSIDIAN_HOST=127.0.0.1
 ## Known Limitations
 - Requires Obsidian to be running with REST API plugin
 - SSL verification disabled for self-signed certificates
-- Binary file operations not supported
+- Binary files limited to 10 MB for safety and performance
 - Large vaults may require performance tuning
 - Some Obsidian features (canvas, graph) not accessible via REST API
 
@@ -473,6 +473,17 @@ This separation enables clean PRs by cherry-picking only non-claude commits.
 
 
 ## Project Learnings
+
+### 2025-10-07 - MCP4 Binary File Support
+
+**Technical:**
+- **Auto-Detection Strategy**: Using file extension-based detection (rather than content sniffing) provides reliable, fast binary file identification without requiring file reads. The `BinaryFileHandler.isBinaryFile()` method maps 20+ extensions to appropriate MIME types, enabling seamless integration with existing resource URIs.
+- **Base64 Encoding for Binary Transport**: Binary files are base64-encoded for safe transport through the MCP protocol. The `BlobResourceContents` type (vs `TextResourceContents`) signals to clients that decoding is required, maintaining type safety while enabling binary data access.
+- **Size Limits for Safety**: The 10 MB limit prevents memory issues and ensures responsive performance. Files exceeding this threshold return clear errors suggesting alternative access methods (tools vs resources), guiding users toward appropriate workflows.
+
+**Methodological:**
+- **Unified URI Pattern Extension**: Rather than creating separate URIs for binary files (e.g., `vault://image/{path}`), MCP4 extends the existing `vault://note/{path}` pattern with automatic type detection. This reduces cognitive load and maintains consistency - users don't need to know file type before accessing.
+- **Type-Based Response Polymorphism**: The resource handler returns different content types (`TextResourceContents` vs `BlobResourceContents`) based on file type, allowing clients to handle responses appropriately without breaking backward compatibility. This pattern enables progressive enhancement of resource capabilities.
 
 ### 2025-10-07 - MCP Resource Enhancement (MCP1-MCP3)
 
