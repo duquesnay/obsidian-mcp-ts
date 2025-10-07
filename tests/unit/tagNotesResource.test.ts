@@ -60,11 +60,17 @@ describe('Tag Notes Resource', () => {
       expect(result.contents[0].mimeType).toBe('application/json');
       
       const data = JSON.parse(result.contents[0].text);
-      expect(data).toEqual({
-        tag: 'project',
-        fileCount: 3,
-        files: mockFiles
-      });
+      expect(data.tag).toBe('project');
+      expect(data.fileCount).toBe(3);
+      expect(data.files).toHaveLength(3);
+
+      // Check that files now include metadata
+      expect(data.files[0]).toHaveProperty('path', 'Projects/ProjectA.md');
+      expect(data.files[0]).toHaveProperty('_meta');
+      expect(data.files[1]).toHaveProperty('path', 'Projects/ProjectB.md');
+      expect(data.files[1]).toHaveProperty('_meta');
+      expect(data.files[2]).toHaveProperty('path', 'Ideas/ProjectIdea.md');
+      expect(data.files[2]).toHaveProperty('_meta');
     });
 
     it('should handle tags with # prefix', async () => {

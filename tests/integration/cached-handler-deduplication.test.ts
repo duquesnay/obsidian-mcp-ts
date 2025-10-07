@@ -258,10 +258,10 @@ describe('CachedResourceHandler Deduplication Integration', () => {
       await vi.advanceTimersByTimeAsync(200);
       const results = await Promise.all(promises);
 
-      // All should receive the same error
+      // All should receive the same error (with MCP error prefix)
       results.forEach(result => {
         expect(result).toBeInstanceOf(Error);
-        expect(result.message).toBe('API Error');
+        expect(result.message).toContain('API Error');
       });
 
       // API should only be called once

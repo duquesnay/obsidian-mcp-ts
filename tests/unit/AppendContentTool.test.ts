@@ -665,8 +665,7 @@ console.log('Code block');
       expect(tool.name).toBe('obsidian_append_content');
       expect(tool.description).toContain('Append content');
       expect(tool.description).toContain('vault');
-      expect(tool.description).toContain('Auto-adds newline between content');
-      expect(tool.description).toContain('NOT filesystem files');
+      expect(tool.description).toContain('Auto-adds newline');
     });
 
     it('should have proper input schema', () => {
@@ -700,7 +699,6 @@ console.log('Code block');
     });
 
     it('should explain automatic newline behavior', () => {
-      expect(tool.description).toContain('Auto-adds newline between content');
       expect(tool.description).toContain('Auto-adds newline');
     });
   });

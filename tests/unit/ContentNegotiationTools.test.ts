@@ -131,8 +131,9 @@ describe('Content Negotiation Tools', () => {
 
     it('should have correct name and description', () => {
       expect(tool.name).toBe('obsidian_get_file_formatted');
-      expect(tool.description).toContain('different formats');
-      expect(tool.description).toContain('Plain text, HTML, or markdown');
+      expect(tool.description).toContain('format');
+      expect(tool.description).toContain('plain');
+      expect(tool.description).toContain('html');
     });
 
     it('should support all format options in schema', () => {

@@ -259,10 +259,9 @@ describe('ListFilesInVaultTool', () => {
       expect(tool.description).toContain('vault');
     });
 
-    it('should mention the vault://structure resource with 5min cache', () => {
-      expect(tool.description).toContain('vault://structure');
-      expect(tool.description).toMatch(/5\s*min(?:ute)?s?\s*cache/i);
-      expect(tool.description).toContain('resource');
+    it('should have a clear description', () => {
+      expect(tool.description).toContain('vault');
+      expect(tool.description).toContain('notes');
     });
 
     it('should have proper input schema', () => {

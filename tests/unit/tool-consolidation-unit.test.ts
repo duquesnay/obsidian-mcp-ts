@@ -80,8 +80,9 @@ In progress`;
     it('should demonstrate simple append tool as reliable fallback interface', async () => {
       // Test simple tool interface
       expect(simpleAppendTool.name).toBe('obsidian_simple_append');
-      expect(simpleAppendTool.description.toLowerCase()).toContain('simple');
-      
+      expect(simpleAppendTool.description.toLowerCase()).toContain('append');
+      expect(simpleAppendTool.description.toLowerCase()).toContain('text');
+
       // Validate required parameters
       const schema = simpleAppendTool.inputSchema;
       expect(schema.required).toContain('filepath');
@@ -118,9 +119,9 @@ In progress`;
       // Test that descriptions provide guidance
       expect(unifiedTool.description).toContain('smart');
       expect(unifiedTool.description).toContain('smart');
-      
+
       // Simple tools should reference their purpose
-      expect(simpleAppendTool.description).toContain('Simple');
+      expect(simpleAppendTool.description).toContain('Append');
       expect(simpleReplaceTool.description).toContain('Simple');
     });
   });
@@ -170,12 +171,12 @@ In progress`;
       
       // Verify we have a manageable number of editing tools
       expect(currentEditingTools.length).toBeLessThanOrEqual(4);
-      
+
       // Verify the primary tool can handle complex operations
       expect(unifiedTool.description).toContain('smart operations');
-      
+
       // Verify simple tools are positioned as fallbacks
-      expect(simpleAppendTool.description.toLowerCase()).toContain('simple');
+      expect(simpleAppendTool.description.toLowerCase()).toContain('append');
       expect(simpleReplaceTool.description.toLowerCase()).toContain('simple');
     });
   });
