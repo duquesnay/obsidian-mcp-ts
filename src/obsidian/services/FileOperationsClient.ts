@@ -2,7 +2,7 @@ import axios, { AxiosInstance, AxiosError } from 'axios';
 import https from 'https';
 import { ObsidianError } from '../../types/errors.js';
 import { validatePath, validatePaths } from '../../utils/pathValidator.js';
-import { OBSIDIAN_DEFAULTS, TIMEOUTS, BATCH_PROCESSOR } from '../../constants.js';
+import { OBSIDIAN_DEFAULTS, TIMEOUTS, BATCH_PROCESSOR, BINARY_FILE_LIMITS } from '../../constants.js';
 import { OptimizedBatchProcessor } from '../../utils/OptimizedBatchProcessor.js';
 import { NotificationManager } from '../../utils/NotificationManager.js';
 import type { IFileOperationsClient, BatchOperationOptions } from '../interfaces/IFileOperationsClient.js';
@@ -121,6 +121,51 @@ export class FileOperationsClient implements IFileOperationsClient {
       const url = format ? `/vault/${filepath}?format=${format}` : `/vault/${filepath}`;
       const response = await this.axiosInstance.get(url);
       return response.data;
+    });
+  }
+
+  /**
+   * Get binary file contents as base64-encoded string.
+   * Checks file size limits before downloading to prevent memory issues.
+   *
+   * @param filepath - Path to the binary file relative to vault root
+   * @returns Base64-encoded string of file contents
+   * @throws {ObsidianError} If file exceeds size limit or download fails
+   */
+  async getBinaryFileContents(filepath: string): Promise<string> {
+    validatePath(filepath, 'filepath');
+
+    return this.safeCall(async () => {
+      // First, get file metadata to check size
+      const metadata = await this.getFileContents(filepath, 'metadata');
+
+      if (typeof metadata === 'object' && 'size' in metadata && typeof metadata.size === 'number') {
+        const fileSize = metadata.size;
+
+        // Hard limit check
+        if (fileSize > BINARY_FILE_LIMITS.MAX_FILE_SIZE) {
+          throw new ObsidianError(
+            `File size (${Math.round(fileSize / 1024 / 1024)}MB) exceeds maximum limit of ${Math.round(BINARY_FILE_LIMITS.MAX_FILE_SIZE / 1024 / 1024)}MB`,
+            413 // Payload Too Large
+          );
+        }
+
+        // Warning for large files
+        if (fileSize > BINARY_FILE_LIMITS.WARNING_SIZE) {
+          console.warn(
+            `Warning: Loading large binary file (${Math.round(fileSize / 1024 / 1024)}MB): ${filepath}`
+          );
+        }
+      }
+
+      // Fetch binary file with arraybuffer response type
+      const response = await this.axiosInstance.get(`/vault/${filepath}`, {
+        responseType: 'arraybuffer'
+      });
+
+      // Convert ArrayBuffer to base64
+      const buffer = Buffer.from(response.data);
+      return buffer.toString('base64');
     });
   }
 

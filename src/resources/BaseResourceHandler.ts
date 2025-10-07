@@ -24,13 +24,22 @@ export abstract class BaseResourceHandler {
    */
   async execute(uri: string, server?: any): Promise<ReadResourceResult> {
     const data = await this.handleRequest(uri, server);
-    
+
     // Auto-detect response type based on data
-    if (typeof data === 'string') {
+    if (this.isBlobResponse(data)) {
+      return this.formatBlobResponse(uri, data);
+    } else if (typeof data === 'string') {
       return this.formatTextResponse(uri, data);
     } else {
       return this.formatJsonResponse(uri, data);
     }
+  }
+
+  /**
+   * Check if response data is a blob response
+   */
+  protected isBlobResponse(data: any): boolean {
+    return typeof data === 'object' && data !== null && 'blob' in data && typeof data.blob === 'string';
   }
   
   /**
@@ -57,6 +66,26 @@ export abstract class BaseResourceHandler {
         text
       }]
     };
+  }
+
+  /**
+   * Format blob data as a resource response
+   */
+  protected formatBlobResponse(uri: string, data: { blob: string; mimeType: string; _meta?: ResourceMetadata }): ReadResourceResult {
+    const result: ReadResourceResult = {
+      contents: [{
+        uri,
+        mimeType: data.mimeType,
+        blob: data.blob
+      }]
+    };
+
+    // Include metadata if present
+    if (data._meta) {
+      (result.contents[0] as any)._meta = data._meta;
+    }
+
+    return result;
   }
 
   /**

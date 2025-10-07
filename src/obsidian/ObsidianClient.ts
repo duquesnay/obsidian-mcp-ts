@@ -140,9 +140,29 @@ export class ObsidianClient implements IObsidianClient {
   async getFileContents(filepath: string, format?: 'content' | 'metadata' | 'frontmatter' | 'plain' | 'html'): Promise<FileContentResponse> {
     // Create a unique key that includes both filepath and format
     const key = format ? `file-content:${filepath}:${format}` : `file-content:${filepath}`;
-    
+
     return this.requestDeduplicator.dedupe(key, () =>
       this.getFileOperationsClient().getFileContents(filepath, format)
+    );
+  }
+
+  /**
+   * Retrieves binary file contents as base64-encoded string.
+   * Automatically checks file size limits before downloading.
+   * Uses deduplication to avoid multiple concurrent requests for the same file.
+   *
+   * @param filepath - Path to the binary file relative to the vault root
+   * @returns Base64-encoded string of file contents
+   * @throws {ObsidianError} If file exceeds 10MB limit or download fails
+   * @example
+   * const base64Data = await client.getBinaryFileContents('attachments/diagram.png');
+   * // Returns: "iVBORw0KGgoAAAANSUhEUgAA..."
+   */
+  async getBinaryFileContents(filepath: string): Promise<string> {
+    const key = `binary-content:${filepath}`;
+
+    return this.requestDeduplicator.dedupe(key, () =>
+      this.getFileOperationsClient().getBinaryFileContents(filepath)
     );
   }
 

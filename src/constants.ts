@@ -583,3 +583,14 @@ export const EVENT_EMITTER_DEFAULTS = {
   /** Maximum number of listeners for NotificationManager EventEmitter to support multiple cache instances */
   MAX_LISTENERS: 20,
 } as const;
+
+/**
+ * Binary file size limits for resource operations
+ */
+export const BINARY_FILE_LIMITS = {
+  /** Maximum binary file size (10 MB) - hard limit */
+  MAX_FILE_SIZE: 10 * 1024 * 1024,
+
+  /** Warning threshold for large files (5 MB) */
+  WARNING_SIZE: 5 * 1024 * 1024,
+} as const;

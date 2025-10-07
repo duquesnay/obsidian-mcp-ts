@@ -17,6 +17,7 @@ export interface IFileOperationsClient {
 
   // Read operations
   getFileContents(filepath: string, format?: 'content' | 'metadata' | 'frontmatter' | 'plain' | 'html'): Promise<FileContentResponse>;
+  getBinaryFileContents(filepath: string): Promise<string>;
   getBatchFileContents(filepaths: string[], options?: BatchOperationOptions): Promise<string>;
 
   // Write operations

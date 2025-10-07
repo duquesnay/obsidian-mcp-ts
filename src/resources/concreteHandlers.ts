@@ -1,6 +1,7 @@
 import { BaseResourceHandler } from './BaseResourceHandler.js';
 import { ResourceErrorHandler } from '../utils/ResourceErrorHandler.js';
 import { OBSIDIAN_DEFAULTS } from '../constants.js';
+import { MimeTypeDetector } from '../utils/MimeTypeDetector.js';
 
 /**
  * Response modes for vault://tags resource
@@ -206,19 +207,39 @@ export class NoteHandler extends BaseResourceHandler {
     // Parse query parameters for mode first
     const url = new URL(uri, 'vault://');
     const modeParam = url.searchParams.get('mode') || 'preview';
-    
+
     // Extract path without query parameters
     const uriWithoutQuery = uri.split('?')[0];
     const path = this.extractPath(uriWithoutQuery, 'vault://note/');
     const client = this.getObsidianClient(server);
-    
+
+    // Check if file is binary
+    if (MimeTypeDetector.isBinaryFile(path)) {
+      try {
+        // Handle binary files: get base64 content
+        const blob = await client.getBinaryFileContents(path);
+        const mimeType = MimeTypeDetector.getMimeType(path);
+        const metadata = await this.getResourceMetadata(path, server);
+
+        // Return blob response object (BaseResourceHandler will auto-detect and format)
+        return {
+          blob,
+          mimeType,
+          _meta: metadata || undefined
+        };
+      } catch (error: unknown) {
+        ResourceErrorHandler.handle(error, 'Binary File', path);
+      }
+    }
+
+    // Handle text files (existing logic)
     // Validate mode parameter (default to preview for invalid modes)
     const validModes = ['preview', 'full'];
     const mode = validModes.includes(modeParam) ? modeParam : 'preview';
-    
+
     try {
       const content = await client.getFileContents(path);
-      
+
       if (mode === 'full') {
         // Return full content as markdown text (backward compatibility)
         return content;
