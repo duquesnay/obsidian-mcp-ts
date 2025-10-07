@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import 'dotenv/config';
 import { spawn, ChildProcess } from 'child_process';
 import { JsonRpcRequest, JsonRpcResponse, JsonRpcNotification } from '../../src/types/jsonrpc.js';
+import { terminateServer } from './test-utils.js';
 
 /**
  * Integration test for server initialization with subscription configuration
@@ -95,10 +96,9 @@ describe('Server Subscription Integration', () => {
     expect(initResponse.result).toBeDefined();
   });
 
-  afterAll(() => {
-    if (server) {
-      server.kill();
-    }
+  afterAll(async () => {
+    await terminateServer(server);
+    server = null;
   });
 
   it('should initialize server with subscription capabilities', async () => {

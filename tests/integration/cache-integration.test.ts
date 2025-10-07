@@ -118,9 +118,10 @@ describe('Resource Caching Integration', () => {
     // List files to get metadata
     const files = await client.listFilesInVault();
     expect(files.length).toBeGreaterThan(0);
-    
-    // Pick first file
-    const testFile = files[0];
+
+    // Pick first markdown file (skip system files like .DS_Store)
+    const testFile = files.find(f => f.endsWith('.md'));
+    expect(testFile).toBeDefined();
     
     // Get file content
     const content1 = await client.getFileContents(testFile);

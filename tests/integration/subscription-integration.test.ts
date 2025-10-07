@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import 'dotenv/config';
 import { spawn, ChildProcess } from 'child_process';
 import { JsonRpcRequest, JsonRpcResponse, JsonRpcNotification } from '../../src/types/jsonrpc.js';
+import { terminateServer } from './test-utils.js';
 
 /**
  * Integration test for subscription functionality
@@ -109,8 +110,9 @@ describe('Subscription Integration', () => {
     await waitForResponse(initRequest.id as number);
   });
 
-  afterAll(() => {
-    server?.kill();
+  afterAll(async () => {
+    await terminateServer(server);
+    server = null;
   });
 
   it('should support subscribing to resource updates', async () => {

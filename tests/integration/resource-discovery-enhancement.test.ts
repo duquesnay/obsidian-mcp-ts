@@ -3,6 +3,7 @@ import { spawn, ChildProcess } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { config } from 'dotenv';
+import { terminateServer } from './test-utils.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const serverPath = join(__dirname, '../../dist/index.js');
@@ -134,11 +135,9 @@ describe('Resource Discovery Enhancement Integration Tests', () => {
     }
   });
 
-  afterAll(() => {
-    if (server) {
-      server.kill();
-      server = null;
-    }
+  afterAll(async () => {
+    await terminateServer(server);
+    server = null;
   });
 
   describe('Tool descriptions mention resources', () => {

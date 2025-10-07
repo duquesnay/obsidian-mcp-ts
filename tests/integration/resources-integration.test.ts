@@ -3,6 +3,7 @@ import { spawn, ChildProcess } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { config } from 'dotenv';
+import { terminateServer } from './test-utils.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const serverPath = join(__dirname, '../../dist/index.js');
@@ -136,11 +137,8 @@ describe('MCP Resources Integration Tests', () => {
   });
 
   afterAll(async () => {
-    console.log('🛑 Shutting down test server...');
-    if (server) {
-      server.kill();
-      server = null;
-    }
+    await terminateServer(server);
+    server = null;
   });
 
   describe('resources/list', () => {

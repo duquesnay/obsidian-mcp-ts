@@ -1,6 +1,7 @@
 import { spawn, ChildProcess } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { terminateServer } from './test-utils.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const serverPath = join(__dirname, '../../dist/index.js');
@@ -78,16 +79,17 @@ setTimeout(() => {
   
   server.stdin?.write(JSON.stringify(listToolsRequest) + '\n');
   
-  setTimeout(() => {
+  setTimeout(async () => {
     console.log('Final output:', output);
-    server.kill();
-    
+
     // Check if we got a proper response
     if (output.includes('"result"') && output.includes('obsidian_list_files_in_vault')) {
       console.log('✅ Server started successfully and returned tools list');
+      await terminateServer(server);
       process.exit(0);
     } else {
       console.error('❌ Server did not return expected response');
+      await terminateServer(server);
       process.exit(1);
     }
   }, 1000);

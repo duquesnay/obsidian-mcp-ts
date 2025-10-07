@@ -1,6 +1,7 @@
 import { spawn, ChildProcess } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { terminateServer } from './test-utils.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const serverPath = join(__dirname, '../../dist/index.js');
@@ -178,7 +179,7 @@ async function runTests() {
     }
   }
 
-  server.kill();
+  await terminateServer(server);
 
   if (allFound) {
     console.log('✅ All resource templates tests passed');
@@ -203,8 +204,8 @@ server.on('exit', (code) => {
 });
 
 // Start tests
-runTests().catch((error) => {
+runTests().catch(async (error) => {
   console.error('Test error:', error);
-  server.kill();
+  await terminateServer(server);
   process.exit(1);
 });
