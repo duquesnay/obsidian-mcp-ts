@@ -1,5 +1,6 @@
 import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 import { HttpError, JsonObject, JsonValue } from '../types/common.js';
+import { HTTP_STATUS_CODES } from '../constants.js';
 
 /**
  * Standardized error handling for resource handlers (MCP3)
@@ -32,17 +33,17 @@ export class ResourceErrorHandler {
    */
   private static mapHttpStatusToErrorCode(status: number): ErrorCode {
     switch (status) {
-      case 404:
+      case HTTP_STATUS_CODES.NOT_FOUND:
         return ErrorCode.MethodNotFound; // Resource not found
-      case 401:
-      case 403:
+      case HTTP_STATUS_CODES.UNAUTHORIZED:
+      case HTTP_STATUS_CODES.FORBIDDEN:
         return ErrorCode.InvalidParams; // Authentication/authorization failure
-      case 400:
+      case HTTP_STATUS_CODES.BAD_REQUEST:
         return ErrorCode.InvalidParams; // Bad request
-      case 500:
-      case 502:
-      case 503:
-      case 504:
+      case HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR:
+      case HTTP_STATUS_CODES.BAD_GATEWAY:
+      case HTTP_STATUS_CODES.SERVICE_UNAVAILABLE:
+      case HTTP_STATUS_CODES.GATEWAY_TIMEOUT:
         return ErrorCode.InternalError; // Server error
       default:
         return ErrorCode.InternalError; // Unknown errors default to internal error
@@ -54,7 +55,7 @@ export class ResourceErrorHandler {
    */
   static handle(error: unknown, resourceType: string, context?: string): never {
     // If it's a 404 error, format the message appropriately
-    if (this.isHttpError(error) && error.response?.status === 404) {
+    if (this.isHttpError(error) && error.response?.status === HTTP_STATUS_CODES.NOT_FOUND) {
       const message = context
         ? `${resourceType} not found: ${context}`
         : `${resourceType} not found`;
@@ -111,23 +112,23 @@ export class ResourceErrorHandler {
       const errorCode = this.mapHttpStatusToErrorCode(status);
 
       switch (status) {
-        case 404:
+        case HTTP_STATUS_CODES.NOT_FOUND:
           this.handleNotFound(resourceType || 'Resource', path);
           break;
-        case 403:
+        case HTTP_STATUS_CODES.FORBIDDEN:
           throw new McpError(
             ErrorCode.InvalidParams,
             `Access denied to ${resourceType}: ${path}`
           );
-        case 401:
+        case HTTP_STATUS_CODES.UNAUTHORIZED:
           throw new McpError(
             ErrorCode.InvalidParams,
             'Authentication failed. Please check your API key.'
           );
-        case 500:
-        case 502:
-        case 503:
-        case 504:
+        case HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR:
+        case HTTP_STATUS_CODES.BAD_GATEWAY:
+        case HTTP_STATUS_CODES.SERVICE_UNAVAILABLE:
+        case HTTP_STATUS_CODES.GATEWAY_TIMEOUT:
           throw new McpError(
             ErrorCode.InternalError,
             `Server error: ${error.message}`
@@ -201,12 +202,12 @@ export class ResourceErrorHandler {
    * Type guard to check if error has HTTP response
    */
   static isHttpError(error: unknown): error is HttpError {
-    return !!(error && 
-           typeof error === 'object' && 
-           'response' in error &&
-           (error as any).response &&
-           typeof (error as any).response === 'object' &&
-           'status' in (error as any).response &&
-           typeof (error as any).response.status === 'number');
+    if (!error || typeof error !== 'object') return false;
+
+    const err = error as Record<string, unknown>;
+    if (!('response' in err) || typeof err.response !== 'object' || !err.response) return false;
+
+    const response = err.response as Record<string, unknown>;
+    return 'status' in response && typeof response.status === 'number';
   }
 }

@@ -13,6 +13,20 @@ describe('RecentHandler', () => {
     handler = new RecentHandler();
     mockClient = new ObsidianClient({ apiKey: 'test', host: '127.0.0.1', verifySsl: false });
     vi.clearAllMocks();
+
+    // Setup default mock for metadata fetching (can be overridden in individual tests)
+    vi.mocked(mockClient.getFileContents).mockImplementation(async (filepath: string, format?: string) => {
+      if (format === 'metadata') {
+        return {
+          stat: {
+            size: 1024,
+            mtime: new Date('2022-01-01T00:00:00.000Z').getTime(),
+            ctime: new Date('2022-01-01T00:00:00.000Z').getTime()
+          }
+        };
+      }
+      return '';
+    });
   });
 
   describe('handleRequest', () => {
@@ -22,14 +36,14 @@ describe('RecentHandler', () => {
         { path: 'note1.md', mtime: new Date('2022-01-01T00:00:00.000Z').getTime(), content: 'This is the content of note 1 with some additional text that should be truncated after 100 character...' },
         { path: 'note2.md', mtime: new Date('2022-01-01T00:00:00.000Z').getTime(), content: 'Short content for note 2' }
       ];
-      
+
       vi.mocked(mockClient.getRecentChanges).mockResolvedValue(mockRecentChanges);
 
       const server = { obsidianClient: mockClient };
-      
+
       // Act
       const result = await handler.handleRequest('vault://recent', server);
-      
+
       // Assert
       expect(result.notes).toHaveLength(2);
 
@@ -58,14 +72,14 @@ describe('RecentHandler', () => {
       const mockRecentChanges = [
         { path: 'note1.md', mtime: new Date('2022-01-01T00:00:00.000Z').getTime(), content: 'Full content of note 1' }
       ];
-      
+
       vi.mocked(mockClient.getRecentChanges).mockResolvedValue(mockRecentChanges);
 
       const server = { obsidianClient: mockClient };
-      
+
       // Act
       const result = await handler.handleRequest('vault://recent?mode=full', server);
-      
+
       // Assert
       expect(result.notes).toHaveLength(1);
 

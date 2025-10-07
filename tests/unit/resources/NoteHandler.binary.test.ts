@@ -89,10 +89,8 @@ describe('NoteHandler - Binary File Support', () => {
 
       expect(result.blob).toBe(base64Data);
       expect(result.mimeType).toBe('image/png');
-      // Even with metadata fetch failure, ResourceMetadataUtil returns defaults
-      expect(result._meta).toBeDefined();
-      expect(result._meta.size).toBe(0);
-      expect(result._meta.sizeFormatted).toBe('0 B');
+      // When metadata fetch fails, _meta should be undefined (null is not included)
+      expect(result._meta).toBeUndefined();
     });
 
     it('should detect audio files as binary', async () => {

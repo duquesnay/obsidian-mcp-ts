@@ -1,10 +1,11 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 import 'dotenv/config';
 import { ObsidianClient } from '../../src/obsidian/ObsidianClient.js';
+import { ResourceMetadataUtil } from '../../src/utils/ResourceMetadataUtil.js';
 
 /**
  * Integration test for resource caching
- * 
+ *
  * Tests that caching actually works with real Obsidian API calls
  * by measuring response times and verifying cache behavior.
  */
@@ -25,6 +26,11 @@ describe('Resource Caching Integration', () => {
       port: 27124,
       verifySsl: false
     });
+  });
+
+  beforeEach(() => {
+    // Clear cache before each test to ensure clean state
+    ResourceMetadataUtil.clearCache();
   });
 
   it('should demonstrate real caching performance improvement', async () => {

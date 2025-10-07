@@ -3,6 +3,11 @@ import { ResourceMetadataUtil } from './ResourceMetadataUtil.js';
 import { ObsidianClient } from '../obsidian/ObsidianClient.js';
 
 describe('ResourceMetadataUtil', () => {
+  beforeEach(() => {
+    // Clear cache before each test to ensure clean state
+    ResourceMetadataUtil.clearCache();
+  });
+
   describe('formatSize', () => {
     it('should format zero bytes', () => {
       expect(ResourceMetadataUtil.formatSize(0)).toBe('0 B');
@@ -91,28 +96,20 @@ describe('ResourceMetadataUtil', () => {
       });
     });
 
-    it('should return default values on error', async () => {
+    it('should return null on error', async () => {
       mockClient.getFileContents.mockRejectedValue(new Error('Network error'));
 
       const result = await ResourceMetadataUtil.fetchMetadata(mockClient, 'test/note.md');
 
-      expect(result).toEqual({
-        size: 0,
-        sizeFormatted: '0 B',
-        lastModified: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)
-      });
+      expect(result).toBeNull();
     });
 
-    it('should handle invalid metadata format', async () => {
+    it('should return null for invalid metadata format', async () => {
       mockClient.getFileContents.mockResolvedValue({ invalid: 'data' });
 
       const result = await ResourceMetadataUtil.fetchMetadata(mockClient, 'test/note.md');
 
-      expect(result).toEqual({
-        size: 0,
-        sizeFormatted: '0 B',
-        lastModified: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)
-      });
+      expect(result).toBeNull();
     });
 
     it('should handle different file sizes', async () => {
@@ -123,13 +120,17 @@ describe('ResourceMetadataUtil', () => {
         { size: 1048576, expected: '1.00 MB' }
       ];
 
-      for (const testCase of testCases) {
+      for (let i = 0; i < testCases.length; i++) {
+        const testCase = testCases[i];
+        // Use unique filepath for each test case to avoid cache collisions
+        const filepath = `test-${i}.md`;
+
         mockClient.getFileContents.mockResolvedValue({
           stat: { ctime: 0, mtime: 0, size: testCase.size }
         });
 
-        const result = await ResourceMetadataUtil.fetchMetadata(mockClient, 'test.md');
-        expect(result.sizeFormatted).toBe(testCase.expected);
+        const result = await ResourceMetadataUtil.fetchMetadata(mockClient, filepath);
+        expect(result?.sizeFormatted).toBe(testCase.expected);
       }
     });
   });
@@ -186,7 +187,7 @@ describe('ResourceMetadataUtil', () => {
 
       expect(result.size).toBe(2);
       expect(result.get('success.md')?.size).toBe(1024);
-      expect(result.get('error.md')?.size).toBe(0); // Default value on error
+      expect(result.get('error.md')).toBeNull(); // null on error
     });
 
     it('should process files in batches', async () => {
@@ -199,6 +200,114 @@ describe('ResourceMetadataUtil', () => {
 
       expect(result.size).toBe(12);
       expect(mockClient.getFileContents).toHaveBeenCalledTimes(12);
+    });
+  });
+
+  describe('caching', () => {
+    let mockClient: any;
+
+    beforeEach(() => {
+      mockClient = {
+        getFileContents: vi.fn()
+      };
+    });
+
+    it('should cache metadata on first fetch', async () => {
+      const mockResponse = {
+        stat: { ctime: 0, mtime: 1728310200000, size: 2048 }
+      };
+      mockClient.getFileContents.mockResolvedValue(mockResponse);
+
+      // First fetch - should hit API
+      const result1 = await ResourceMetadataUtil.fetchMetadata(mockClient, 'test.md');
+      expect(mockClient.getFileContents).toHaveBeenCalledTimes(1);
+      expect(result1?.size).toBe(2048);
+
+      // Second fetch - should use cache
+      const result2 = await ResourceMetadataUtil.fetchMetadata(mockClient, 'test.md');
+      expect(mockClient.getFileContents).toHaveBeenCalledTimes(1); // No additional calls
+      expect(result2?.size).toBe(2048);
+      expect(result2).toEqual(result1);
+    });
+
+    it('should cache different files separately', async () => {
+      mockClient.getFileContents.mockImplementation((filepath: string) => {
+        if (filepath === 'file1.md') {
+          return Promise.resolve({ stat: { ctime: 0, mtime: 0, size: 1024 } });
+        }
+        return Promise.resolve({ stat: { ctime: 0, mtime: 0, size: 2048 } });
+      });
+
+      // Fetch both files
+      const result1 = await ResourceMetadataUtil.fetchMetadata(mockClient, 'file1.md');
+      const result2 = await ResourceMetadataUtil.fetchMetadata(mockClient, 'file2.md');
+
+      expect(mockClient.getFileContents).toHaveBeenCalledTimes(2);
+      expect(result1?.size).toBe(1024);
+      expect(result2?.size).toBe(2048);
+
+      // Fetch again - should use cache
+      const result1Cached = await ResourceMetadataUtil.fetchMetadata(mockClient, 'file1.md');
+      const result2Cached = await ResourceMetadataUtil.fetchMetadata(mockClient, 'file2.md');
+
+      expect(mockClient.getFileContents).toHaveBeenCalledTimes(2); // No additional calls
+      expect(result1Cached).toEqual(result1);
+      expect(result2Cached).toEqual(result2);
+    });
+
+    it('should invalidate specific cache entry', async () => {
+      const mockResponse = {
+        stat: { ctime: 0, mtime: 1728310200000, size: 2048 }
+      };
+      mockClient.getFileContents.mockResolvedValue(mockResponse);
+
+      // First fetch - should hit API
+      await ResourceMetadataUtil.fetchMetadata(mockClient, 'test.md');
+      expect(mockClient.getFileContents).toHaveBeenCalledTimes(1);
+
+      // Invalidate cache
+      ResourceMetadataUtil.invalidateCache('test.md');
+
+      // Next fetch - should hit API again
+      await ResourceMetadataUtil.fetchMetadata(mockClient, 'test.md');
+      expect(mockClient.getFileContents).toHaveBeenCalledTimes(2);
+    });
+
+    it('should clear entire cache', async () => {
+      mockClient.getFileContents.mockResolvedValue({
+        stat: { ctime: 0, mtime: 0, size: 1024 }
+      });
+
+      // Cache multiple files
+      await ResourceMetadataUtil.fetchMetadata(mockClient, 'file1.md');
+      await ResourceMetadataUtil.fetchMetadata(mockClient, 'file2.md');
+      await ResourceMetadataUtil.fetchMetadata(mockClient, 'file3.md');
+      expect(mockClient.getFileContents).toHaveBeenCalledTimes(3);
+
+      // Clear cache
+      ResourceMetadataUtil.clearCache();
+
+      // All fetches should hit API again
+      await ResourceMetadataUtil.fetchMetadata(mockClient, 'file1.md');
+      await ResourceMetadataUtil.fetchMetadata(mockClient, 'file2.md');
+      await ResourceMetadataUtil.fetchMetadata(mockClient, 'file3.md');
+      expect(mockClient.getFileContents).toHaveBeenCalledTimes(6);
+    });
+
+    it('should not cache null results on error', async () => {
+      mockClient.getFileContents
+        .mockRejectedValueOnce(new Error('Network error'))
+        .mockResolvedValue({ stat: { ctime: 0, mtime: 0, size: 1024 } });
+
+      // First fetch - error, should not cache
+      const result1 = await ResourceMetadataUtil.fetchMetadata(mockClient, 'test.md');
+      expect(result1).toBeNull();
+      expect(mockClient.getFileContents).toHaveBeenCalledTimes(1);
+
+      // Second fetch - should retry API (not cached)
+      const result2 = await ResourceMetadataUtil.fetchMetadata(mockClient, 'test.md');
+      expect(result2?.size).toBe(1024);
+      expect(mockClient.getFileContents).toHaveBeenCalledTimes(2);
     });
   });
 });

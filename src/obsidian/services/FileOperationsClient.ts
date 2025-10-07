@@ -2,9 +2,10 @@ import axios, { AxiosInstance, AxiosError } from 'axios';
 import https from 'https';
 import { ObsidianError } from '../../types/errors.js';
 import { validatePath, validatePaths } from '../../utils/pathValidator.js';
-import { OBSIDIAN_DEFAULTS, TIMEOUTS, BATCH_PROCESSOR, BINARY_FILE_LIMITS } from '../../constants.js';
+import { OBSIDIAN_DEFAULTS, TIMEOUTS, BATCH_PROCESSOR, BINARY_FILE_LIMITS, HTTP_STATUS_CODES } from '../../constants.js';
 import { OptimizedBatchProcessor } from '../../utils/OptimizedBatchProcessor.js';
 import { NotificationManager } from '../../utils/NotificationManager.js';
+import { ResourceMetadataUtil } from '../../utils/ResourceMetadataUtil.js';
 import type { IFileOperationsClient, BatchOperationOptions } from '../interfaces/IFileOperationsClient.js';
 import type { FileContentResponse, RecentChange } from '../../types/obsidian.js';
 import type { ObsidianClientConfig } from '../ObsidianClient.js';
@@ -72,15 +73,15 @@ export class FileOperationsClient implements IFileOperationsClient {
     let context = `${method} ${url} - `;
 
     if (status) {
-      if (status === 401) {
+      if (status === HTTP_STATUS_CODES.UNAUTHORIZED) {
         context += 'Authentication failed (check API key) - ';
-      } else if (status === 403) {
+      } else if (status === HTTP_STATUS_CODES.FORBIDDEN) {
         context += 'Access forbidden (check permissions) - ';
-      } else if (status === 404) {
+      } else if (status === HTTP_STATUS_CODES.NOT_FOUND) {
         context += 'Resource not found - ';
-      } else if (status >= 500) {
+      } else if (status >= HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR) {
         context += 'Server error (Obsidian plugin may be unavailable) - ';
-      } else if (status >= 400) {
+      } else if (status >= HTTP_STATUS_CODES.BAD_REQUEST) {
         context += 'Client error - ';
       }
     }
@@ -146,7 +147,7 @@ export class FileOperationsClient implements IFileOperationsClient {
         if (fileSize > BINARY_FILE_LIMITS.MAX_FILE_SIZE) {
           throw new ObsidianError(
             `File size (${Math.round(fileSize / 1024 / 1024)}MB) exceeds maximum limit of ${Math.round(BINARY_FILE_LIMITS.MAX_FILE_SIZE / 1024 / 1024)}MB`,
-            413 // Payload Too Large
+            HTTP_STATUS_CODES.PAYLOAD_TOO_LARGE
           );
         }
 
@@ -215,6 +216,8 @@ export class FileOperationsClient implements IFileOperationsClient {
       this.safeNotify(() => {
         notificationManager.notifyFileCreated(filepath, { operation: 'create', contentLength: content.length });
         notificationManager.notifyCacheInvalidation(filepath, { reason: 'file-created' });
+        // Invalidate metadata cache
+        ResourceMetadataUtil.invalidateCache(filepath);
       });
     });
   }
@@ -233,6 +236,8 @@ export class FileOperationsClient implements IFileOperationsClient {
       this.safeNotify(() => {
         notificationManager.notifyFileUpdated(filepath, { operation: 'update', contentLength: content.length });
         notificationManager.notifyCacheInvalidation(filepath, { reason: 'file-updated' });
+        // Invalidate metadata cache
+        ResourceMetadataUtil.invalidateCache(filepath);
       });
     });
   }
@@ -249,6 +254,8 @@ export class FileOperationsClient implements IFileOperationsClient {
       this.safeNotify(() => {
         notificationManager.notifyFileDeleted(filepath, { operation: 'delete' });
         notificationManager.notifyCacheInvalidation(filepath, { reason: 'file-deleted' });
+        // Invalidate metadata cache
+        ResourceMetadataUtil.invalidateCache(filepath);
       });
     });
   }
@@ -276,12 +283,15 @@ export class FileOperationsClient implements IFileOperationsClient {
         this.safeNotify(() => {
           notificationManager.notifyFileUpdated(oldPath, { operation: 'rename', newPath });
           notificationManager.notifyCacheInvalidation(oldPath, { reason: 'file-renamed', newPath });
+          // Invalidate metadata cache for both old and new paths
+          ResourceMetadataUtil.invalidateCache(oldPath);
+          ResourceMetadataUtil.invalidateCache(newPath);
         });
       } catch (error) {
-        if (axios.isAxiosError(error) && error.response?.status === 400) {
+        if (axios.isAxiosError(error) && error.response?.status === HTTP_STATUS_CODES.BAD_REQUEST) {
           throw new ObsidianError(
             'Rename operation requires the enhanced Obsidian REST API. The standard API does not support preserving backlinks during rename operations.',
-            400
+            HTTP_STATUS_CODES.BAD_REQUEST
           );
         } else {
           throw error;
@@ -311,12 +321,15 @@ export class FileOperationsClient implements IFileOperationsClient {
         this.safeNotify(() => {
           notificationManager.notifyFileUpdated(sourcePath, { operation: 'move', destinationPath });
           notificationManager.notifyCacheInvalidation(sourcePath, { reason: 'file-moved', destinationPath });
+          // Invalidate metadata cache for both source and destination paths
+          ResourceMetadataUtil.invalidateCache(sourcePath);
+          ResourceMetadataUtil.invalidateCache(destinationPath);
         });
       } catch (error) {
-        if (axios.isAxiosError(error) && error.response?.status === 400) {
+        if (axios.isAxiosError(error) && error.response?.status === HTTP_STATUS_CODES.BAD_REQUEST) {
           throw new ObsidianError(
             'Move operation requires the enhanced Obsidian REST API. The standard API does not support preserving backlinks during move operations.',
-            400
+            HTTP_STATUS_CODES.BAD_REQUEST
           );
         } else {
           throw error;
@@ -336,8 +349,8 @@ export class FileOperationsClient implements IFileOperationsClient {
         const fileContent = await this.getFileContents(sourcePath);
         content = fileContent as string;
       } catch (error) {
-        if (error instanceof ObsidianError && error.code === 404) {
-          throw new ObsidianError(`Source file not found: ${sourcePath}`, 404);
+        if (error instanceof ObsidianError && error.code === HTTP_STATUS_CODES.NOT_FOUND) {
+          throw new ObsidianError(`Source file not found: ${sourcePath}`, HTTP_STATUS_CODES.NOT_FOUND);
         }
         throw error;
       }
@@ -346,10 +359,10 @@ export class FileOperationsClient implements IFileOperationsClient {
       if (!overwrite) {
         try {
           await this.getFileContents(destinationPath);
-          throw new ObsidianError(`Destination file already exists: ${destinationPath}. Use overwrite=true to replace it.`, 409);
+          throw new ObsidianError(`Destination file already exists: ${destinationPath}. Use overwrite=true to replace it.`, HTTP_STATUS_CODES.CONFLICT);
         } catch (error) {
           // If file doesn't exist (404), that's what we want
-          if (!(error instanceof ObsidianError && error.code === 404)) {
+          if (!(error instanceof ObsidianError && error.code === HTTP_STATUS_CODES.NOT_FOUND)) {
             throw error;
           }
         }
@@ -366,6 +379,8 @@ export class FileOperationsClient implements IFileOperationsClient {
       this.safeNotify(() => {
         notificationManager.notifyFileCreated(destinationPath, { operation: 'copy', sourcePath, contentLength: content.length });
         notificationManager.notifyCacheInvalidation(destinationPath, { reason: 'file-copied', sourcePath });
+        // Invalidate metadata cache for destination path
+        ResourceMetadataUtil.invalidateCache(destinationPath);
       });
     });
   }
