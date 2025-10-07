@@ -23,6 +23,7 @@ export interface IObsidianClient {
   listFilesInVault(): Promise<string[]>;
   listFilesInDir(dirpath: string): Promise<string[]>;
   getFileContents(filepath: string, format?: 'content' | 'metadata' | 'frontmatter' | 'plain' | 'html'): Promise<FileContentResponse>;
+  getBinaryFileContents(filepath: string): Promise<string>;
   getBatchFileContents(filepaths: string[]): Promise<string>;
   createFile(filepath: string, content: string): Promise<void>;
   updateFile(filepath: string, content: string): Promise<void>;
