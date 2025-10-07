@@ -142,7 +142,7 @@ The list evolves naturally: completed items at top, active work in middle, futur
 - [x] MCP1: See resource sizes before downloading for better planning
 - [x] MCP2: Track when resources were last modified for smart caching
 - [x] MCP3: Get protocol-compliant error codes for better tool integration
-- [ ] MCP4: Work with binary files like images and PDFs through resources
+- [x] MCP4: Work with binary files like images and PDFs through resources
 - [ ] BM1: Create and manage bookmark collections for quick note access
 - [ ] BM2: Add notes to bookmarks with custom categories
 - [ ] BM3: Access recent bookmarks instantly from any context
