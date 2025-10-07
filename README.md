@@ -123,6 +123,49 @@ throw new McpError(
 
 This standardization enables better error handling across all MCP clients and tools.
 
+### Binary File Support (MCP4 - v2.4.0)
+
+Access images, PDFs, audio, and video files through the same unified `vault://note/{path}` URI. The server automatically detects binary files and returns them as base64-encoded blobs.
+
+**Supported Formats:**
+- Images: PNG, JPG, JPEG, GIF, SVG, WebP, BMP, ICO
+- Documents: PDF
+- Audio: MP3, WAV, OGG, AAC, FLAC, M4A
+- Video: MP4, WebM, MOV, AVI, MKV
+
+**How It Works:**
+The server automatically detects file type based on extension and returns appropriate content:
+- Text files (`.md`, `.txt`): Returned as `TextResourceContents` with markdown
+- Binary files: Returned as `BlobResourceContents` with base64-encoded data
+
+**Example - Accessing an image:**
+```typescript
+// Request an image resource
+const imageResource = await client.readResource('vault://note/attachments/diagram.png');
+
+// Response structure for binary files
+{
+  "uri": "vault://note/attachments/diagram.png",
+  "name": "diagram.png",
+  "mimeType": "image/png",
+  "blob": "iVBORw0KGgoAAAANSUhEUgAA...", // base64-encoded data
+  "_meta": {
+    "size": 45678,
+    "sizeFormatted": "44.61 KB",
+    "lastModified": "2025-10-07T14:30:00.000Z"
+  }
+}
+```
+
+**Size Limits:**
+Binary files are limited to 10 MB for safety and performance. Files exceeding this limit will return an error with suggestions to access through tools instead.
+
+**Use Cases:**
+- Display images embedded in notes
+- Access PDF attachments for processing
+- Extract audio/video metadata
+- Download binary assets programmatically
+
 ## Feature Status
 
 This section shows what resources and capabilities are available in the Obsidian MCP server.

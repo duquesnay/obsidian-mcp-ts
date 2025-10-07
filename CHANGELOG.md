@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.4.0] - 2025-10-07
+
+### Added
+- **MCP4 - Binary File Support**: Access images, PDFs, audio, and video through resources
+  - Auto-detection based on file extension (20+ binary formats supported)
+  - Base64-encoded blob responses for binary files
+  - 10 MB size limit for safety and performance
+  - Supports images (PNG, JPG, GIF, SVG, etc.), PDFs, audio (MP3, WAV, etc.), video (MP4, WebM, etc.)
+  - Seamless integration with existing `vault://note/{path}` URI pattern
+  - Returns `BlobResourceContents` for binary files vs `TextResourceContents` for text
+
+### Technical
+- New `BinaryFileHandler` utility for binary file detection and processing
+- MIME type mapping for 20+ binary file extensions
+- Size validation and error handling for oversized files
+- Base64 encoding integrated into resource response pipeline
+
 ## [2.3.0] - 2025-10-07
 
 ### Added

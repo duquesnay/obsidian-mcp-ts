@@ -186,17 +186,57 @@ Returns the complete hierarchical structure of your vault.
 These resources accept parameters and have shorter cache times (1-2 minutes):
 
 #### 5. **Individual Notes** - `vault://note/{path}`
-Retrieves the content of a specific note.
+Retrieves the content of a specific note or binary file.
 
 **Parameters:**
-- `path`: The file path relative to vault root (must include .md extension)
+- `path`: The file path relative to vault root (include file extension)
 
 **Examples:**
-- `vault://note/README.md`
-- `vault://note/Daily/2024-01-15.md`
-- `vault://note/Projects/web-app/architecture.md`
+- `vault://note/README.md` - Markdown note
+- `vault://note/Daily/2024-01-15.md` - Daily note
+- `vault://note/attachments/diagram.png` - Image file
+- `vault://note/documents/report.pdf` - PDF document
 
-**Response:** Raw markdown content of the note
+**Response Format:**
+
+**Text files (.md, .txt):**
+```typescript
+{
+  "uri": "vault://note/README.md",
+  "name": "README",
+  "mimeType": "text/plain",
+  "text": "# README\n\nMarkdown content...",
+  "_meta": {
+    "size": 1024,
+    "sizeFormatted": "1.00 KB",
+    "lastModified": "2025-10-07T14:30:00.000Z"
+  }
+}
+```
+
+**Binary files (images, PDFs, audio, video):**
+```typescript
+{
+  "uri": "vault://note/attachments/diagram.png",
+  "name": "diagram.png",
+  "mimeType": "image/png",
+  "blob": "iVBORw0KGgoAAAANSUhEUgAA...", // base64-encoded data
+  "_meta": {
+    "size": 45678,
+    "sizeFormatted": "44.61 KB",
+    "lastModified": "2025-10-07T14:30:00.000Z"
+  }
+}
+```
+
+**Supported Binary Formats:**
+- **Images**: PNG, JPG, JPEG, GIF, SVG, WebP, BMP, ICO
+- **Documents**: PDF
+- **Audio**: MP3, WAV, OGG, AAC, FLAC, M4A
+- **Video**: MP4, WebM, MOV, AVI, MKV
+
+**Size Limits:**
+Binary files are limited to 10 MB for safety and performance. Files exceeding this limit will return an error suggesting alternative access methods.
 
 #### 6. **Folder Contents** - `vault://folder/{path}`
 Lists all files and subfolders within a specific directory.
@@ -326,6 +366,80 @@ vault://search/{query}
 - **Special Characters**: URL encode when needed
   - ✅ `vault://tag/high-priority`
   - ✅ `vault://search/question%3F`
+
+## Working with Binary Files
+
+### Binary File Types
+
+The server automatically detects and handles binary files based on file extension. Binary files are returned as base64-encoded blobs through the same `vault://note/{path}` URI pattern used for text files.
+
+**Supported Binary Formats:**
+
+| Category | Extensions | MIME Types |
+|----------|-----------|------------|
+| **Images** | .png, .jpg, .jpeg, .gif, .svg, .webp, .bmp, .ico | image/png, image/jpeg, etc. |
+| **Documents** | .pdf | application/pdf |
+| **Audio** | .mp3, .wav, .ogg, .aac, .flac, .m4a | audio/mpeg, audio/wav, etc. |
+| **Video** | .mp4, .webm, .mov, .avi, .mkv | video/mp4, video/webm, etc. |
+
+### Response Format Differences
+
+**Text files** return `TextResourceContents`:
+```typescript
+{
+  uri: string,
+  name: string,
+  mimeType: "text/plain",
+  text: string,           // Raw text content
+  _meta?: { ... }
+}
+```
+
+**Binary files** return `BlobResourceContents`:
+```typescript
+{
+  uri: string,
+  name: string,
+  mimeType: string,       // Format-specific (e.g., "image/png")
+  blob: string,           // Base64-encoded binary data
+  _meta?: { ... }
+}
+```
+
+### Binary File Limitations
+
+- **Size Limit**: 10 MB maximum
+- **Error Handling**: Files exceeding 10 MB return an error with suggestions to use tools instead
+- **Memory Safety**: Base64 encoding increases data size by ~33%, factored into memory calculations
+- **Performance**: Large binary files may impact response time; consider using tools for batch operations
+
+### Use Cases for Binary Resources
+
+**Display embedded images:**
+```typescript
+// Retrieve image from vault
+const image = await client.readResource('vault://note/assets/screenshot.png');
+// Decode base64 for display
+const imageData = atob(image.blob);
+```
+
+**Process PDF attachments:**
+```typescript
+// Access PDF document
+const pdf = await client.readResource('vault://note/reports/quarterly-report.pdf');
+// Forward base64 data to PDF processing service
+processPDF(pdf.blob, pdf._meta.size);
+```
+
+**Extract media metadata:**
+```typescript
+// Check file size before downloading
+const video = await client.readResource('vault://note/recordings/meeting.mp4');
+if (video._meta.size < 5000000) { // Less than 5MB
+  // Process smaller video
+  processVideo(video.blob);
+}
+```
 
 ## Usage Examples
 
