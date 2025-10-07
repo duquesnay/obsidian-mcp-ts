@@ -139,6 +139,8 @@ The list evolves naturally: completed items at top, active work in middle, futur
 - [x] I3: Extend functionality with new tools easily
 - [x] I4: Benefit from active development and updates
 - [x] BUG1: Empty directory visibility - External API limitation (reported to plugin maintainers)
+- [x] BUG2: Test suite completes without zombie processes consuming system memory
+- [x] TECH1: Developer adds new tools in <1h (vs 4h) with metadata cache
 - [x] MCP1: See resource sizes before downloading for better planning
 - [x] MCP2: Track when resources were last modified for smart caching
 - [x] MCP3: Get protocol-compliant error codes for better tool integration
