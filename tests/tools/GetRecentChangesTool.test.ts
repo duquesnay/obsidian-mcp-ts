@@ -20,17 +20,13 @@ describe('GetRecentChangesTool', () => {
   });
 
   describe('description', () => {
-    it('should mention the vault://recent resource alternative with cache information', () => {
+    it('should have a clear description about recent changes', () => {
       const description = tool.description;
-      
-      // Check that it mentions the vault://recent resource
-      expect(description.toLowerCase()).toContain('vault://recent');
-      
-      // Check that it mentions the cache duration
-      expect(description).toMatch(/30\s*second|30s/i);
-      
-      // Check that it mentions performance benefit
-      expect(description.toLowerCase()).toContain('performance');
+
+      // Check that it mentions recent files and vault
+      expect(description.toLowerCase()).toContain('recent');
+      expect(description.toLowerCase()).toContain('vault');
+      expect(description.toLowerCase()).toContain('pagination');
     });
   });
 

@@ -32,18 +32,24 @@ describe('RecentHandler', () => {
       
       // Assert
       expect(result.notes).toHaveLength(2);
-      expect(result.notes[0]).toEqual({
-        path: 'note1.md',
-        title: 'note1',
-        modifiedAt: '2022-01-01T00:00:00.000Z',
-        preview: 'This is the content of note 1 with some additional text that should be truncated after 100 character...'
-      });
-      expect(result.notes[1]).toEqual({
-        path: 'note2.md',
-        title: 'note2',
-        modifiedAt: '2022-01-01T00:00:00.000Z',
-        preview: 'Short content for note 2'
-      });
+
+      // Check first note structure (including _meta field)
+      expect(result.notes[0]).toHaveProperty('path', 'note1.md');
+      expect(result.notes[0]).toHaveProperty('title', 'note1');
+      expect(result.notes[0]).toHaveProperty('modifiedAt', '2022-01-01T00:00:00.000Z');
+      expect(result.notes[0]).toHaveProperty('preview', 'This is the content of note 1 with some additional text that should be truncated after 100 character...');
+      expect(result.notes[0]).toHaveProperty('_meta');
+      expect(result.notes[0]._meta).toHaveProperty('size');
+      expect(result.notes[0]._meta).toHaveProperty('sizeFormatted');
+      expect(result.notes[0]._meta).toHaveProperty('lastModified');
+
+      // Check second note structure
+      expect(result.notes[1]).toHaveProperty('path', 'note2.md');
+      expect(result.notes[1]).toHaveProperty('title', 'note2');
+      expect(result.notes[1]).toHaveProperty('modifiedAt', '2022-01-01T00:00:00.000Z');
+      expect(result.notes[1]).toHaveProperty('preview', 'Short content for note 2');
+      expect(result.notes[1]).toHaveProperty('_meta');
+
       expect(result.mode).toBe('preview');
     });
 
@@ -62,12 +68,17 @@ describe('RecentHandler', () => {
       
       // Assert
       expect(result.notes).toHaveLength(1);
-      expect(result.notes[0]).toEqual({
-        path: 'note1.md',
-        title: 'note1',
-        modifiedAt: '2022-01-01T00:00:00.000Z',
-        content: 'Full content of note 1'
-      });
+
+      // Check note structure (including _meta field)
+      expect(result.notes[0]).toHaveProperty('path', 'note1.md');
+      expect(result.notes[0]).toHaveProperty('title', 'note1');
+      expect(result.notes[0]).toHaveProperty('modifiedAt', '2022-01-01T00:00:00.000Z');
+      expect(result.notes[0]).toHaveProperty('content', 'Full content of note 1');
+      expect(result.notes[0]).toHaveProperty('_meta');
+      expect(result.notes[0]._meta).toHaveProperty('size');
+      expect(result.notes[0]._meta).toHaveProperty('sizeFormatted');
+      expect(result.notes[0]._meta).toHaveProperty('lastModified');
+
       expect(result.mode).toBe('full');
     });
 

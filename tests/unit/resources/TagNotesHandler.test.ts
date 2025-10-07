@@ -12,12 +12,22 @@ describe('TagNotesHandler', () => {
 
   beforeEach(() => {
     handler = new TagNotesHandler();
-    
+
     // Create mock client
     mockClient = {
-      getFilesByTag: vi.fn()
+      getFilesByTag: vi.fn(),
+      getFileContents: vi.fn()
     };
-    
+
+    // Mock getFileContents to return metadata
+    mockClient.getFileContents.mockResolvedValue({
+      stat: {
+        ctime: Date.now(),
+        mtime: Date.now(),
+        size: 1024
+      }
+    });
+
     // Create mock server with client
     mockServer = {
       obsidianClient: mockClient
@@ -34,16 +44,22 @@ describe('TagNotesHandler', () => {
         'Ideas/NewProject.md'
       ];
       mockClient.getFilesByTag.mockResolvedValue(mockFiles);
-      
+
       // When
       const result = await handler.handleRequest(uri, mockServer);
-      
+
       // Then
       expect(mockClient.getFilesByTag).toHaveBeenCalledWith('project');
-      expect(result).toEqual({
-        tag: 'project',
-        fileCount: 3,
-        files: mockFiles
+      expect(result.tag).toBe('project');
+      expect(result.fileCount).toBe(3);
+      expect(result.files).toHaveLength(3);
+      // Verify files have metadata structure
+      result.files.forEach((file: any) => {
+        expect(file).toHaveProperty('path');
+        expect(file).toHaveProperty('_meta');
+        expect(file._meta).toHaveProperty('size');
+        expect(file._meta).toHaveProperty('sizeFormatted');
+        expect(file._meta).toHaveProperty('lastModified');
       });
     });
 
@@ -52,27 +68,26 @@ describe('TagNotesHandler', () => {
       const uri = 'vault://tag/#meeting';
       const mockFiles = ['Meetings/2024-01-15.md'];
       mockClient.getFilesByTag.mockResolvedValue(mockFiles);
-      
+
       // When
       const result = await handler.handleRequest(uri, mockServer);
-      
+
       // Then
       expect(mockClient.getFilesByTag).toHaveBeenCalledWith('meeting');
-      expect(result).toEqual({
-        tag: 'meeting',
-        fileCount: 1,
-        files: mockFiles
-      });
+      expect(result.tag).toBe('meeting');
+      expect(result.fileCount).toBe(1);
+      expect(result.files).toHaveLength(1);
+      expect(result.files[0].path).toBe('Meetings/2024-01-15.md');
     });
 
     it('should handle empty tag list', async () => {
       // Given
       const uri = 'vault://tag/nonexistent';
       mockClient.getFilesByTag.mockResolvedValue([]);
-      
+
       // When
       const result = await handler.handleRequest(uri, mockServer);
-      
+
       // Then
       expect(result).toEqual({
         tag: 'nonexistent',
@@ -86,17 +101,16 @@ describe('TagNotesHandler', () => {
       const uri = 'vault://tag/project-alpha';
       const mockFiles = ['Projects/Alpha.md'];
       mockClient.getFilesByTag.mockResolvedValue(mockFiles);
-      
+
       // When
       const result = await handler.handleRequest(uri, mockServer);
-      
+
       // Then
       expect(mockClient.getFilesByTag).toHaveBeenCalledWith('project-alpha');
-      expect(result).toEqual({
-        tag: 'project-alpha',
-        fileCount: 1,
-        files: mockFiles
-      });
+      expect(result.tag).toBe('project-alpha');
+      expect(result.fileCount).toBe(1);
+      expect(result.files).toHaveLength(1);
+      expect(result.files[0].path).toBe('Projects/Alpha.md');
     });
 
     it('should handle URL encoded tags', async () => {
@@ -104,17 +118,16 @@ describe('TagNotesHandler', () => {
       const uri = 'vault://tag/work%2Fproject';
       const mockFiles = ['Work/Project.md'];
       mockClient.getFilesByTag.mockResolvedValue(mockFiles);
-      
+
       // When
       const result = await handler.handleRequest(uri, mockServer);
-      
+
       // Then
       expect(mockClient.getFilesByTag).toHaveBeenCalledWith('work/project');
-      expect(result).toEqual({
-        tag: 'work/project',
-        fileCount: 1,
-        files: mockFiles
-      });
+      expect(result.tag).toBe('work/project');
+      expect(result.fileCount).toBe(1);
+      expect(result.files).toHaveLength(1);
+      expect(result.files[0].path).toBe('Work/Project.md');
     });
 
     it('should handle missing tag parameter', async () => {

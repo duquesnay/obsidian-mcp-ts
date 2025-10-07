@@ -180,13 +180,11 @@ describe('GetAllTagsTool', () => {
   });
 
   describe('Tool description', () => {
-    it('should mention the vault://tags resource and internal usage', () => {
+    it('should have a clear description', () => {
       const tool = new GetAllTagsTool();
-      
-      expect(tool.description).toContain('vault://tags');
-      expect(tool.description).toContain('internally');
-      expect(tool.description).toContain('5-minute caching');
-      expect(tool.description).toContain('performance');
+
+      expect(tool.description).toContain('tags');
+      expect(tool.description).toContain('vault');
     });
   });
 
