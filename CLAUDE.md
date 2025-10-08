@@ -474,7 +474,7 @@ This separation enables clean PRs by cherry-picking only non-claude commits.
 
 ## Project Learnings
 
-### 2025-10-08 - Tag Management API Evolution (v4.0 → v4.1.0)
+### 2025-10-08 - Tag Management API Evolution (v4.0 → v4.1.0+)
 
 #### Initial Problem (API v4.0.x)
 **Issue:** `manage_file_tags` tool generated error "Target header with tag name is required"
@@ -496,11 +496,11 @@ for (const tag of tags) {
 }
 ```
 
-#### API Upgrade to v4.1.0 (Same Day)
+#### API Upgrade to v4.1.0
 
 **Batch Support Added:** Obsidian Local REST API v4.1.0 introduced native multi-tag operations
 
-**New Batch Format:**
+**MCP Client Implementation:**
 ```typescript
 // Single request for multiple tags (10x-100x faster)
 await this.axiosInstance.patch(`/vault/${path}`,
@@ -509,32 +509,50 @@ await this.axiosInstance.patch(`/vault/${path}`,
     headers: {
       'Target-Type': 'tag',
       'Operation': 'add|remove',
-      'Location': 'frontmatter|inline|both'  // Replaces Tag-Location
+      'Location': 'frontmatter|inline|both'
     }
   }
 );
-
-// API v4.1.0 response format:
-// {
-//   summary: { requested: 3, succeeded: 3, skipped: 0, failed: 0 },
-//   results: [
-//     { tag: 'tag1', status: 'success', message: 'Added to frontmatter' },
-//     { tag: 'tag2', status: 'success', message: 'Added to frontmatter' },
-//     { tag: 'tag3', status: 'success', message: 'Added to frontmatter' }
-//   ]
-// }
 ```
+
+**API Response Format:**
+```typescript
+{
+  summary: { requested: 3, succeeded: 3, skipped: 0, failed: 0 },
+  results: [
+    { tag: 'tag1', status: 'success', message: 'Added to frontmatter' },
+    { tag: 'tag2', status: 'success', message: 'Added to frontmatter' },
+    { tag: 'tag3', status: 'success', message: 'Added to frontmatter' }
+  ]
+}
+```
+
+#### False Positive Bug Discovery (Same Day)
+
+**Critical Issue:** API reported success but tags were NOT actually added to files
+
+**Symptoms:**
+- API returned `{summary: {succeeded: 3}, results: [{status: 'success'}, ...]}`
+- File frontmatter remained unchanged
+- Silent failure - most dangerous type of bug
+
+**Impact:** Would affect ~2,170 files - users would believe tags were added when they weren't
+
+**Resolution:** API bug fixed to handle all YAML frontmatter formats (both YAML list and inline array formats)
+
+**MCP Client Status:** ✅ Client code is format-agnostic - sends tags as array, receives results. No changes needed.
 
 **Technical Benefits:**
 - **10x-100x Performance:** Single read/write cycle vs N separate operations
 - **Best-Effort Semantics:** Per-tag status with detailed results
 - **Auto-Deduplication:** Skips tags that already exist/don't exist
+- **Format Agnostic:** API handles all valid YAML frontmatter formats
 - **Backward Compatible:** Existing single-tag operations still work
 
 **Methodological Insights:**
-- **Rapid API Evolution:** Same-day fix → upstream API improvement shows value of open contribution
-- **Exploratory Testing ROI:** Initial exploratory tests (`batch-tag-api.test.ts`) validated new batch support immediately
-- **5 Whys → Feature Request:** Root cause analysis identified API limitation → contributed batch support to upstream
+- **Integration Testing Critical:** False positive bugs are caught by end-to-end tests, not unit tests
+- **Trust But Verify:** API success responses should be verified with actual file reads in critical operations
+- **Project Boundaries:** Always ask before modifying code in different projects - even when you have access and know the fix
 
 ### 2025-10-07 - MCP4 Binary File Support
 
