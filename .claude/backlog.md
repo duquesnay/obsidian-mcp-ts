@@ -154,3 +154,4 @@ The list evolves naturally: completed items at top, active work in middle, futur
 - [ ] OBS2: Support backwards compatibility with vault:// resources
 - [ ] FILE1: Reference Obsidian notes with @file:///obsidian/ syntax
 - [ ] FILE2: Enable native Claude workflows (Grep, search) on vault content
+

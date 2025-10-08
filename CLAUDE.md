@@ -474,45 +474,67 @@ This separation enables clean PRs by cherry-picking only non-claude commits.
 
 ## Project Learnings
 
-### 2025-10-08 - Tag Management API Batch Limitation
+### 2025-10-08 - Tag Management API Evolution (v4.0 → v4.1.0)
 
-**Problem:** `manage_file_tags` tool generated error "Target header with tag name is required"
+#### Initial Problem (API v4.0.x)
+**Issue:** `manage_file_tags` tool generated error "Target header with tag name is required"
 
-**Root Cause Analysis (5 Whys):**
+**Root Cause (5 Whys):**
 1. **Why error?** API expected `Target` header with tag name, but code didn't send it
-2. **Why missing?** Code sent tags in body (array), but API requires individual tag in `Target` header
-3. **Why designed for batch?** Attempted to allow multi-tag operations in single request, but API doesn't support batch
+2. **Why missing?** Code sent tags in body (array), but API v4.0 required individual tag in `Target` header
+3. **Why designed for batch?** Attempted multi-tag operations, but API v4.0 didn't support batch
 4. **Why not caught earlier?** Missing integration tests for `manageFileTags` operation
 5. **Why no integration tests?** Feature implemented without complete TDD cycle
 
-**Technical:**
-- **Obsidian API Constraint**: Tag operations require individual PATCH requests with tag name in `Target` header - no batch support
-- **Tested Alternatives**:
-  - Array in body without `Target`: Returns "Target header required" (400)
-  - Comma-separated tags in `Target`: Returns "Invalid tag name" (400)
-  - Array in body WITH `Target`: Only processes tag from header, ignores body
-  - Object `{tags: []}` in body: Returns "Target header required" (400)
-- **Working Solution**: Loop through tags array, send one PATCH request per tag with `Target: tagname` header
-
-**Methodological:**
-- **5 Whys Effectiveness**: Systematic root cause analysis revealed not just implementation bug, but missing test coverage and incomplete TDD
-- **Exploratory Testing Value**: Created `tests/exploratory/batch-tag-api.test.ts` to scientifically verify all possible API approaches before finalizing solution
-- **Documentation as Prevention**: Comprehensive JSDoc in `TagManagementClient.manageFileTags()` documents API limitation and tested approaches to prevent future confusion
-
-**Implementation:**
+**Initial Solution (API v4.0):**
 ```typescript
-// Loop through tags individually
+// Loop through tags individually (10-100x slower)
 for (const tag of tags) {
   await this.axiosInstance.patch(`/vault/${path}`, '', {
-    headers: {
-      'Target-Type': 'tag',
-      'Target': tag,  // Each tag requires separate request
-      'Operation': operation,
-      'Tag-Location': location
-    }
+    headers: { 'Target-Type': 'tag', 'Target': tag, 'Operation': operation }
   });
 }
 ```
+
+#### API Upgrade to v4.1.0 (Same Day)
+
+**Batch Support Added:** Obsidian Local REST API v4.1.0 introduced native multi-tag operations
+
+**New Batch Format:**
+```typescript
+// Single request for multiple tags (10x-100x faster)
+await this.axiosInstance.patch(`/vault/${path}`,
+  { tags: ['tag1', 'tag2', 'tag3'] },  // JSON body format
+  {
+    headers: {
+      'Target-Type': 'tag',
+      'Operation': 'add|remove',
+      'Location': 'frontmatter|inline|both'  // Replaces Tag-Location
+    }
+  }
+);
+
+// API v4.1.0 response format:
+// {
+//   summary: { requested: 3, succeeded: 3, skipped: 0, failed: 0 },
+//   results: [
+//     { tag: 'tag1', status: 'success', message: 'Added to frontmatter' },
+//     { tag: 'tag2', status: 'success', message: 'Added to frontmatter' },
+//     { tag: 'tag3', status: 'success', message: 'Added to frontmatter' }
+//   ]
+// }
+```
+
+**Technical Benefits:**
+- **10x-100x Performance:** Single read/write cycle vs N separate operations
+- **Best-Effort Semantics:** Per-tag status with detailed results
+- **Auto-Deduplication:** Skips tags that already exist/don't exist
+- **Backward Compatible:** Existing single-tag operations still work
+
+**Methodological Insights:**
+- **Rapid API Evolution:** Same-day fix → upstream API improvement shows value of open contribution
+- **Exploratory Testing ROI:** Initial exploratory tests (`batch-tag-api.test.ts`) validated new batch support immediately
+- **5 Whys → Feature Request:** Root cause analysis identified API limitation → contributed batch support to upstream
 
 ### 2025-10-07 - MCP4 Binary File Support
 
