@@ -136,22 +136,23 @@ export class TagManagementClient implements ITagManagementClient {
   }
 
   /**
-   * Adds or removes tags from a specific file.
+   * Adds or removes tags from a specific file using batch operations.
    *
-   * Note: The Obsidian API does not support batch tag operations.
-   * Each tag requires a separate PATCH request with the tag name in the Target header.
-   * This method loops through the tags array and processes each tag individually.
-   *
-   * Tested approaches that failed:
-   * - Array in body without Target header: Returns "Target header with tag name is required"
-   * - Comma-separated tags in Target header: Returns "Invalid tag name"
-   * - Tags array in body with Target header: Only processes the tag in Target header, ignores body
+   * API v4.1.0+ supports batch tag operations via JSON body format:
+   * - Single API call for multiple tags (10x-100x faster than sequential)
+   * - Best-effort semantics with per-tag results
+   * - Automatic deduplication (skips existing/missing tags)
    *
    * @param filePath - Path to the file relative to vault root
    * @param operation - Whether to add or remove the tags
    * @param tags - Array of tag names to add or remove (without # prefix)
    * @param location - Where to modify tags: frontmatter (default), inline, or both
-   * @returns Object with count of tags modified and success message
+   * @returns Object with count of tags modified, summary, and per-tag results
+   *
+   * @example
+   * // Add multiple tags in one call
+   * await client.manageFileTags('note.md', 'add', ['project', 'urgent'], 'frontmatter');
+   * // Response: { tagsModified: 2, summary: { requested: 2, succeeded: 2, ... }, results: [...] }
    */
   async manageFileTags(
     filePath: string,
@@ -161,35 +162,43 @@ export class TagManagementClient implements ITagManagementClient {
   ): Promise<{
     tagsModified: number;
     message?: string;
+    summary?: {
+      requested: number;
+      succeeded: number;
+      skipped: number;
+      failed: number;
+    };
+    results?: Array<{
+      tag: string;
+      status: 'success' | 'skipped' | 'failed';
+      message: string;
+    }>;
   }> {
     validatePath(filePath, 'filePath');
     const encodedPath = encodeURIComponent(filePath);
     return this.safeCall(async () => {
-      // Obsidian API requires one tag at a time via Target header
-      // We loop through tags and make individual requests
-      let totalModified = 0;
-
-      for (const tag of tags) {
-        const response = await this.axiosInstance.patch(
-          `/vault/${encodedPath}`,
-          '', // Empty body - tag specified in Target header
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              'Target-Type': 'tag',
-              'Target': tag, // API requires tag name in Target header
-              'Operation': operation,
-              'Tag-Location': location
-            }
+      // Use API v4.1.0+ batch format with JSON body
+      const response = await this.axiosInstance.patch(
+        `/vault/${encodedPath}`,
+        { tags }, // Batch format: {tags: ["tag1", "tag2", ...]}
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Target-Type': 'tag',
+            'Operation': operation,
+            'Location': location
           }
-        );
-        const result = response.data;
-        totalModified += result.tagsModified || 1;
-      }
+        }
+      );
 
+      const result = response.data;
+
+      // API v4.1.0+ returns detailed summary and per-tag results
       return {
-        tagsModified: totalModified,
-        message: `Successfully ${operation === 'add' ? 'added' : 'removed'} ${totalModified} tag(s)`
+        tagsModified: result.summary?.succeeded || tags.length,
+        message: result.message || `Successfully ${operation === 'add' ? 'added' : 'removed'} ${result.summary?.succeeded || tags.length} tag(s)`,
+        summary: result.summary,
+        results: result.results
       };
     });
   }

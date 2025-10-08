@@ -5,12 +5,12 @@ import { validateRequiredArgs, FILE_PATH_SCHEMA, TAGS_ARRAY_SCHEMA, normalizeTag
 
 export class ManageFileTagsTool extends BaseTool<ManageFileTagsArgs> {
   name = 'obsidian_manage_file_tags';
-  description = 'Add or remove tags from vault note. Supports multiple tags in single call (processed sequentially). Can modify frontmatter tags, inline tags, or both.';
+  description = 'Add or remove tags from vault note. Supports batch operations (multiple tags in one API call - 10x-100x faster). Can modify frontmatter tags, inline tags, or both.';
 
   metadata: ToolMetadata = {
     category: 'tags',
-    keywords: ['tags', 'manage', 'add', 'remove', 'file', 'frontmatter'],
-    version: '1.0.0'
+    keywords: ['tags', 'manage', 'add', 'remove', 'file', 'frontmatter', 'batch'],
+    version: '2.0.0'  // Bumped version for batch API support
   };
   
   inputSchema = {
