@@ -474,6 +474,46 @@ This separation enables clean PRs by cherry-picking only non-claude commits.
 
 ## Project Learnings
 
+### 2025-10-08 - Tag Management API Batch Limitation
+
+**Problem:** `manage_file_tags` tool generated error "Target header with tag name is required"
+
+**Root Cause Analysis (5 Whys):**
+1. **Why error?** API expected `Target` header with tag name, but code didn't send it
+2. **Why missing?** Code sent tags in body (array), but API requires individual tag in `Target` header
+3. **Why designed for batch?** Attempted to allow multi-tag operations in single request, but API doesn't support batch
+4. **Why not caught earlier?** Missing integration tests for `manageFileTags` operation
+5. **Why no integration tests?** Feature implemented without complete TDD cycle
+
+**Technical:**
+- **Obsidian API Constraint**: Tag operations require individual PATCH requests with tag name in `Target` header - no batch support
+- **Tested Alternatives**:
+  - Array in body without `Target`: Returns "Target header required" (400)
+  - Comma-separated tags in `Target`: Returns "Invalid tag name" (400)
+  - Array in body WITH `Target`: Only processes tag from header, ignores body
+  - Object `{tags: []}` in body: Returns "Target header required" (400)
+- **Working Solution**: Loop through tags array, send one PATCH request per tag with `Target: tagname` header
+
+**Methodological:**
+- **5 Whys Effectiveness**: Systematic root cause analysis revealed not just implementation bug, but missing test coverage and incomplete TDD
+- **Exploratory Testing Value**: Created `tests/exploratory/batch-tag-api.test.ts` to scientifically verify all possible API approaches before finalizing solution
+- **Documentation as Prevention**: Comprehensive JSDoc in `TagManagementClient.manageFileTags()` documents API limitation and tested approaches to prevent future confusion
+
+**Implementation:**
+```typescript
+// Loop through tags individually
+for (const tag of tags) {
+  await this.axiosInstance.patch(`/vault/${path}`, '', {
+    headers: {
+      'Target-Type': 'tag',
+      'Target': tag,  // Each tag requires separate request
+      'Operation': operation,
+      'Tag-Location': location
+    }
+  });
+}
+```
+
 ### 2025-10-07 - MCP4 Binary File Support
 
 **Technical:**
