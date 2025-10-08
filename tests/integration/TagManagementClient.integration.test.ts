@@ -66,6 +66,107 @@ describe('TagManagementClient Integration Tests', () => {
     });
   });
 
+  describe('manageFileTags', () => {
+    const testFilePath = 'test-tag-management.md';
+
+    beforeAll(async () => {
+      // Create a test file for tag management
+      const { FileOperationsClient } = await import('../../src/obsidian/services/FileOperationsClient');
+      const fileClient = new FileOperationsClient({
+        apiKey: process.env.OBSIDIAN_API_KEY!,
+        host: process.env.OBSIDIAN_HOST || '127.0.0.1',
+        port: parseInt(process.env.OBSIDIAN_PORT || '27124'),
+        protocol: 'https',
+        verifySsl: false
+      });
+
+      await fileClient.createFile(testFilePath, '# Test File\n\nContent for tag testing.');
+    });
+
+    afterAll(async () => {
+      // Clean up test file
+      const { FileOperationsClient } = await import('../../src/obsidian/services/FileOperationsClient');
+      const fileClient = new FileOperationsClient({
+        apiKey: process.env.OBSIDIAN_API_KEY!,
+        host: process.env.OBSIDIAN_HOST || '127.0.0.1',
+        port: parseInt(process.env.OBSIDIAN_PORT || '27124'),
+        protocol: 'https',
+        verifySsl: false
+      });
+
+      try {
+        await fileClient.deleteFile(testFilePath);
+      } catch (error) {
+        // Ignore if file doesn't exist
+      }
+    });
+
+    it('should add tags to frontmatter', async () => {
+      const result = await client.manageFileTags(
+        testFilePath,
+        'add',
+        ['test-tag-1', 'test-tag-2'],
+        'frontmatter'
+      );
+
+      expect(result.tagsModified).toBeGreaterThan(0);
+      expect(result.message).toContain('added');
+
+      // Verify tags were added
+      const files = await client.getFilesByTag('test-tag-1');
+      expect(files).toContain(testFilePath);
+    });
+
+    it('should add tags inline', async () => {
+      const result = await client.manageFileTags(
+        testFilePath,
+        'add',
+        ['inline-tag-1'],
+        'inline'
+      );
+
+      expect(result.tagsModified).toBeGreaterThan(0);
+    });
+
+    it('should remove tags from file', async () => {
+      // First add a tag
+      await client.manageFileTags(testFilePath, 'add', ['removable-tag'], 'frontmatter');
+
+      // Then remove it
+      const result = await client.manageFileTags(
+        testFilePath,
+        'remove',
+        ['removable-tag'],
+        'frontmatter'
+      );
+
+      expect(result.tagsModified).toBeGreaterThan(0);
+      expect(result.message).toContain('removed');
+    });
+
+    it('should handle multiple tags in single call', async () => {
+      const result = await client.manageFileTags(
+        testFilePath,
+        'add',
+        ['multi-1', 'multi-2', 'multi-3'],
+        'frontmatter'
+      );
+
+      expect(result.tagsModified).toBe(3);
+    });
+
+    it('should work with both frontmatter and inline location', async () => {
+      const result = await client.manageFileTags(
+        testFilePath,
+        'add',
+        ['both-location-tag'],
+        'both'
+      );
+
+      expect(result.tagsModified).toBeGreaterThan(0);
+    });
+  });
+
   describe('error handling', () => {
     it('should handle authentication errors', async () => {
       const invalidClient = new TagManagementClient({

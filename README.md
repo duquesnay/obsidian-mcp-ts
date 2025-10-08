@@ -256,7 +256,7 @@ The server implements multiple tools to interact with Obsidian:
 - get_all_tags: List all unique tags in the vault with their usage counts
 - get_files_by_tag: Get all files that contain a specific tag
 - rename_tag: Rename a tag across the entire vault
-- manage_file_tags: Add or remove tags from a specific file
+- manage_file_tags: Add or remove tags from a specific file (supports multiple tags, processed sequentially)
 - get_periodic_note: Get current periodic note for the specified period (daily, weekly, monthly, quarterly, yearly)
 - get_recent_periodic_notes: Get most recent periodic notes for the specified period type
 - get_recent_changes: Get recently modified files in the vault (note: content preview parameter not yet supported by API)
