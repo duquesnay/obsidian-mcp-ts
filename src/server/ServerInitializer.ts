@@ -73,6 +73,10 @@ export async function initializeServer(server: ServerWithSubscriptions): Promise
   });
   server.loggingHandler = loggingHandler;
 
+  // Register completions (after resources to ensure cached handlers are available)
+  const { registerCompletions } = await import('../completions/index.js');
+  await registerCompletions(server);
+
   // Configure default subscriptions if specified
   if (config.defaultSubscriptions.length > 0 && server.subscriptionManager) {
     // For now, we just validate the URIs. Actual subscription setup would happen
