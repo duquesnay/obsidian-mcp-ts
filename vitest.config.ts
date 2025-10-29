@@ -1,7 +1,10 @@
 import { defineConfig } from 'vitest/config';
+import { loadEnv } from 'vite';
 
 export default defineConfig({
   test: {
+    // Load environment variables from .env file
+    env: loadEnv('test', process.cwd(), ''),
     // Prevent orphan processes by setting global timeout
     testTimeout: 10000, // 10 seconds default timeout
     hookTimeout: 10000, // 10 seconds for setup/teardown hooks
