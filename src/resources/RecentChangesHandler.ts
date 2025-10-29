@@ -90,7 +90,16 @@ export class RecentChangesHandler extends BaseResourceHandler {
       const recentChanges = await client.getRecentChanges(undefined, maxFetchLimit);
 
       // Extract unique file paths for metadata fetching
-      const filePaths = recentChanges.map(change => change.path);
+      // Filter out directories and system files that won't have metadata
+      const filePaths = recentChanges
+        .map(change => change.path)
+        .filter(path => {
+          // Skip directories (ending with /)
+          if (path.endsWith('/')) return false;
+          // Skip system files
+          if (path === '.DS_Store' || path.startsWith('.') && path.includes('/')) return false;
+          return true;
+        });
 
       // Batch fetch metadata for all files
       const metadataMap = await ResourceMetadataUtil.batchFetchMetadata(client, filePaths);

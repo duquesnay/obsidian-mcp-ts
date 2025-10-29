@@ -98,6 +98,13 @@ export class ResourceMetadataUtil {
       // Fetch file metadata without loading content
       const response = await client.getFileContents(filepath, 'metadata');
 
+      // Handle directory listing response (older plugin versions or folders)
+      // When the API is called with format=metadata on a folder, it returns { files: [...] }
+      if (typeof response === 'object' && 'files' in response) {
+        // This is a directory, not a file - directories don't have metadata
+        return null;
+      }
+
       // Handle the response - it should be a FileMetadata object
       if (typeof response === 'object' && 'stat' in response) {
         const metadata = response as FileMetadata;
@@ -111,8 +118,9 @@ export class ResourceMetadataUtil {
         };
       }
 
-      // Fallback if metadata format is unexpected
-      throw new Error('Invalid metadata response format');
+      // Fallback if metadata format is unexpected (return null gracefully)
+      // This handles compatibility with different plugin versions
+      return null;
     } catch (error) {
       // Log the actual error for debugging
       console.warn(`Failed to fetch metadata for ${filepath}:`, error);
