@@ -3,7 +3,14 @@ import { RecentChangesHandler } from '../../src/resources/RecentChangesHandler.j
 
 // Mock ObsidianClient
 const mockObsidianClient = {
-  getRecentChanges: vi.fn()
+  getRecentChanges: vi.fn(),
+  getFileContents: vi.fn().mockResolvedValue({
+    stat: {
+      size: 1000,
+      ctime: Date.now() - 86400000,
+      mtime: Date.now()
+    }
+  })
 };
 
 // Mock server with client

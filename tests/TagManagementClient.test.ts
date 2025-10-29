@@ -172,13 +172,13 @@ describe('TagManagementClient', () => {
 
       expect(mockAxiosInstance.patch).toHaveBeenCalledWith(
         `/vault/${encodeURIComponent(filePath)}`,
-        tags,
+        { tags },
         {
           headers: {
             'Content-Type': 'application/json',
             'Target-Type': 'tag',
             'Operation': 'add',
-            'Tag-Location': 'frontmatter'
+            'Location': 'frontmatter'
           }
         }
       );
@@ -200,13 +200,13 @@ describe('TagManagementClient', () => {
 
       expect(mockAxiosInstance.patch).toHaveBeenCalledWith(
         `/vault/${encodeURIComponent(filePath)}`,
-        tags,
+        { tags },
         {
           headers: {
             'Content-Type': 'application/json',
             'Target-Type': 'tag',
             'Operation': 'remove',
-            'Tag-Location': 'inline'
+            'Location': 'inline'
           }
         }
       );
@@ -231,10 +231,10 @@ describe('TagManagementClient', () => {
 
       expect(mockAxiosInstance.patch).toHaveBeenCalledWith(
         expect.any(String),
-        tags,
+        { tags },
         expect.objectContaining({
           headers: expect.objectContaining({
-            'Tag-Location': 'frontmatter'
+            'Location': 'frontmatter'
           })
         })
       );
