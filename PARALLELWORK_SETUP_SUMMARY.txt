@@ -1,0 +1,358 @@
+================================================================================
+PARALLEL WORKTREE SETUP - COMPLETE SUMMARY
+================================================================================
+
+Date: 2025-10-29
+Status: ✅ SETUP COMPLETE & VERIFIED
+
+================================================================================
+WHAT WAS SET UP
+================================================================================
+
+3 Independent Git Worktrees:
+
+1. MAIN REFERENCE WORKTREE
+   Location: /Users/guillaume/dev/tools/mcp/obsidian-mcp-ts
+   Branch: main
+   Status: ✅ Current, up-to-date
+   Purpose: Reference copy and documentation hub
+
+2. BASELINE FIXES WORKTREE (ACTIVE)
+   Location: /Users/guillaume/dev/tools/mcp/obsidian-mcp-ts-baseline-fixes
+   Branch: fix/baseline-test-failures
+   Status: ✅ Ready for development
+   Purpose: Fix the 6 failing tests to achieve green line
+
+3. SDK MIGRATION WORKTREE (ACTIVE)
+   Location: /Users/guillaume/dev/tools/mcp/obsidian-mcp-ts-sdk-migration
+   Branch: feat/sdk-migration-wt (tracking feat/sdk-migration)
+   Status: ✅ Ready for development
+   Purpose: Continue SDK v1.20.2 upgrade in parallel
+
+================================================================================
+6 BASELINE TEST FAILURES TO FIX
+================================================================================
+
+Priority 1 (Root Causes):
+[#3] resources-integration.test.ts - TIMEOUT (vault://recent resource)
+     └─ Root Issue: "TypeError: client.getFileContents is not a function"
+     └─ File: src/resources/RecentHandler.ts
+     └─ Impact: May also block performance test #4
+
+[#2] multi-tag-verification.test.ts - 400 ERROR (batch tag operation)
+     └─ Root Issue: Wrong request format for API v4.1.0
+     └─ File: tests/exploratory/multi-tag-verification.test.ts
+     └─ Impact: Reveals actual API requirements
+
+Priority 2 (Dependent):
+[#4] RecentChangesHandler.migration.test.ts - PERFORMANCE (665ms vs 200ms target)
+     └─ Status: Test after fixing #3 - may self-resolve
+     └─ File: tests/unit/RecentChangesHandler.migration.test.ts
+
+[#1] TagManagementClient.test.ts - 3 FAILURES (mock format mismatch)
+     └─ Root Issue: Test mocks expect old API format, code uses new format
+     └─ File: tests/TagManagementClient.test.ts
+     └─ Status: Update mocks to match API v4.1.0 format
+
+================================================================================
+DOCUMENTATION CREATED
+================================================================================
+
+📄 WORKTREE_WORKFLOW.md
+   Complete workflow guide with detailed instructions
+   - 3 worktrees structure and purpose
+   - Development workflow for parallel work
+   - Merging strategy
+   - Git commands reference
+   - Troubleshooting guide
+
+📄 BASELINE_FAILURES_SUMMARY.md
+   Detailed investigation guide for each failure
+   - Root cause analysis for all 6 failures
+   - What needs fixing for each test
+   - Files to inspect
+   - Investigation steps
+   - Dependencies between failures
+   - Recommended fix order
+
+📄 QUICK_REFERENCE.md
+   Quick commands and navigation guide
+   - Worktree overview table
+   - One-liner commands
+   - Files you'll likely edit
+   - Commit message format
+   - Quick troubleshooting
+
+📄 SETUP_VERIFICATION.md
+   Setup verification and getting started guide
+   - Worktree configuration details
+   - Verification commands
+   - Step-by-step starting instructions
+   - Common issues and solutions
+   - Timeline and next steps
+
+================================================================================
+HOW TO START
+================================================================================
+
+Step 1: Review the Documentation
+├─ Start with: QUICK_REFERENCE.md (2 min read)
+├─ Then read: BASELINE_FAILURES_SUMMARY.md (detailed)
+└─ Keep: WORKTREE_WORKFLOW.md as reference
+
+Step 2: Navigate to Baseline Fixes Worktree
+```bash
+cd /Users/guillaume/dev/tools/mcp/obsidian-mcp-ts-baseline-fixes
+npm test                # See the 6 failures
+```
+
+Step 3: Fix in Priority Order
+├─ First: Fix #3 (metadata timeout)
+├─ Then: Retest #4 (performance)
+├─ Fix: #2 (API format)
+└─ Last: #1 (test mocks)
+
+Step 4: When All Tests Pass
+```bash
+npm test                # Should show: 0 failed | X passed
+git add -A
+git commit -m "fix: resolve 6 baseline test failures"
+git checkout main
+git merge fix/baseline-test-failures
+git push origin main
+```
+
+Step 5: Update SDK Migration Branch
+```bash
+cd /Users/guillaume/dev/tools/mcp/obsidian-mcp-ts-sdk-migration
+git fetch origin
+git rebase origin/main  # Gets baseline fixes
+npm test                # Ensure still passing
+```
+
+================================================================================
+QUICK NAVIGATION
+================================================================================
+
+Go to baseline fixes:
+  cd /Users/guillaume/dev/tools/mcp/obsidian-mcp-ts-baseline-fixes
+
+Go to SDK migration:
+  cd /Users/guillaume/dev/tools/mcp/obsidian-mcp-ts-sdk-migration
+
+Go to main:
+  cd /Users/guillaume/dev/tools/mcp/obsidian-mcp-ts
+
+List all worktrees:
+  git worktree list
+
+Check current branch:
+  git branch --show-current
+
+See test failures:
+  npm test 2>&1 | grep -E "FAIL|expected"
+
+================================================================================
+WORKFLOW PRINCIPLE
+================================================================================
+
+Independent Development:
+  • Baseline fixes: Only fix the 6 tests, no SDK changes
+  • SDK migration: Separate concerns, no test file changes
+  • Both worktrees: Independent branches, can't interfere
+
+Merge Strategy:
+  1. Baseline fixes complete → merge to main first
+  2. SDK migration gets baseline fixes → rebase on main
+  3. Continue SDK migration with clean main as base
+  4. Merge SDK migration → main
+  5. Both done, green line achieved
+
+No Conflicts Expected:
+  • Different code regions being modified
+  • Baseline focuses on tests and bug fixes
+  • SDK focuses on new feature integration
+  • Clean separation prevents merge conflicts
+
+================================================================================
+FILES YOU'LL LIKELY EDIT
+================================================================================
+
+For Tag API Issues (#1, #2):
+  └─ src/obsidian/services/TagManagementClient.ts
+  └─ tests/TagManagementClient.test.ts
+  └─ tests/exploratory/multi-tag-verification.test.ts
+
+For Metadata/Timeout (#3):
+  └─ src/resources/RecentHandler.ts
+  └─ src/obsidian/ObsidianClient.ts
+  └─ src/utils/ResourceMetadataUtil.ts
+
+For Performance (#4):
+  └─ src/utils/PaginationSystem.ts
+  └─ src/resources/RecentChangesHandler.ts
+  └─ tests/unit/RecentChangesHandler.migration.test.ts
+
+================================================================================
+SUCCESS CRITERIA
+================================================================================
+
+✅ Setup Complete:
+  [✓] 3 worktrees exist and show correct branches
+  [✓] npm test shows 6 failures in baseline-fixes
+  [✓] npm test shows passing in SDK migration
+  [✓] All documentation files present on main
+  [✓] Can navigate between worktrees
+
+✅ Baseline Fixes Done:
+  [✓] All 6 tests pass
+  [✓] npm test shows: "Test Files  0 failed | X passed"
+  [✓] Changes merged to main
+  [✓] No new regressions
+  [✓] SDK migration still passes after rebase
+
+✅ Overall Success:
+  [✓] Main branch has green line (all tests pass)
+  [✓] Both worktrees merged to main
+  [✓] Clean commit history preserved
+
+================================================================================
+KEY COMMANDS REFERENCE
+================================================================================
+
+Development (in appropriate worktree):
+  npm install               # Install dependencies (per worktree)
+  npm run build             # Build
+  npm test                  # Run tests
+  npm run dev               # Development mode
+
+Git Operations (per worktree):
+  git branch --show-current # Check what branch you're on
+  git log --oneline -n 5    # See your commits
+  git add -A                # Stage changes
+  git commit -m "..."       # Commit with message
+  git fetch origin           # Get remote updates
+  git rebase origin/main    # Update with main changes
+
+Worktree Management:
+  git worktree list         # List all worktrees
+  git worktree prune        # Clean up stale entries
+
+================================================================================
+IMPORTANT NOTES
+================================================================================
+
+• Each worktree has independent node_modules
+  → Run npm install in each worktree separately
+
+• Each worktree has independent build output
+  → dist/ folder per worktree (don't share)
+
+• Branches are independent but share git history
+  → Merging to main affects all worktrees
+
+• Documentation is on main for all to reference
+  → Easier to access from any worktree
+
+• Commit messages follow convention
+  → fix: for bug fixes
+  → feat: for new features
+  → perf: for performance improvements
+
+================================================================================
+TROUBLESHOOTING REFERENCE
+================================================================================
+
+If npm install fails in a worktree:
+  1. Check Node version: node --version
+  2. Clear cache: npm cache clean --force
+  3. Delete node_modules: rm -rf node_modules
+  4. Try again: npm install
+
+If tests still fail after fix:
+  1. Rebuild: npm run build
+  2. Clear cache: npm cache clean --force
+  3. Reinstall: npm install
+  4. Retest: npm test
+
+If git worktree is locked:
+  1. Prune stale entries: git worktree prune
+  2. Remove manually: rm -rf /path/to/worktree
+  3. Recreate if needed
+
+If you get merge conflicts:
+  1. Read WORKTREE_WORKFLOW.md - Complex Merge section
+  2. Document conflict scope
+  3. Escalate if >3 files affected
+
+================================================================================
+NEXT STEPS - YOUR ACTION ITEMS
+================================================================================
+
+Immediate (Right Now):
+  [ ] Read QUICK_REFERENCE.md (2-5 minutes)
+  [ ] Read BASELINE_FAILURES_SUMMARY.md (10 minutes)
+  [ ] Navigate to baseline-fixes worktree
+  [ ] Run npm test to see the failures
+
+Soon (Next 30 minutes):
+  [ ] Review failure #3 details (metadata timeout)
+  [ ] Check RecentHandler.ts code
+  [ ] Understand the getFileContents issue
+  [ ] Plan first fix
+
+Development (Next 1-2 hours):
+  [ ] Fix #3 (metadata timeout)
+  [ ] Retest #4 (performance)
+  [ ] Fix #2 (API format)
+  [ ] Fix #1 (test mocks)
+  [ ] All tests pass
+
+Completion:
+  [ ] Commit fixes
+  [ ] Merge to main
+  [ ] Rebase SDK migration
+  [ ] Continue SDK work
+
+================================================================================
+DOCUMENTATION INDEX
+================================================================================
+
+Location: /Users/guillaume/dev/tools/mcp/obsidian-mcp-ts/
+
+Quick Start:
+  → QUICK_REFERENCE.md (read first)
+  → BASELINE_FAILURES_SUMMARY.md (detailed)
+
+Complete Guides:
+  → WORKTREE_WORKFLOW.md (full workflow)
+  → SETUP_VERIFICATION.md (verification steps)
+
+This File:
+  → PARALLELWORK_SETUP_SUMMARY.txt (you are here)
+
+================================================================================
+SUPPORT
+================================================================================
+
+If stuck:
+  1. Check BASELINE_FAILURES_SUMMARY.md for your failure
+  2. Review WORKTREE_WORKFLOW.md for workflow questions
+  3. Check QUICK_REFERENCE.md for commands
+  4. Run npm test with verbose: npm test 2>&1 | tee test-output.log
+
+All documentation is committed to main and available in all worktrees.
+
+================================================================================
+✅ SETUP COMPLETE - READY TO START FIXING TESTS
+================================================================================
+
+You have 3 independent worktrees ready for parallel development:
+  1. Baseline fixes (fix the 6 tests)
+  2. SDK migration (continue upgrade)
+  3. Main reference (documentation hub)
+
+Next: Navigate to baseline-fixes and start with failure #3.
+
+Good luck! The green line awaits. 🚀
+================================================================================
