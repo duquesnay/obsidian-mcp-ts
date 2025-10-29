@@ -9,7 +9,7 @@
  */
 
 export { CompletionHandler } from './CompletionHandler.js';
-export {
+export type {
   CompletionProvider,
   CompletionReference,
   CompletionArgument,
