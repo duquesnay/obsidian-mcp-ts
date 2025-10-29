@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import axios, { AxiosInstance } from 'axios';
-import { TagManagementClient } from '../src/obsidian/services/TagManagementClient';
-import { ObsidianError } from '../src/types/errors';
-import type { ObsidianClientConfig } from '../src/obsidian/ObsidianClient';
+import { TagManagementClient } from '../../../src/obsidian/services/TagManagementClient';
+import { ObsidianError } from '../../../src/types/errors';
+import type { ObsidianClientConfig } from '../../../src/obsidian/ObsidianClient';
 
 vi.mock('axios');
 
