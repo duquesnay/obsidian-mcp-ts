@@ -3,6 +3,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { registerTools } from '../tools/index.js';
 import { registerResources } from '../resources/index.js';
 import { registerSubscriptions } from '../subscriptions/index.js';
+import { registerLogging, LoggingHandler } from '../logging/index.js';
 
 /**
  * Configuration for subscription settings
@@ -14,11 +15,12 @@ export interface SubscriptionConfig {
 }
 
 /**
- * Extended server interface to include subscription components
+ * Extended server interface to include subscription and logging components
  */
 interface ServerWithSubscriptions extends Server {
   subscriptionManager?: any;
   subscriptionHandlers?: any;
+  loggingHandler?: LoggingHandler;
   capabilities?: any;
 }
 
@@ -61,6 +63,15 @@ export async function initializeServer(server: ServerWithSubscriptions): Promise
   await registerTools(server);
   await registerSubscriptions(server);
   await registerResources(server);
+
+  // Register logging (after tools to capture tool usage)
+  const loggingHandler = await registerLogging(server, {
+    maxEntries: 1000,
+    minLevel: 'debug',
+    sendToClient: true,
+    logToConsole: false,
+  });
+  server.loggingHandler = loggingHandler;
 
   // Configure default subscriptions if specified
   if (config.defaultSubscriptions.length > 0 && server.subscriptionManager) {
