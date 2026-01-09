@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ \"$CLAUDE_CODE_REMOTE\" \\!= \"true\" ] && exit 0; command -v gh >/dev/null || { sudo apt-get update >&2 && sudo apt-get install -y gh >&2 || { echo 'Failed to install gh' >&2; exit 1; }; }; [ -d /tmp/claude_ref ] || { git clone --depth 1 https://x-access-token:${GITHUB_TOKEN}@github.com/duquesnay/claude-memories.git /tmp/claude_ref >&2 || { echo 'Failed to clone claude_ref' >&2; exit 1; }; }; /tmp/claude_ref/install.sh --core-only --root $HOME >&2"
+            "command": "[ \"$CLAUDE_CODE_REMOTE\" \\!= \"true\" ] && exit 0; command -v gh >/dev/null || { sudo apt-get update >&2 && sudo apt-get install -y gh >&2 || { echo 'Failed to install gh' >&2; exit 1; }; }; [ -d /tmp/claude_ref ] || { git clone --depth 1 https://x-access-token:${GH_TOKEN}@github.com/duquesnay/claude-memories.git /tmp/claude_ref >&2 || { echo 'Failed to clone claude_ref' >&2; exit 1; }; }; /tmp/claude_ref/install.sh --core-only --root $HOME >&2"
           }
         ]
       }
